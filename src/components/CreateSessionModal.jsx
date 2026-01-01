@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { sessionsAPI } from '../utils/api';
 import './CreateSessionModal.css';
 
 const CreateSessionModal = ({ onClose, onSuccess }) => {
@@ -92,33 +93,22 @@ const CreateSessionModal = ({ onClose, onSuccess }) => {
     setErrors({});
 
     try {
-      const response = await fetch('http://localhost:5000/api/sessions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await sessionsAPI.createSession(formData);
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (response.status === 201) {
         onSuccess();
-      } else {
-        if (data.error.details) {
-          const fieldErrors = {};
-          data.error.details.forEach(detail => {
-            fieldErrors[detail.field] = detail.message;
-          });
-          setErrors(fieldErrors);
-        } else {
-          setErrors({ general: data.error.message });
-        }
       }
     } catch (error) {
       console.error('Error creating session:', error);
-      setErrors({ general: 'Failed to create session. Please try again.' });
+      if (error.response?.data?.error?.details) {
+        const fieldErrors = {};
+        error.response.data.error.details.forEach(detail => {
+          fieldErrors[detail.field] = detail.message;
+        });
+        setErrors(fieldErrors);
+      } else {
+        setErrors({ general: error.response?.data?.error?.message || 'Failed to create session. Please try again.' });
+      }
     } finally {
       setLoading(false);
     }
