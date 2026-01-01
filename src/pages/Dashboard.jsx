@@ -1,123 +1,243 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { sessionsAPI } from '../utils/api';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    totalSessions: 0,
+    upcomingSessions: 0,
+    joinedGroups: 0,
+    organizedSessions: 0
+  });
+  const [upcomingSessions, setUpcomingSessions] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      const [sessionsRes, mySessionsRes] = await Promise.all([
+        sessionsAPI.getSessions({ limit: 5 }),
+        sessionsAPI.getMySessions()
+      ]);
+
+      const allSessions = sessionsRes.data.data.sessions;
+      const mySessions = mySessionsRes.data.data;
+
+      // Calculate stats
+      const now = new Date();
+      const upcoming = allSessions.filter(session => new Date(session.date) > now);
+      const organized = mySessions.organized.length;
+      const joined = mySessions.joined.length;
+
+      setStats({
+        totalSessions: allSessions.length,
+        upcomingSessions: upcoming.length,
+        joinedGroups: 0, // TODO: implement groups API
+        organizedSessions: organized
+      });
+
+      setUpcomingSessions(upcoming.slice(0, 3));
+      setRecentActivity([...mySessions.organized, ...mySessions.joined]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5));
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const handleViewGroups = () => {
-    navigate('/groups');
-  };
-
   const handleViewSessions = () => {
     navigate('/sessions');
   };
 
-  const features = [
-    {
-      icon: '👥',
-      title: 'Study Groups',
-      description: 'Create or join groups with peers studying the same subjects',
-      action: 'Browse Groups',
-      onClick: handleViewGroups,
-      color: 'feature-blue'
-    },
-    {
-      icon: '📅',
-      title: 'Schedule Sessions',
-      description: 'Plan and attend collaborative study sessions with others',
-      action: 'View Sessions',
-      onClick: handleViewSessions,
-      color: 'feature-purple'
-    },
-    {
-      icon: '🎓',
-      title: 'Learn Together',
-      description: 'Share resources, discuss topics, and grow with your group',
-      action: 'Get Started',
-      onClick: handleViewGroups,
-      color: 'feature-green'
-    }
-  ];
+  const handleCreateSession = () => {
+    navigate('/sessions');
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const formatTime = (timeString) => {
+    const [hours, minutes] = timeString.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="dashboard-container">
+        <div className="loading-spinner">Loading dashboard...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container">
+      {/* Header */}
       <header className="dashboard-header">
         <div className="header-content">
-          <h1 className="header-title">📚 Study Hub</h1>
-          <p className="header-subtitle">Your collaborative learning platform</p>
+          <h1 className="header-title">📊 Dashboard</h1>
+          <p className="header-subtitle">Welcome back, {user?.username}!</p>
         </div>
-        <button onClick={handleLogout} className="logout-button">
-          Logout
-        </button>
+        <div className="header-actions">
+          <button onClick={handleCreateSession} className="create-session-btn">
+            + New Session
+          </button>
+          <button onClick={handleLogout} className="logout-button">
+            Logout
+          </button>
+        </div>
       </header>
 
-      <main className="dashboard-content">
-        <section className="welcome-section">
-          <div className="welcome-card">
-            <div className="welcome-header">
-              <div className="user-avatar">{user?.username?.[0]?.toUpperCase()}</div>
-              <div>
-                <h2>Welcome back, <span className="highlight">{user?.username}</span>!</h2>
-                <p className="user-info">{user?.email}</p>
+      <main className="dashboard-main">
+        {/* Stats Cards */}
+        <section className="stats-section">
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon">📅</div>
+              <div className="stat-content">
+                <h3>{stats.totalSessions}</h3>
+                <p>Total Sessions</p>
               </div>
             </div>
-            <p className="welcome-message">
-              You're all set to start collaborating with other students. Explore study groups or schedule sessions to get started.
-            </p>
+            <div className="stat-card">
+              <div className="stat-icon">⏰</div>
+              <div className="stat-content">
+                <h3>{stats.upcomingSessions}</h3>
+                <p>Upcoming Sessions</p>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">👥</div>
+              <div className="stat-content">
+                <h3>{stats.joinedGroups}</h3>
+                <p>Study Groups</p>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">🎯</div>
+              <div className="stat-content">
+                <h3>{stats.organizedSessions}</h3>
+                <p>My Sessions</p>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section className="features-section">
-          <h2 className="section-title">What You Can Do</h2>
-          <div className="features-grid">
-            {features.map((feature, index) => (
-              <div key={index} className={`feature-card ${feature.color}`}>
-                <div className="feature-icon">{feature.icon}</div>
-                <h3 className="feature-title">{feature.title}</h3>
-                <p className="feature-description">{feature.description}</p>
-                <button 
-                  className="feature-button" 
-                  onClick={feature.onClick}
-                >
-                  {feature.action} →
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="getting-started-section">
-          <div className="getting-started-card">
-            <h2>Getting Started</h2>
-            <div className="steps-grid">
-              <div className="step">
-                <div className="step-number">1</div>
-                <h4>Complete Your Profile</h4>
-                <p>Set up your study preferences and interests</p>
-              </div>
-              <div className="step">
-                <div className="step-number">2</div>
-                <h4>Find or Create Groups</h4>
-                <p>Join groups matching your subjects and goals</p>
-              </div>
-              <div className="step">
-                <div className="step-number">3</div>
-                <h4>Schedule Sessions</h4>
-                <p>Coordinate study times with your group members</p>
-              </div>
-              <div className="step">
-                <div className="step-number">4</div>
-                <h4>Collaborate & Learn</h4>
-                <p>Share resources and ace your exams together</p>
-              </div>
+        <div className="dashboard-content">
+          {/* Upcoming Sessions */}
+          <section className="upcoming-sessions-section">
+            <div className="section-header">
+              <h2>Upcoming Sessions</h2>
+              <button onClick={handleViewSessions} className="view-all-btn">
+                View All →
+              </button>
             </div>
+            <div className="sessions-list">
+              {upcomingSessions.length > 0 ? (
+                upcomingSessions.map(session => (
+                  <div key={session._id} className="session-card">
+                    <div className="session-info">
+                      <h4>{session.title}</h4>
+                      <p className="session-subject">{session.subject}</p>
+                      <div className="session-details">
+                        <span>📅 {formatDate(session.date)}</span>
+                        <span>🕐 {formatTime(session.startTime)} - {formatTime(session.endTime)}</span>
+                        <span>📍 {session.location}</span>
+                      </div>
+                    </div>
+                    <div className="session-participants">
+                      <span>{session.participants.length}/{session.maxParticipants} joined</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="empty-state">
+                  <p>No upcoming sessions</p>
+                  <button onClick={handleCreateSession} className="create-first-btn">
+                    Create Your First Session
+                  </button>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Recent Activity */}
+          <section className="recent-activity-section">
+            <div className="section-header">
+              <h2>Recent Activity</h2>
+            </div>
+            <div className="activity-list">
+              {recentActivity.length > 0 ? (
+                recentActivity.map(session => (
+                  <div key={session._id} className="activity-item">
+                    <div className="activity-icon">
+                      {session.organizer._id === user?.id ? '📝' : '✅'}
+                    </div>
+                    <div className="activity-content">
+                      <p>
+                        {session.organizer._id === user?.id
+                          ? `You created "${session.title}"`
+                          : `You joined "${session.title}"`
+                        }
+                      </p>
+                      <span className="activity-date">
+                        {formatDate(session.date)} at {formatTime(session.startTime)}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="empty-state">
+                  <p>No recent activity</p>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+
+        {/* Quick Actions */}
+        <section className="quick-actions-section">
+          <h2>Quick Actions</h2>
+          <div className="actions-grid">
+            <button onClick={handleCreateSession} className="action-btn primary">
+              <span className="action-icon">📅</span>
+              <span>Schedule Session</span>
+            </button>
+            <button onClick={() => navigate('/groups')} className="action-btn secondary">
+              <span className="action-icon">👥</span>
+              <span>Browse Groups</span>
+            </button>
+            <button onClick={() => navigate('/profile')} className="action-btn secondary">
+              <span className="action-icon">⚙️</span>
+              <span>Edit Profile</span>
+            </button>
+            <button onClick={() => navigate('/resources')} className="action-btn secondary">
+              <span className="action-icon">📚</span>
+              <span>Study Resources</span>
+            </button>
           </div>
         </section>
       </main>
