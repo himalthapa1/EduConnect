@@ -1,8 +1,14 @@
-import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
-// Generate JWT token
+/* =========================
+   Helper: Generate JWT
+========================= */
 const generateToken = (userId, email) => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET is missing');
+  }
+
   return jwt.sign(
     { userId, email },
     process.env.JWT_SECRET,
@@ -10,53 +16,43 @@ const generateToken = (userId, email) => {
   );
 };
 
-// @desc    Register new user
-// @route   POST /api/auth/register
-// @access  Public
+/* =========================
+   REGISTER
+========================= */
 export const register = async (req, res) => {
   try {
-    const { username, email, password, dateOfBirth, collegeName, currentYear } = req.body;
+    let {
+      username,
+      email,
+      password,
+      dateOfBirth,
+      collegeName,
+      currentYear
+    } = req.body;
 
-    // Validate minimal required fields
-    if (!username || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          message: 'Username, email and password are required',
-          code: 'MISSING_FIELDS'
-        }
-      });
-    }
+    // Normalize email
+    email = email.toLowerCase();
 
-    // Check if user already exists
+    // Check existing user
     const existingUser = await User.findOne({
       $or: [{ email }, { username }]
     });
 
     if (existingUser) {
-      if (existingUser.email === email) {
-        return res.status(409).json({
-          success: false,
-          error: {
-            message: 'Email already registered',
-            code: 'EMAIL_EXISTS',
-            field: 'email'
-          }
-        });
-      }
-      if (existingUser.username === username) {
-        return res.status(409).json({
-          success: false,
-          error: {
-            message: 'Username already taken',
-            code: 'USERNAME_EXISTS',
-            field: 'username'
-          }
-        });
-      }
+      return res.status(409).json({
+        success: false,
+        error: {
+          message:
+            existingUser.email === email
+              ? 'Email already registered'
+              : 'Username already taken',
+          field:
+            existingUser.email === email ? 'email' : 'username'
+        }
+      });
     }
 
-    // Create new user
+    // Create user
     const user = new User({
       username,
       email,
@@ -68,10 +64,14 @@ export const register = async (req, res) => {
 
     await user.save();
 
+    // Token
+    const token = generateToken(user._id, user.email);
+
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: 'Registration successful',
       data: {
+        token,
         user: {
           id: user._id,
           username: user.username,
@@ -82,69 +82,43 @@ export const register = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Registration error:', error);
-    
-    // Handle mongoose validation errors
-    if (error.name === 'ValidationError') {
-      const details = Object.values(error.errors).map(err => ({
-        field: err.path,
-        message: err.message
-      }));
-      
-      return res.status(400).json({
-        success: false,
-        error: {
-          message: 'Validation failed',
-          code: 'VALIDATION_ERROR',
-          details
-        }
-      });
-    }
+    console.error('REGISTER ERROR:', error);
 
     res.status(500).json({
       success: false,
       error: {
-        message: 'Internal server error',
-        code: 'SERVER_ERROR'
+        message: 'Server error during registration'
       }
     });
   }
 };
 
-// @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
+/* =========================
+   LOGIN
+========================= */
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = req.body.email.toLowerCase();
+    const { password } = req.body;
 
-    // Find user by email
     const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        error: {
-          message: 'Invalid credentials',
-          code: 'INVALID_CREDENTIALS'
-        }
+        error: { message: 'Invalid credentials' }
       });
     }
 
-    // Check password
-    const isPasswordValid = await user.comparePassword(password);
+    const isMatch = await user.comparePassword(password);
 
-    if (!isPasswordValid) {
+    if (!isMatch) {
       return res.status(401).json({
         success: false,
-        error: {
-          message: 'Invalid credentials',
-          code: 'INVALID_CREDENTIALS'
-        }
+        error: { message: 'Invalid credentials' }
       });
     }
 
-    // Generate token
     const token = generateToken(user._id, user.email);
 
     res.status(200).json({
@@ -160,20 +134,18 @@ export const login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('LOGIN ERROR:', error);
+
     res.status(500).json({
       success: false,
-      error: {
-        message: 'Internal server error',
-        code: 'SERVER_ERROR'
-      }
+      error: { message: 'Server error during login' }
     });
   }
 };
 
-// @desc    Verify token
-// @route   GET /api/auth/verify
-// @access  Private
+/* =========================
+   VERIFY TOKEN
+========================= */
 export const verifyToken = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
@@ -181,10 +153,7 @@ export const verifyToken = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        error: {
-          message: 'User not found',
-          code: 'USER_NOT_FOUND'
-        }
+        error: { message: 'User not found' }
       });
     }
 
@@ -199,13 +168,11 @@ export const verifyToken = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Verify token error:', error);
+    console.error('VERIFY ERROR:', error);
+
     res.status(500).json({
       success: false,
-      error: {
-        message: 'Internal server error',
-        code: 'SERVER_ERROR'
-      }
+      error: { message: 'Token verification failed' }
     });
   }
 };

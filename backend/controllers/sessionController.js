@@ -1,10 +1,16 @@
 import Session from '../models/Session.js';
-import User from '../models/User.js';
 
-// @desc    Create new session
-// @route   POST /api/sessions
-// @access  Private
+/* =========================
+   HELPERS
+========================= */
+const parseTime = (time) => new Date(`2000-01-01T${time}:00`);
+
+/* =========================
+   CREATE SESSION
+========================= */
 export const createSession = async (req, res) => {
+  console.log('REQ.USER =>', req.user);
+  console.log('REQ.BODY =>', req.body);
   try {
     const {
       title,
@@ -18,10 +24,10 @@ export const createSession = async (req, res) => {
       isPublic
     } = req.body;
 
-    // Validate end time is after start time
-    const start = new Date(`2000-01-01 ${startTime}`);
-    const end = new Date(`2000-01-01 ${endTime}`);
-    
+    // Validate time range
+    const start = parseTime(startTime);
+    const end = parseTime(endTime);
+
     if (end <= start) {
       return res.status(400).json({
         success: false,
@@ -32,20 +38,19 @@ export const createSession = async (req, res) => {
       });
     }
 
-    const session = new Session({
+    const session = await Session.create({
       title,
       description,
       subject,
-      date,
+      date: new Date(date),
       startTime,
       endTime,
       location,
       maxParticipants,
-      organizer: req.user.userId,
-      isPublic: isPublic !== undefined ? isPublic : true
+      organizer: req.user.userId, // ✅ JWT payload
+      isPublic: isPublic ?? true
     });
 
-    await session.save();
     await session.populate('organizer', 'username email');
 
     res.status(201).json({
@@ -55,19 +60,17 @@ export const createSession = async (req, res) => {
     });
   } catch (error) {
     console.error('Create session error:', error);
-    
+
     if (error.name === 'ValidationError') {
-      const details = Object.values(error.errors).map(err => ({
-        field: err.path,
-        message: err.message
-      }));
-      
       return res.status(400).json({
         success: false,
         error: {
           message: 'Validation failed',
           code: 'VALIDATION_ERROR',
-          details
+          details: Object.values(error.errors).map(e => ({
+            field: e.path,
+            message: e.message
+          }))
         }
       });
     }
@@ -82,42 +85,42 @@ export const createSession = async (req, res) => {
   }
 };
 
-// @desc    Get all sessions
-// @route   GET /api/sessions
-// @access  Private
+/* =========================
+   GET ALL SESSIONS
+========================= */
 export const getSessions = async (req, res) => {
   try {
     const { page = 1, limit = 10, subject, date, status = 'scheduled' } = req.query;
-    
+
     const query = { isPublic: true, status };
-    
+
     if (subject) {
       query.subject = { $regex: subject, $options: 'i' };
     }
-    
+
     if (date) {
-      const searchDate = new Date(date);
-      const nextDay = new Date(searchDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      query.date = { $gte: searchDate, $lt: nextDay };
+      const start = new Date(date);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      query.date = { $gte: start, $lt: end };
     }
 
     const sessions = await Session.find(query)
       .populate('organizer', 'username email')
       .populate('participants.user', 'username email')
       .sort({ date: 1, startTime: 1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
+      .skip((page - 1) * limit)
+      .limit(Number(limit));
 
     const total = await Session.countDocuments(query);
 
-    res.status(200).json({
+    res.json({
       success: true,
       data: {
         sessions,
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
+          page: Number(page),
+          limit: Number(limit),
           total,
           pages: Math.ceil(total / limit)
         }
@@ -127,27 +130,24 @@ export const getSessions = async (req, res) => {
     console.error('Get sessions error:', error);
     res.status(500).json({
       success: false,
-      error: {
-        message: 'Internal server error',
-        code: 'SERVER_ERROR'
-      }
+      error: { message: 'Internal server error' }
     });
   }
 };
 
-// @desc    Get user's sessions (organized or joined)
-// @route   GET /api/sessions/my
-// @access  Private
+/* =========================
+   GET MY SESSIONS
+========================= */
 export const getMySessions = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    const organizedSessions = await Session.find({ organizer: userId })
+    const organized = await Session.find({ organizer: userId })
       .populate('organizer', 'username email')
       .populate('participants.user', 'username email')
       .sort({ date: 1, startTime: 1 });
 
-    const joinedSessions = await Session.find({ 
+    const joined = await Session.find({
       'participants.user': userId,
       organizer: { $ne: userId }
     })
@@ -155,106 +155,75 @@ export const getMySessions = async (req, res) => {
       .populate('participants.user', 'username email')
       .sort({ date: 1, startTime: 1 });
 
-    res.status(200).json({
+    res.json({
       success: true,
-      data: {
-        organized: organizedSessions,
-        joined: joinedSessions
-      }
+      data: { organized, joined }
     });
   } catch (error) {
     console.error('Get my sessions error:', error);
     res.status(500).json({
       success: false,
-      error: {
-        message: 'Internal server error',
-        code: 'SERVER_ERROR'
-      }
+      error: { message: 'Internal server error' }
     });
   }
 };
 
-// @desc    Join a session
-// @route   POST /api/sessions/:id/join
-// @access  Private
+/* =========================
+   JOIN SESSION
+========================= */
 export const joinSession = async (req, res) => {
   try {
     const session = await Session.findById(req.params.id);
-    
+
     if (!session) {
       return res.status(404).json({
         success: false,
-        error: {
-          message: 'Session not found',
-          code: 'SESSION_NOT_FOUND'
-        }
+        error: { message: 'Session not found' }
       });
     }
 
     if (session.organizer.toString() === req.user.userId) {
       return res.status(400).json({
         success: false,
-        error: {
-          message: 'Cannot join your own session',
-          code: 'CANNOT_JOIN_OWN_SESSION'
-        }
+        error: { message: 'Cannot join your own session' }
       });
     }
 
     await session.addParticipant(req.user.userId);
-    await session.populate('organizer', 'username email');
-    await session.populate('participants.user', 'username email');
+    await session.populate('organizer participants.user', 'username email');
 
-    res.status(200).json({
+    res.json({
       success: true,
       message: 'Successfully joined the session',
       data: { session }
     });
   } catch (error) {
     console.error('Join session error:', error);
-    
-    if (error.message === 'Session is full' || error.message === 'User already joined this session') {
-      return res.status(400).json({
-        success: false,
-        error: {
-          message: error.message,
-          code: 'JOIN_ERROR'
-        }
-      });
-    }
-
-    res.status(500).json({
+    res.status(400).json({
       success: false,
-      error: {
-        message: 'Internal server error',
-        code: 'SERVER_ERROR'
-      }
+      error: { message: error.message || 'Join failed' }
     });
   }
 };
 
-// @desc    Leave a session
-// @route   POST /api/sessions/:id/leave
-// @access  Private
+/* =========================
+   LEAVE SESSION
+========================= */
 export const leaveSession = async (req, res) => {
   try {
     const session = await Session.findById(req.params.id);
-    
+
     if (!session) {
       return res.status(404).json({
         success: false,
-        error: {
-          message: 'Session not found',
-          code: 'SESSION_NOT_FOUND'
-        }
+        error: { message: 'Session not found' }
       });
     }
 
     await session.removeParticipant(req.user.userId);
-    await session.populate('organizer', 'username email');
-    await session.populate('participants.user', 'username email');
+    await session.populate('organizer participants.user', 'username email');
 
-    res.status(200).json({
+    res.json({
       success: true,
       message: 'Successfully left the session',
       data: { session }
@@ -263,135 +232,74 @@ export const leaveSession = async (req, res) => {
     console.error('Leave session error:', error);
     res.status(500).json({
       success: false,
-      error: {
-        message: 'Internal server error',
-        code: 'SERVER_ERROR'
-      }
+      error: { message: 'Internal server error' }
     });
   }
 };
 
-// @desc    Update session
-// @route   PUT /api/sessions/:id
-// @access  Private (organizer only)
+/* =========================
+   UPDATE SESSION
+========================= */
 export const updateSession = async (req, res) => {
   try {
     const session = await Session.findById(req.params.id);
-    
+
     if (!session) {
       return res.status(404).json({
         success: false,
-        error: {
-          message: 'Session not found',
-          code: 'SESSION_NOT_FOUND'
-        }
+        error: { message: 'Session not found' }
       });
     }
 
     if (session.organizer.toString() !== req.user.userId) {
       return res.status(403).json({
         success: false,
-        error: {
-          message: 'Not authorized to update this session',
-          code: 'NOT_AUTHORIZED'
-        }
+        error: { message: 'Not authorized' }
       });
     }
 
-    const allowedUpdates = ['title', 'description', 'subject', 'date', 'startTime', 'endTime', 'location', 'maxParticipants', 'isPublic'];
-    const updates = {};
-    
-    allowedUpdates.forEach(field => {
-      if (req.body[field] !== undefined) {
-        updates[field] = req.body[field];
-      }
-    });
-
-    // Validate time range if both times are being updated
-    if (updates.startTime && updates.endTime) {
-      const start = new Date(`2000-01-01 ${updates.startTime}`);
-      const end = new Date(`2000-01-01 ${updates.endTime}`);
-      
-      if (end <= start) {
-        return res.status(400).json({
-          success: false,
-          error: {
-            message: 'End time must be after start time',
-            code: 'INVALID_TIME_RANGE'
-          }
-        });
-      }
-    }
-
-    Object.assign(session, updates);
+    Object.assign(session, req.body);
     await session.save();
-    await session.populate('organizer', 'username email');
-    await session.populate('participants.user', 'username email');
+    await session.populate('organizer participants.user', 'username email');
 
-    res.status(200).json({
+    res.json({
       success: true,
       message: 'Session updated successfully',
       data: { session }
     });
   } catch (error) {
     console.error('Update session error:', error);
-    
-    if (error.name === 'ValidationError') {
-      const details = Object.values(error.errors).map(err => ({
-        field: err.path,
-        message: err.message
-      }));
-      
-      return res.status(400).json({
-        success: false,
-        error: {
-          message: 'Validation failed',
-          code: 'VALIDATION_ERROR',
-          details
-        }
-      });
-    }
-
     res.status(500).json({
       success: false,
-      error: {
-        message: 'Internal server error',
-        code: 'SERVER_ERROR'
-      }
+      error: { message: 'Internal server error' }
     });
   }
 };
 
-// @desc    Delete session
-// @route   DELETE /api/sessions/:id
-// @access  Private (organizer only)
+/* =========================
+   DELETE SESSION
+========================= */
 export const deleteSession = async (req, res) => {
   try {
     const session = await Session.findById(req.params.id);
-    
+
     if (!session) {
       return res.status(404).json({
         success: false,
-        error: {
-          message: 'Session not found',
-          code: 'SESSION_NOT_FOUND'
-        }
+        error: { message: 'Session not found' }
       });
     }
 
     if (session.organizer.toString() !== req.user.userId) {
       return res.status(403).json({
         success: false,
-        error: {
-          message: 'Not authorized to delete this session',
-          code: 'NOT_AUTHORIZED'
-        }
+        error: { message: 'Not authorized' }
       });
     }
 
-    await Session.findByIdAndDelete(req.params.id);
+    await session.deleteOne();
 
-    res.status(200).json({
+    res.json({
       success: true,
       message: 'Session deleted successfully'
     });
@@ -399,10 +307,7 @@ export const deleteSession = async (req, res) => {
     console.error('Delete session error:', error);
     res.status(500).json({
       success: false,
-      error: {
-        message: 'Internal server error',
-        code: 'SERVER_ERROR'
-      }
+      error: { message: 'Internal server error' }
     });
   }
 };
