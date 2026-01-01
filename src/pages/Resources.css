@@ -31,6 +31,21 @@
   font-size: 1.25rem;
 }
 
+.resources-header button {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.resources-header button:hover {
+  background: #4338ca;
+}
+
 .resources-tabs {
   display: flex;
   gap: 4px;
@@ -189,4 +204,119 @@
   background: #f0fdf4;
   color: #16a34a;
   border: 1px solid #bbf7d0;
+}
+
+/* Resource Form Styling */
+.resource-form {
+  background: #fff;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.resource-form input,
+.resource-form textarea,
+.resource-form select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.resource-form input:focus,
+.resource-form textarea:focus,
+.resource-form select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.file-upload {
+  border: 2px dashed #9ca3af;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #f9fafb;
+  position: relative;
+}
+
+.file-upload:hover {
+  background: #f3f4f6;
+  border-color: #6b7280;
+}
+
+.file-upload.drag-active {
+  background: #eff6ff;
+  border-color: #4f46e5;
+}
+
+.upload-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.upload-placeholder span {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+/* File selected state */
+.file-preview {
+  background: #e5e7eb;
+  border-radius: 6px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-preview span {
+  font-weight: 500;
+  color: #1f2937;
+  word-break: break-all;
+}
+
+.file-preview button {
+  background: #ef4444; /* Red remove button */
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.file-preview button:hover {
+  background: #dc2626;
+}
+
+.resource-form button[type="submit"] {
+  background: #10b981; /* Green Add Button */
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  align-self: flex-start;
+  transition: background 0.2s;
+}
+
+.resource-form button[type="submit"]:hover {
+  background: #059669;
 }
