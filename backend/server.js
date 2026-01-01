@@ -1,93 +1,200 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import connectDB from './config/db.js';
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import path from "path";
+import fs from "fs";
+import helmet from "helmet";
+import compression from "compression";
+import morgan from "morgan";
+import rateLimit from "express-rate-limit";
+import mongoose from "mongoose";
+import { fileURLToPath } from "url";
 
-// Load environment variables
+import connectDB from "./config/db.js";
+import authRoutes from "./routes/auth.js";
+import groupRoutes from "./routes/groups.js";
+import sessionRoutes from "./routes/sessions.js";
+
+/* =========================
+   ENV + PATH SETUP
+========================= */
 dotenv.config();
 
-// Import routes (must be before server startup)
-import authRoutes from './routes/auth.js';
-import groupRoutes from './routes/groups.js';
-import sessionRoutes from './routes/sessions.js';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const NODE_ENV = process.env.NODE_ENV || "development";
+const IS_PROD = NODE_ENV === "production";
 
-// Async server startup
+/* =========================
+   CREATE APP
+========================= */
+const app = express();
+if (IS_PROD) {
+  // If behind a proxy (e.g., Heroku/Render/Nginx) for correct IPs in rate limit/logging
+  app.set("trust proxy", 1);
+}
+
+/* =========================
+   SECURITY, COMPRESSION, LOGGING
+========================= */
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+}));
+app.use(compression());
+app.use(morgan(IS_PROD ? "combined" : "dev"));
+
+/* =========================
+   CORS CONFIG (strict allowlist)
+========================= */
+const allowlist = new Set([
+  process.env.FRONTEND_URL, // e.g. https://app.example.com
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:3000",
+].filter(Boolean));
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow non-browser clients (curl/postman) with no origin
+      if (!origin) return callback(null, true);
+
+      if (allowlist.has(origin) || /^http:\/\/localhost:\d+$/.test(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("CORS: Origin not allowed"));
+    },
+    credentials: true,
+  })
+);
+
+/* =========================
+   RATE LIMITING (auth + uploads)
+========================= */
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/* =========================
+   BODY PARSERS (with limits)
+========================= */
+app.use(express.json({ limit: "200kb" }));
+app.use(express.urlencoded({ extended: true, limit: "200kb" }));
+
+/* =========================
+   STATIC FILES (UPLOADS)
+========================= */
+const uploadsPath = path.join(__dirname, "..", "uploads");
+try {
+  if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
+} catch (e) {
+  console.error("Failed to ensure uploads directory:", e);
+}
+app.use(
+  "/uploads",
+  express.static(uploadsPath, {
+    dotfiles: "ignore",
+    etag: true,
+    immutable: true,
+    maxAge: IS_PROD ? "30d" : 0,
+    redirect: false,
+  })
+);
+
+/* =========================
+   HEALTH CHECK
+========================= */
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", message: "Server is running" });
+});
+
+/* =========================
+   DB + ROUTES BOOTSTRAP
+========================= */
+let server;
 (async () => {
   try {
-    // Connect to database
+    // Connect DB first
     await connectDB();
 
-    const app = express();
+    // Mount routes after DB is ready
+    app.use("/api/auth", authLimiter, authRoutes);
+    // Apply uploadLimiter to resource create endpoints (POST)
+    app.use("/api/groups", (req, res, next) => {
+      if (req.method === "POST") return uploadLimiter(req, res, next);
+      return next();
+    }, groupRoutes);
+    app.use("/api/sessions", sessionRoutes);
 
-    // Middleware
-    app.use(cors({
-      origin: [process.env.FRONTEND_URL, 'http://localhost:5174', 'http://localhost:5175'],
-      credentials: true
-    }));
-    app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
-
-    // Routes
-    app.get('/api/health', (req, res) => {
-      try {
-        res.json({ status: 'ok', message: 'Server is running' });
-      } catch (error) {
-        console.error('Health route error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-      }
-    });
-
-    console.log('Registering auth routes...');
-    app.use('/api/auth', authRoutes);
-    console.log('Auth routes registered');
-
-    console.log('Registering groups routes...');
-    app.use('/api/groups', groupRoutes);
-    console.log('Groups routes registered');
-
-    console.log('Registering session routes...');
-    app.use('/api/sessions', sessionRoutes);
-    console.log('Session routes registered');
-    // 404 handler
+    // 404 HANDLER
     app.use((req, res) => {
-      res.status(404).json({
-        success: false,
-        error: {
-          message: 'Not found',
-          code: 'NOT_FOUND'
-        }
-      });
+      res.status(404).json({ success: false, error: { message: "Not found" } });
     });
 
-    // Error handling middleware (will be enhanced later)
+    // GLOBAL ERROR HANDLER
+    // eslint-disable-next-line no-unused-vars
     app.use((err, req, res, next) => {
-      console.error('Middleware error:', err);
-      res.status(500).json({
+      const status = err.status || err.statusCode || 500;
+      const isMulter = err.name === "MulterError";
+      const isCors = /CORS/i.test(err.message || "");
+
+      if (isMulter) {
+        return res.status(400).json({ success: false, error: { message: err.message } });
+      }
+      if (isCors) {
+        return res.status(403).json({ success: false, error: { message: "CORS: Origin not allowed" } });
+      }
+
+      if (!IS_PROD) console.error("Server error:", err);
+      return res.status(status).json({
         success: false,
-        error: {
-          message: 'Internal server error',
-          code: 'SERVER_ERROR'
-        }
+        error: { message: IS_PROD ? "Internal server error" : err.message },
       });
     });
 
-    const PORT = process.env.PORT || 5000;
-
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+    const PORT = process.env.PORT || 3001;
+    server = app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT} (${NODE_ENV})`);
     });
-
-    // Handle uncaught exceptions
-    process.on('uncaughtException', (error) => {
-      console.error('Uncaught Exception:', error);
-    });
-
-    process.on('unhandledRejection', (reason, promise) => {
-      console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    });
-
   } catch (error) {
-    console.error('Failed to start server:', error);
+    console.error("❌ Failed to start server:", error);
     process.exit(1);
   }
 })();
+
+/* =========================
+   GRACEFUL SHUTDOWN
+========================= */
+const shutdown = async (signal) => {
+  try {
+    console.log(`\n${signal} received. Shutting down gracefully...`);
+    if (server) {
+      await new Promise((resolve) => server.close(resolve));
+    }
+    await mongoose.connection.close().catch(() => {});
+    // Stop in-memory Mongo if started by connectDB in dev
+    if (process.__MONGO_SERVER__) {
+      try { await process.__MONGO_SERVER__.stop(); } catch (_) {}
+    }
+    console.log("Shutdown complete.");
+    process.exit(0);
+  } catch (e) {
+    console.error("Error during shutdown:", e);
+    process.exit(1);
+  }
+};
+
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+
+export default app;
