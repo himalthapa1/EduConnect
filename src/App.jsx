@@ -1,11 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Sessions from './pages/Sessions';
 import Groups from './pages/Groups';
+import AccountSettings from './pages/AccountSettings';
+import Resources from './pages/Resources';
 
 function App() {
   return (
@@ -16,29 +19,19 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route 
-            path="/dashboard" 
+            path="/" 
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <Layout />
               </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/sessions" 
-            element={
-              <ProtectedRoute>
-                <Sessions />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/groups" 
-            element={
-              <ProtectedRoute>
-                <Groups />
-              </ProtectedRoute>
-            } 
-          />
+            }
+          >
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="sessions" element={<Sessions />} />
+            <Route path="groups" element={<Groups />} />
+            <Route path="resources" element={<Resources />} />
+            <Route path="profile" element={<AccountSettings />} />
+          </Route>
           
         </Routes>
       </AuthProvider>

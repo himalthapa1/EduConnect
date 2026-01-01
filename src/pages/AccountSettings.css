@@ -1,0 +1,116 @@
+/* Simple, clean account settings styles inspired by provided mock */
+.account-settings {
+  padding: 28px 24px;
+  color: #0f172a;
+}
+
+.account-wrapper {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.account-sidebar {
+  width: 200px;
+}
+
+.account-title {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.account-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-nav-item {
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.account-nav-item:hover {
+  background: rgba(99,102,241,0.06);
+}
+
+.account-nav-item.active {
+  background: linear-gradient(90deg,#eef2ff,#f3e8ff);
+  border-color: rgba(99,102,241,0.18);
+}
+
+.account-nav-item.danger {
+  color: #ef4444;
+}
+
+.account-main {
+  flex: 1 1 auto;
+}
+
+.profile-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 18px;
+  border: 1px solid rgba(15,23,42,0.06);
+  box-shadow: 0 6px 18px rgba(16,24,40,0.04);
+}
+
+.profile-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: linear-gradient(90deg,#667eea,#764ba2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.profile-info h4 { margin: 0; }
+.muted { color: #6b7280; font-size: 13px; }
+
+.profile-edit { margin-left: auto; }
+.edit-btn {
+  background: transparent;
+  border: 1px solid rgba(15,23,42,0.06);
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.profile-sections { margin-top: 16px; }
+.profile-sections h5 { margin: 0 0 8px 0; }
+
+.card { background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid rgba(15,23,42,0.04); }
+
+.card.danger { background: #fff6f6; border-color: rgba(239,68,68,0.12); }
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+@media (max-width: 900px) {
+  .account-wrapper { flex-direction: column; }
+  .account-sidebar { width: 100%; display: flex; overflow-x: auto; gap: 8px; }
+  .account-nav { flex-direction: row; }
+}
