@@ -279,7 +279,7 @@ const Groups = () => {
               {myGroups.map((group) => (
                 <div key={group._id} className="group-card">
                   <h3>{group.name}</h3>
-                  <button onClick={() => handleLeaveGroup(group._id)}>
+                  <button className="leave-button" onClick={() => handleLeaveGroup(group._id)}>
                     Leave Group
                   </button>
                   <ResourcesToggle group={group} />
