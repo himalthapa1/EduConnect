@@ -17,7 +17,12 @@ const studyGroupSchema = new mongoose.Schema({
   subject: {
     type: String,
     required: [true, 'Subject is required'],
-    enum: ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'English', 'History', 'Other'],
+    default: 'Other'
+  },
+  tag: {
+    type: String,
+    // ✅ Removed required: [true, 'Group tag is required'] - tag is now optional
+    // ✅ Removed enum restriction - any tag value is allowed
     default: 'Other'
   },
   creator: {

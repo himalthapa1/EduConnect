@@ -27,9 +27,17 @@ const ResourcesToggle = ({ group, isOpen, onToggle }) => {
       >
         {isOpen ? '↑ Hide Resources' : '↓ Show Resources'}
       </button>
-      {/* Only renders if THIS group is open */}
+
       {isOpen && (
-        <div style={{ marginTop: '12px', padding: '16px', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+        <div
+          style={{
+            marginTop: '12px',
+            padding: '16px',
+            background: '#f9fafb',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb'
+          }}
+        >
           <ResourcesList group={group} />
         </div>
       )}
@@ -50,7 +58,6 @@ const Groups = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  // Separate expansion state for each tab
   const [expandedBrowseGroupId, setExpandedBrowseGroupId] = useState(null);
   const [expandedMyGroupId, setExpandedMyGroupId] = useState(null);
 
@@ -60,14 +67,18 @@ const Groups = () => {
     subject: 'Other',
     maxMembers: 50,
     isPublic: true,
+    tag: '#ff3b30', // UI-only (NOT sent to backend)
   });
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState('');
-
   const subjects = [
-    'Mathematics', 'Physics', 'Chemistry', 'Biology',
-    'Computer Science', 'English', 'History', 'Other',
+    'Mathematics',
+    'Physics',
+    'Chemistry',
+    'Biology',
+    'Computer Science',
+    'English',
+    'History',
+    'Other',
   ];
 
   useEffect(() => {
@@ -80,14 +91,13 @@ const Groups = () => {
     if (activeTab === 'my-groups' && user) fetchMyGroups();
   }, [activeTab, user]);
 
-  // API Calls
+  /* =========================
+     API Calls
+  ========================= */
   const fetchGroups = async () => {
     setLoading(true);
     try {
-      const params = {};
-      if (searchQuery) params.search = searchQuery;
-      if (selectedSubject) params.subject = selectedSubject;
-      const res = await groupsAPI.listGroups(params);
+      const res = await groupsAPI.listGroups();
       setGroups(res.data?.data?.groups || res.data || []);
     } catch {
       setError('Failed to fetch groups');
@@ -126,7 +136,7 @@ const Groups = () => {
     try {
       await groupsAPI.leaveGroup(groupId);
       setSuccess('Left the group');
-      setExpandedMyGroupId(null); // Force close if open
+      setExpandedMyGroupId(null);
       fetchMyGroups();
       fetchGroups();
     } catch {
@@ -139,15 +149,43 @@ const Groups = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleTagSelect = (color) => {
+    setFormData(prev => ({ ...prev, tag: color }));
+  };
+
+  /* =========================
+     ✅ FIXED CREATE GROUP
+  ========================= */
   const handleCreateGroup = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
+
     try {
-      await groupsAPI.createGroup(formData);
+      // ✅ Include tag field in the payload
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+        subject: formData.subject,
+        tag: formData.tag, // ✅ Added tag field
+        maxMembers: formData.maxMembers,
+        isPublic: formData.isPublic,
+      };
+
+      await groupsAPI.createGroup(payload);
+
       setSuccess('Group created!');
-      setFormData({ name: '', description: '', subject: 'Other', maxMembers: 50, isPublic: true });
+      setFormData({
+        name: '',
+        description: '',
+        subject: 'Other',
+        maxMembers: 50,
+        isPublic: true,
+        tag: '#ff3b30',
+      });
       setActiveTab('my-groups');
-    } catch {
+    } catch (err) {
+      console.error('Create group error:', err.response?.data || err);
       setError('Failed to create group');
     } finally {
       setLoading(false);
@@ -191,14 +229,13 @@ const Groups = () => {
                     Join Group
                   </button>
                 ) : (
-                  <span style={{color: 'green', fontWeight: 'bold'}}>✓ You're a member</span>
+                  <span style={{ color: 'green', fontWeight: 'bold' }}>✓ You're a member</span>
                 )}
 
-                {/* Only this group's resources will show when clicked */}
-                <ResourcesToggle 
-                  group={group} 
-                  isOpen={isOpen} 
-                  onToggle={() => setExpandedBrowseGroupId(isOpen ? null : group._id)} 
+                <ResourcesToggle
+                  group={group}
+                  isOpen={isOpen}
+                  onToggle={() => setExpandedBrowseGroupId(isOpen ? null : group._id)}
                 />
               </div>
             );
@@ -222,10 +259,10 @@ const Groups = () => {
                   Leave Group
                 </button>
 
-                <ResourcesToggle 
-                  group={group} 
-                  isOpen={isOpen} 
-                  onToggle={() => setExpandedMyGroupId(isOpen ? null : group._id)} 
+                <ResourcesToggle
+                  group={group}
+                  isOpen={isOpen}
+                  onToggle={() => setExpandedMyGroupId(isOpen ? null : group._id)}
                 />
               </div>
             );
@@ -237,50 +274,38 @@ const Groups = () => {
       {activeTab === 'create' && (
         <form onSubmit={handleCreateGroup} className="create-group-form-fancy">
           <div className="form-group-fancy">
-            <label htmlFor="group-name">Group Name *</label>
-            <input
-              id="group-name"
-              name="name"
-              type="text"
-              placeholder="E.g. Study"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-            />
+            <label>Group Name *</label>
+            <input name="name" value={formData.name} onChange={handleInputChange} required />
           </div>
+
           <div className="form-group-fancy">
-            <label htmlFor="group-description">Group Description</label>
-            <textarea
-              id="group-description"
-              name="description"
-              placeholder="Optional"
-              value={formData.description}
-              onChange={handleInputChange}
-              rows={5}
-            />
+            <label>Description</label>
+            <textarea name="description" value={formData.description} onChange={handleInputChange} rows={5} />
           </div>
+
           <div className="form-group-fancy">
-            <label htmlFor="group-subject">Subject *</label>
-            <input
-              id="group-subject"
-              name="subject"
-              type="text"
-              placeholder="E.g Math"
-              value={formData.subject}
-              onChange={handleInputChange}
-              required
-            />
+            <label>Subject *</label>
+            <input name="subject" value={formData.subject} onChange={handleInputChange} required />
           </div>
+
           <div className="form-group-fancy">
             <label>Group Tags</label>
             <div className="group-tags-fancy">
-              <span className="tag-circle" style={{ background: "#ff3b30" }} />
-              <span className="tag-circle" style={{ background: "#34c759" }} />
-              <span className="tag-circle" style={{ background: "#32ade6" }} />
-              <span className="tag-circle" style={{ background: "#ffd60a" }} />
-              <span className="tag-circle" style={{ background: "#ff9500" }} />
+              {['#ff3b30','#34c759','#32ade6','#ffd60a','#ff9500'].map(color => (
+                <span
+                  key={color}
+                  className="tag-circle"
+                  style={{
+                    background: color,
+                    border: formData.tag === color ? '2px solid #222' : '2px solid #fff',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => handleTagSelect(color)}
+                />
+              ))}
             </div>
           </div>
+
           <button type="submit" className="create-btn-fancy" disabled={loading}>
             {loading ? 'Creating...' : 'Create'}
           </button>

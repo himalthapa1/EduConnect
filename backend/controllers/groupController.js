@@ -27,27 +27,48 @@ const getUserObjectId = (req) => {
 
 export const createGroup = async (req, res) => {
   try {
-    const userId = getUserObjectId(req);
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    // Debug: log incoming payload and user
+    console.log("createGroup payload:", req.body);
+    console.log("createGroup user:", req.user);
 
-    const { name, description, subject, maxMembers, isPublic } = req.body;
-    if (!name || !description || !subject) {
-      return res.status(400).json({ message: "Missing required fields" });
+    // Validate userId existence and type
+    const rawUserId = req.user?.userId;
+    if (!rawUserId || typeof rawUserId !== "string" || !mongoose.Types.ObjectId.isValid(rawUserId)) {
+      console.error("Invalid userId:", rawUserId);
+      return res.status(401).json({ message: "Unauthorized: Invalid userId" });
+    }
+    const userId = new mongoose.Types.ObjectId(rawUserId);
+
+    // Validate required fields
+    const { name, description, subject, tag, maxMembers, isPublic } = req.body;
+    if (
+      typeof name !== "string" ||
+      typeof description !== "string" ||
+      typeof subject !== "string" ||
+      !name.trim() ||
+      !description.trim() ||
+      !subject.trim()
+    ) {
+      return res.status(400).json({ message: "Missing required fields: name, description, and subject are required" });
     }
 
-    const group = await StudyGroup.create({
-      name,
-      description,
-      subject,
+    const groupData = {
+      name: name.trim(),
+      description: description.trim(),
+      subject: subject.trim(),
+      tag: typeof tag === "string" ? tag : "Other",
       creator: userId,
-      maxMembers: maxMembers ?? 50,
-      isPublic: isPublic ?? true,
+      maxMembers: typeof maxMembers === "number" ? maxMembers : 50,
+      isPublic: typeof isPublic === "boolean" ? isPublic : true,
       members: [userId],
-    });
+    };
+
+    const group = await StudyGroup.create(groupData);
 
     res.status(201).json({ success: true, data: { group } });
   } catch (err) {
     console.error("createGroup error:", err);
+    if (err.stack) console.error(err.stack);
     res.status(500).json({ message: "Failed to create group", error: err.message });
   }
 };
