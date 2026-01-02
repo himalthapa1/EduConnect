@@ -27,7 +27,6 @@ const ResourcesToggle = ({ group, isOpen, onToggle }) => {
       >
         {isOpen ? '↑ Hide Resources' : '↓ Show Resources'}
       </button>
-      
       {/* Only renders if THIS group is open */}
       {isOpen && (
         <div style={{ marginTop: '12px', padding: '16px', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
@@ -51,8 +50,9 @@ const Groups = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  // THIS IS THE KEY: Only ONE group can be expanded at a time
-  const [expandedGroupId, setExpandedGroupId] = useState(null);
+  // Separate expansion state for each tab
+  const [expandedBrowseGroupId, setExpandedBrowseGroupId] = useState(null);
+  const [expandedMyGroupId, setExpandedMyGroupId] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -73,7 +73,8 @@ const Groups = () => {
   useEffect(() => {
     setError(null);
     setSuccess(null);
-    setExpandedGroupId(null); // Close any open resources when switching tabs
+    setExpandedBrowseGroupId(null);
+    setExpandedMyGroupId(null);
 
     if (activeTab === 'browse') fetchGroups();
     if (activeTab === 'my-groups' && user) fetchMyGroups();
@@ -125,19 +126,12 @@ const Groups = () => {
     try {
       await groupsAPI.leaveGroup(groupId);
       setSuccess('Left the group');
-      setExpandedGroupId(null); // Force close if open
+      setExpandedMyGroupId(null); // Force close if open
       fetchMyGroups();
       fetchGroups();
     } catch {
       setError('Failed to leave');
     }
-  };
-
-  // THIS IS THE CRITICAL FIX
-  const toggleResources = (groupId) => {
-    setExpandedGroupId(prevId => 
-      prevId === groupId ? null : groupId  // Click same → close, different → open new
-    );
   };
 
   const handleInputChange = (e) => {
@@ -184,7 +178,7 @@ const Groups = () => {
         <div className="groups-grid">
           {groups.map(group => {
             const isMember = user && group.members?.some(m => m._id === user.id);
-            const isOpen = expandedGroupId === group._id;
+            const isOpen = expandedBrowseGroupId === group._id;
 
             return (
               <div key={group._id} className="group-card">
@@ -204,7 +198,7 @@ const Groups = () => {
                 <ResourcesToggle 
                   group={group} 
                   isOpen={isOpen} 
-                  onToggle={() => toggleResources(group._id)} 
+                  onToggle={() => setExpandedBrowseGroupId(isOpen ? null : group._id)} 
                 />
               </div>
             );
@@ -216,7 +210,7 @@ const Groups = () => {
       {activeTab === 'my-groups' && (
         <div className="groups-grid">
           {myGroups.map(group => {
-            const isOpen = expandedGroupId === group._id;
+            const isOpen = expandedMyGroupId === group._id;
 
             return (
               <div key={group._id} className="group-card">
@@ -231,7 +225,7 @@ const Groups = () => {
                 <ResourcesToggle 
                   group={group} 
                   isOpen={isOpen} 
-                  onToggle={() => toggleResources(group._id)} 
+                  onToggle={() => setExpandedMyGroupId(isOpen ? null : group._id)} 
                 />
               </div>
             );
@@ -241,14 +235,54 @@ const Groups = () => {
 
       {/* CREATE TAB */}
       {activeTab === 'create' && (
-        <form onSubmit={handleCreateGroup} className="create-group-form">
-          <input name="name" placeholder="Group Name" value={formData.name} onChange={handleInputChange} required />
-          <textarea name="description" placeholder="Description" value={formData.description} onChange={handleInputChange} required />
-          <select name="subject" value={formData.subject} onChange={handleInputChange}>
-            {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <button type="submit" disabled={loading}>
-            {loading ? 'Creating...' : 'Create Group'}
+        <form onSubmit={handleCreateGroup} className="create-group-form-fancy">
+          <div className="form-group-fancy">
+            <label htmlFor="group-name">Group Name *</label>
+            <input
+              id="group-name"
+              name="name"
+              type="text"
+              placeholder="E.g. Study"
+              value={formData.name}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="form-group-fancy">
+            <label htmlFor="group-description">Group Description</label>
+            <textarea
+              id="group-description"
+              name="description"
+              placeholder="Optional"
+              value={formData.description}
+              onChange={handleInputChange}
+              rows={5}
+            />
+          </div>
+          <div className="form-group-fancy">
+            <label htmlFor="group-subject">Subject *</label>
+            <input
+              id="group-subject"
+              name="subject"
+              type="text"
+              placeholder="E.g Math"
+              value={formData.subject}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="form-group-fancy">
+            <label>Group Tags</label>
+            <div className="group-tags-fancy">
+              <span className="tag-circle" style={{ background: "#ff3b30" }} />
+              <span className="tag-circle" style={{ background: "#34c759" }} />
+              <span className="tag-circle" style={{ background: "#32ade6" }} />
+              <span className="tag-circle" style={{ background: "#ffd60a" }} />
+              <span className="tag-circle" style={{ background: "#ff9500" }} />
+            </div>
+          </div>
+          <button type="submit" className="create-btn-fancy" disabled={loading}>
+            {loading ? 'Creating...' : 'Create'}
           </button>
         </form>
       )}
