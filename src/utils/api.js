@@ -1,16 +1,31 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+/**
+ * ======================================================
+ * API BASE URL
+ * - Uses Vite env in production/dev
+ * - Falls back safely for local development
+ * ======================================================
+ */
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-// Create axios instance
+/**
+ * ======================================================
+ * AXIOS INSTANCE
+ * ======================================================
+ */
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  baseURL: `${API_BASE_URL}/api`,
+  withCredentials: true,
 });
 
-// Request interceptor to attach JWT token
+/**
+ * ======================================================
+ * REQUEST INTERCEPTOR
+ * - Automatically attach JWT token if present
+ * ======================================================
+ */
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -19,62 +34,155 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor for error handling
+/**
+ * ======================================================
+ * RESPONSE INTERCEPTOR (OPTIONAL BUT PRO)
+ * ======================================================
+ */
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
-    if (error.response) {
-      // Handle specific error codes
-      switch (error.response.status) {
-        case 401:
-          // Unauthorized - clear token and redirect to login
-          localStorage.removeItem('token');
-          if (window.location.pathname !== '/login') {
-            window.location.href = '/login';
-          }
-          break;
-        case 429:
-          // Rate limit exceeded
-          console.error('Too many requests. Please try again later.');
-          break;
-        default:
-          break;
-      }
-    } else if (error.request) {
-      // Network error
-      console.error('Network error. Please check your connection.');
+    // Centralized error handling (extend later)
+    if (error.response?.status === 401) {
+      console.warn('Unauthorized – token expired or invalid');
     }
     return Promise.reject(error);
   }
 );
 
-// Auth API functions
-export const authAPI = {
-  register: (userData) => api.post('/auth/register', userData),
-  login: (credentials) => api.post('/auth/login', credentials),
-  verify: () => api.get('/auth/verify'),
+/**
+ * ======================================================
+ * GROUPS API
+ * ======================================================
+ */
+export const groupsAPI = {
+  /**
+   * Browse public groups
+   * GET /api/groups/list
+   */
+  listGroups: (params = {}) =>
+    api.get('/groups/list', { params }),
+
+  /**
+   * Create a new group
+   * POST /api/groups/create
+   */
+  createGroup: (data) =>
+    api.post('/groups/create', data),
+
+  /**
+   * Join a group
+   * POST /api/groups/join/:groupId
+   */
+  joinGroup: (groupId) =>
+    api.post(`/groups/join/${groupId}`),
+
+  /**
+   * Leave a group
+   * POST /api/groups/leave/:groupId
+   */
+  leaveGroup: (groupId) =>
+    api.post(`/groups/leave/${groupId}`),
+
+  /**
+   * Get groups joined by logged-in user
+   * GET /api/groups/my-groups
+   */
+  getMyGroups: () =>
+    api.get('/groups/my-groups'),
+
+  /**
+   * Add resource to group
+   * POST /api/groups/:groupId/resources
+   */
+  addResource: (groupId, data) => {
+    // Let the browser/axios set the correct multipart boundary header for FormData.
+    // Passing a manual 'Content-Type' without the boundary can break multer parsing.
+    if (data instanceof FormData) {
+      return api.post(`/groups/${groupId}/resources`, data);
+    }
+    return api.post(`/groups/${groupId}/resources`, data);
+  },
+
+  /**
+   * Get resources for group
+   * GET /api/groups/:groupId/resources
+   */
+  getResources: (groupId) =>
+    api.get(`/groups/${groupId}/resources`),
+
+  /**
+   * Delete resource from group
+   * DELETE /api/groups/:groupId/resources/:resourceId
+   */
+  deleteResource: (groupId, resourceId) =>
+    api.delete(`/groups/${groupId}/resources/${resourceId}`),
+
+  /**
+   * Update resource in group
+   * PUT /api/groups/:groupId/resources/:resourceId
+   */
+  updateResource: (groupId, resourceId, data) =>
+    api.put(`/groups/${groupId}/resources/${resourceId}`, data),
 };
 
-// Groups API functions
-export const groupsAPI = {
-  createGroup: (groupData) => api.post('/groups/create', groupData),
-  joinGroup: (groupId) => api.post('/groups/join', { groupId }),
-  leaveGroup: (groupId) => api.post('/groups/leave', { groupId }),
-  listGroups: (params) => api.get('/groups/list', { params }),
-  getMyGroups: (params) => api.get('/groups/my-groups', { params }),
-  getGroupById: (groupId) => api.get(`/groups/${groupId}`),
-  // Resources
-  getResources: (groupId) => api.get(`/groups/${groupId}/resources`),
-  addResource: (groupId, data) => api.post(`/groups/${groupId}/resources`, data),
-  updateResource: (groupId, resourceId, data) => api.put(`/groups/${groupId}/resources/${resourceId}`, data),
-  deleteResource: (groupId, resourceId) => api.delete(`/groups/${groupId}/resources/${resourceId}`),
+/**
+ * ======================================================
+ * SESSIONS API
+ * ======================================================
+ */
+export const sessionsAPI = {
+  /**
+   * Get all sessions
+   * GET /api/sessions
+   */
+  getSessions: (params = {}) =>
+    api.get('/sessions', { params }),
+
+  /**
+   * Create a new session
+   * POST /api/sessions
+   */
+  createSession: (data) =>
+    api.post('/sessions', data),
+
+  /**
+   * Get my sessions
+   * GET /api/sessions/my
+   */
+  getMySessions: () =>
+    api.get('/sessions/my'),
+
+  /**
+   * Join a session
+   * POST /api/sessions/:id/join
+   */
+  joinSession: (sessionId) =>
+    api.post(`/sessions/${sessionId}/join`),
+
+  /**
+   * Leave a session
+   * POST /api/sessions/:id/leave
+   */
+  leaveSession: (sessionId) =>
+    api.post(`/sessions/${sessionId}/leave`),
+
+  /**
+   * Update a session
+   * PUT /api/sessions/:id
+   */
+  updateSession: (sessionId, data) =>
+    api.put(`/sessions/${sessionId}`, data),
+
+  /**
+   * Delete a session
+   * DELETE /api/sessions/:id
+   */
+  deleteSession: (sessionId) =>
+    api.delete(`/sessions/${sessionId}`),
 };
 
 export default api;

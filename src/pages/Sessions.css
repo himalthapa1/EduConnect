@@ -1,7 +1,7 @@
 .sessions-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
+  background: #f8f9fa;
+  min-height: calc(100vh - 40px);
 }
 
 .sessions-header {
@@ -135,7 +135,8 @@
 
 .sessions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  /* increase minimum card width so time fits on a single line */
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
   gap: 20px;
 }
 

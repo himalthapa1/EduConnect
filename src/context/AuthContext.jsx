@@ -11,85 +11,168 @@ export const useAuth = () => {
   return context;
 };
 
+const API_BASE_URL = 'http://localhost:3001';
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Check authentication on mount
+  /* =========================
+     INITIAL AUTH CHECK
+  ========================= */
   useEffect(() => {
-    checkAuth();
+    verifyToken();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const checkAuth = async () => {
+  const verifyToken = async () => {
     const storedToken = localStorage.getItem('token');
-    if (storedToken) {
-      try {
-        const response = await axios.get('http://localhost:5000/api/auth/verify', {
-          headers: {
-            Authorization: `Bearer ${storedToken}`
-          }
-        });
-        
-        if (response.data.success) {
-          setUser(response.data.data.user);
-          setToken(storedToken);
-          setIsAuthenticated(true);
-        } else {
-          logout();
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        logout();
-      }
-    }
-    setLoading(false);
-  };
 
-  const login = async (email, password) => {
+    // 🔑 No token → force logged-out state
+    if (!storedToken) {
+      setUser(null);
+      setToken(null);
+      setIsAuthenticated(false);
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
-        email,
-        password
+      const res = await axios.get(`${API_BASE_URL}/api/auth/verify`, {
+        headers: {
+          Authorization: `Bearer ${storedToken}`,
+        },
       });
 
-      if (response.data.success) {
-        const { token: newToken, user: userData } = response.data.data;
-        localStorage.setItem('token', newToken);
-        setToken(newToken);
-        setUser(userData);
+      if (res.data?.success && res.data?.data?.user) {
+        const verifiedUser = {
+          id: res.data.data.user.id || res.data.data.user._id,
+          email: res.data.data.user.email,
+          username: res.data.data.user.username,
+        };
+
+        setUser(verifiedUser);
+        setToken(storedToken);
         setIsAuthenticated(true);
-        return { success: true };
+      } else {
+        logout();
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.error?.message || 'Login failed';
-      return { success: false, error: errorMessage };
+      // 🔥 Invalid / expired token → logout
+      logout();
+    } finally {
+      setLoading(false);
     }
   };
 
-  const register = async (userData) => {
+  /* =========================
+     LOGIN
+  ========================= */
+  const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', userData);
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+        email,
+        password,
+      });
 
-      if (response.data.success) {
-        return { success: true, message: response.data.message };
+      if (res.data?.success && res.data?.data?.token) {
+        const { token: newToken, user: userData } = res.data.data;
+
+        const normalizedUser = {
+          id: userData.id || userData._id,
+          email: userData.email,
+          username: userData.username,
+        };
+
+        localStorage.setItem('token', newToken);
+        setToken(newToken);
+        setUser(normalizedUser);
+        setIsAuthenticated(true);
+
+        return { success: true };
       }
+
+      return { success: false, error: 'Invalid login response' };
     } catch (error) {
-      const errorData = error.response?.data?.error;
       return {
         success: false,
-        error: errorData?.message || 'Registration failed',
-        details: errorData?.details || []
+        error:
+          error.response?.data?.error?.message ||
+          'Login failed',
       };
     }
   };
 
+  /* =========================
+     REGISTER
+  ========================= */
+  const register = async (userData) => {
+    try {
+      const res = await axios.post(
+        `${API_BASE_URL}/api/auth/register`,
+        userData
+      );
+
+      if (res.data?.success) {
+        return { success: true };
+      }
+
+      return { success: false, error: 'Registration failed' };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error.response?.data?.error?.message ||
+          'Registration failed',
+      };
+    }
+  };
+
+  /* =========================
+     LOGOUT
+  ========================= */
   const logout = () => {
     localStorage.removeItem('token');
-    setToken(null);
     setUser(null);
+    setToken(null);
     setIsAuthenticated(false);
+  };
+
+  /* =========================
+     UPDATE PROFILE
+  ========================= */
+  const updateProfile = async (updates) => {
+    // optimistic local update
+    const newUser = { ...(user || {}), ...updates };
+    setUser(newUser);
+
+    const storedToken = localStorage.getItem('token');
+    if (!storedToken) return { success: true };
+
+    try {
+      const res = await axios.patch(
+        `${API_BASE_URL}/api/users/${newUser.id || newUser._id}`,
+        updates,
+        { headers: { Authorization: `Bearer ${storedToken}` } }
+      );
+
+      if (res.data?.success && res.data.data?.user) {
+        const normalizedUser = {
+          id: res.data.data.user.id || res.data.data.user._id,
+          email: res.data.data.user.email,
+          username: res.data.data.user.username,
+        };
+        setUser(normalizedUser);
+        return { success: true };
+      }
+
+      return { success: false };
+    } catch (err) {
+      // ignore backend failure; keep optimistic update
+      return { success: false, error: err?.response?.data || err.message };
+    }
   };
 
   const value = {
@@ -100,8 +183,12 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    checkAuth
+    updateProfile,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };

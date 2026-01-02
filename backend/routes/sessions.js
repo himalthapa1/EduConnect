@@ -1,4 +1,5 @@
 import express from 'express';
+import { body, validationResult } from 'express-validator';
 import {
   createSession,
   getSessions,
@@ -9,83 +10,87 @@ import {
   deleteSession
 } from '../controllers/sessionController.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { body } from 'express-validator';
 
 const router = express.Router();
 
-// Session validation middleware
+/* =========================
+   VALIDATION
+========================= */
 const validateSession = [
   body('title')
     .trim()
     .isLength({ min: 1, max: 100 })
     .withMessage('Title must be between 1 and 100 characters'),
-  
+
   body('subject')
     .trim()
     .isLength({ min: 1, max: 50 })
     .withMessage('Subject must be between 1 and 50 characters'),
-  
+
   body('date')
     .isISO8601()
-    .withMessage('Please provide a valid date')
-    .custom((value) => {
-      if (new Date(value) <= new Date()) {
-        throw new Error('Session date must be in the future');
-      }
-      return true;
-    }),
-  
+    .withMessage('Invalid date format'),
+
   body('startTime')
-    .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
-    .withMessage('Please provide a valid start time (HH:MM)'),
-  
+    .matches(/^([01]\d|2[0-3]):[0-5]\d$/)
+    .withMessage('Start time must be HH:mm'),
+
   body('endTime')
-    .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
-    .withMessage('Please provide a valid end time (HH:MM)'),
-  
+    .matches(/^([01]\d|2[0-3]):[0-5]\d$/)
+    .withMessage('End time must be HH:mm'),
+
   body('location')
     .trim()
-    .isLength({ min: 1, max: 100 })
-    .withMessage('Location must be between 1 and 100 characters'),
-  
+    .notEmpty()
+    .withMessage('Location is required'),
+
   body('maxParticipants')
     .isInt({ min: 1, max: 50 })
-    .withMessage('Maximum participants must be between 1 and 50'),
-  
+    .withMessage('Max participants must be between 1 and 50'),
+
   body('description')
     .optional()
     .trim()
     .isLength({ max: 500 })
-    .withMessage('Description must not exceed 500 characters'),
-  
+    .withMessage('Description too long'),
+
   body('isPublic')
     .optional()
     .isBoolean()
-    .withMessage('isPublic must be a boolean value')
+    .withMessage('isPublic must be boolean'),
+
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Validation failed',
+          details: errors.array().map(e => ({
+            field: e.path,
+            message: e.msg
+          }))
+        }
+      });
+    }
+    next();
+  }
 ];
 
-// All routes require authentication
+/* =========================
+   AUTH
+========================= */
 router.use(authenticateToken);
 
-// Create session
+/* =========================
+   ROUTES
+========================= */
 router.post('/', validateSession, createSession);
-
-// Get all public sessions
 router.get('/', getSessions);
-
-// Get user's sessions
 router.get('/my', getMySessions);
-
-// Join session
 router.post('/:id/join', joinSession);
-
-// Leave session
 router.post('/:id/leave', leaveSession);
-
-// Update session
 router.put('/:id', validateSession, updateSession);
-
-// Delete session
 router.delete('/:id', deleteSession);
 
 export default router;

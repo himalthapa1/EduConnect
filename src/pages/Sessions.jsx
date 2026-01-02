@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { sessionsAPI } from '../utils/api';
 import SessionCard from '../components/SessionCard';
 import CreateSessionModal from '../components/CreateSessionModal';
 import './Sessions.css';
@@ -23,20 +24,12 @@ const Sessions = () => {
 
   const fetchSessions = async () => {
     try {
-      const queryParams = new URLSearchParams();
-      if (filters.subject) queryParams.append('subject', filters.subject);
-      if (filters.date) queryParams.append('date', filters.date);
+      const params = {};
+      if (filters.subject) params.subject = filters.subject;
+      if (filters.date) params.date = filters.date;
 
-      const response = await fetch(`http://localhost:5000/api/sessions?${queryParams}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSessions(data.data.sessions);
-      }
+      const response = await sessionsAPI.getSessions(params);
+      setSessions(response.data.data.sessions);
     } catch (error) {
       console.error('Error fetching sessions:', error);
     }
@@ -44,16 +37,8 @@ const Sessions = () => {
 
   const fetchMySessions = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/sessions/my', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setMySessions(data.data);
-      }
+      const response = await sessionsAPI.getMySessions();
+      setMySessions(response.data.data);
     } catch (error) {
       console.error('Error fetching my sessions:', error);
     } finally {
@@ -63,42 +48,23 @@ const Sessions = () => {
 
   const handleJoinSession = async (sessionId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/sessions/${sessionId}/join`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        fetchSessions();
-        fetchMySessions();
-      } else {
-        const error = await response.json();
-        alert(error.error.message);
-      }
+      await sessionsAPI.joinSession(sessionId);
+      fetchSessions();
+      fetchMySessions();
     } catch (error) {
       console.error('Error joining session:', error);
-      alert('Failed to join session');
+      alert(error.response?.data?.error?.message || 'Failed to join session');
     }
   };
 
   const handleLeaveSession = async (sessionId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/sessions/${sessionId}/leave`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        fetchSessions();
-        fetchMySessions();
-      }
+      await sessionsAPI.leaveSession(sessionId);
+      fetchSessions();
+      fetchMySessions();
     } catch (error) {
       console.error('Error leaving session:', error);
-      alert('Failed to leave session');
+      alert(error.response?.data?.error?.message || 'Failed to leave session');
     }
   };
 

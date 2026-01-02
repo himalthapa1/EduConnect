@@ -38,7 +38,7 @@ beforeAll(async () => {
   sessionRouter.get('/list', sessionController.listSessions);
   sessionRouter.get('/my-sessions', authenticateToken, sessionController.getMySessions);
   sessionRouter.get('/:sessionId', sessionController.getSessionById);
-  sessionRouter.post('/create', authenticateToken, sessionController.createSession);
+  sessionRouter.post('/', authenticateToken, sessionController.createSession);
   sessionRouter.post('/join', authenticateToken, sessionController.joinSession);
   sessionRouter.post('/leave', authenticateToken, sessionController.leaveSession);
   sessionRouter.delete('/:sessionId', authenticateToken, sessionController.deleteSession);
