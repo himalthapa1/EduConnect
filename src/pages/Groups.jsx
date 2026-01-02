@@ -5,26 +5,41 @@ import ResourcesList from '../components/ResourcesList';
 import './Groups.css';
 
 /* =========================
-   Resources Toggle
+   Resources Toggle (Accordion Style)
 ========================= */
-const ResourcesToggle = ({ group }) => {
-  const [open, setOpen] = useState(false);
-
+const ResourcesToggle = ({ group, isOpen, onToggle }) => {
   return (
-    <div className="resources-toggle">
-      <button
-        className="resources-button"
-        onClick={() => setOpen((o) => !o)}
+    <div className="resources-toggle" style={{ marginTop: '12px' }}>
+      <button 
+        className="resources-button" 
+        onClick={onToggle}
+        style={{
+          padding: '8px 16px',
+          background: isOpen ? '#2563eb' : '#3b82f6',
+          color: 'white',
+          border: 'none',
+          borderRadius: '6px',
+          cursor: 'pointer',
+          fontSize: '14px',
+          width: '100%',
+          textAlign: 'center'
+        }}
       >
-        {open ? 'Hide Resources' : 'Resources'}
+        {isOpen ? '↑ Hide Resources' : '↓ Show Resources'}
       </button>
-      {open && <ResourcesList group={group} />}
+      
+      {/* Only renders if THIS group is open */}
+      {isOpen && (
+        <div style={{ marginTop: '12px', padding: '16px', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+          <ResourcesList group={group} />
+        </div>
+      )}
     </div>
   );
 };
 
 /* =========================
-   Groups Page
+   Main Groups Component
 ========================= */
 const Groups = () => {
   const { user } = useAuth();
@@ -36,9 +51,9 @@ const Groups = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  /* =========================
-     Create Group Form
-  ========================= */
+  // THIS IS THE KEY: Only ONE group can be expanded at a time
+  const [expandedGroupId, setExpandedGroupId] = useState(null);
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -47,60 +62,34 @@ const Groups = () => {
     isPublic: true,
   });
 
-  /* =========================
-     Filters
-  ========================= */
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('');
 
   const subjects = [
-    'Mathematics',
-    'Physics',
-    'Chemistry',
-    'Biology',
-    'Computer Science',
-    'English',
-    'History',
-    'Other',
+    'Mathematics', 'Physics', 'Chemistry', 'Biology',
+    'Computer Science', 'English', 'History', 'Other',
   ];
 
-  /* =========================
-     Effects
-  ========================= */
   useEffect(() => {
     setError(null);
     setSuccess(null);
+    setExpandedGroupId(null); // Close any open resources when switching tabs
 
-    if (activeTab === 'browse') {
-      fetchGroups();
-    }
+    if (activeTab === 'browse') fetchGroups();
+    if (activeTab === 'my-groups' && user) fetchMyGroups();
+  }, [activeTab, user]);
 
-    if (activeTab === 'my-groups') {
-      if (!user) {
-        setError('Please log in to view your groups.');
-        setMyGroups([]);
-      } else {
-        fetchMyGroups();
-      }
-    }
-  }, [activeTab, searchQuery, selectedSubject, user]);
-
-  /* =========================
-     API Calls
-  ========================= */
+  // API Calls
   const fetchGroups = async () => {
     setLoading(true);
     try {
       const params = {};
       if (searchQuery) params.search = searchQuery;
       if (selectedSubject) params.subject = selectedSubject;
-
       const res = await groupsAPI.listGroups(params);
-      const data = res.data?.data?.groups || res.data || [];
-      setGroups(Array.isArray(data) ? data : []);
+      setGroups(res.data?.data?.groups || res.data || []);
     } catch {
       setError('Failed to fetch groups');
-      setGroups([]);
     } finally {
       setLoading(false);
     }
@@ -108,42 +97,61 @@ const Groups = () => {
 
   const fetchMyGroups = async () => {
     if (!user) return;
-
     setLoading(true);
     try {
       const res = await groupsAPI.getMyGroups();
-      const data = res.data?.data?.groups || res.data || [];
-      setMyGroups(Array.isArray(data) ? data : []);
-    } catch (err) {
-      if (err.response?.status === 401) {
-        setError('Please log in to view your groups.');
-      } else {
-        setError('Failed to fetch your groups.');
-      }
-      setMyGroups([]);
+      setMyGroups(res.data?.data?.groups || res.data || []);
+    } catch {
+      setError('Failed to load your groups');
     } finally {
       setLoading(false);
     }
   };
 
-  /* =========================
-     Handlers
-  ========================= */
+  const handleJoinGroup = async (groupId) => {
+    if (!user) return setError('Please log in');
+    try {
+      await groupsAPI.joinGroup(groupId);
+      setSuccess('Joined successfully!');
+      fetchGroups();
+      fetchMyGroups();
+    } catch {
+      setError('Failed to join');
+    }
+  };
+
+  const handleLeaveGroup = async (groupId) => {
+    if (!confirm('Leave this group?')) return;
+    try {
+      await groupsAPI.leaveGroup(groupId);
+      setSuccess('Left the group');
+      setExpandedGroupId(null); // Force close if open
+      fetchMyGroups();
+      fetchGroups();
+    } catch {
+      setError('Failed to leave');
+    }
+  };
+
+  // THIS IS THE CRITICAL FIX
+  const toggleResources = (groupId) => {
+    setExpandedGroupId(prevId => 
+      prevId === groupId ? null : groupId  // Click same → close, different → open new
+    );
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleCreateGroup = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-
     try {
       await groupsAPI.createGroup(formData);
-      setSuccess('Study group created successfully!');
-      setFormData({
-        name: '',
-        description: '',
-        subject: 'Other',
-        maxMembers: 50,
-        isPublic: true,
-      });
+      setSuccess('Group created!');
+      setFormData({ name: '', description: '', subject: 'Other', maxMembers: 50, isPublic: true });
       setActiveTab('my-groups');
     } catch {
       setError('Failed to create group');
@@ -152,48 +160,6 @@ const Groups = () => {
     }
   };
 
-  const handleJoinGroup = async (groupId) => {
-    if (!user) {
-      setError('Please log in to join a group.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await groupsAPI.joinGroup(groupId);
-      setSuccess('Successfully joined the group!');
-      fetchGroups();
-      fetchMyGroups();
-    } catch {
-      setError('Failed to join group');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLeaveGroup = async (groupId) => {
-    if (!window.confirm('Are you sure you want to leave this group?')) return;
-
-    setLoading(true);
-    try {
-      await groupsAPI.leaveGroup(groupId);
-      setSuccess('Successfully left the group');
-      fetchMyGroups();
-    } catch {
-      setError('Failed to leave group');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  /* =========================
-     Render
-  ========================= */
   return (
     <div className="groups-container">
       <h1>Study Groups</h1>
@@ -202,140 +168,89 @@ const Groups = () => {
       {success && <div className="alert alert-success">{success}</div>}
 
       <div className="groups-tabs">
-        <button
-          className={`tab-button ${activeTab === 'browse' ? 'active' : ''}`}
-          onClick={() => setActiveTab('browse')}
-        >
+        <button className={`tab-button ${activeTab === 'browse' ? 'active' : ''}`} onClick={() => setActiveTab('browse')}>
           Browse Groups
         </button>
-        <button
-          className={`tab-button ${activeTab === 'my-groups' ? 'active' : ''}`}
-          onClick={() => setActiveTab('my-groups')}
-          disabled={!user}
-        >
+        <button className={`tab-button ${activeTab === 'my-groups' ? 'active' : ''}`} onClick={() => setActiveTab('my-groups')} disabled={!user}>
           My Groups
         </button>
-        <button
-          className={`tab-button ${activeTab === 'create' ? 'active' : ''}`}
-          onClick={() => setActiveTab('create')}
-        >
+        <button className={`tab-button ${activeTab === 'create' ? 'active' : ''}`} onClick={() => setActiveTab('create')}>
           Create Group
         </button>
       </div>
 
-      {/* =========================
-         BROWSE GROUPS
-      ========================= */}
+      {/* BROWSE TAB */}
       {activeTab === 'browse' && (
-        <div className="tab-content">
-          {loading ? (
-            <p>Loading groups...</p>
-          ) : groups.length === 0 ? (
-            <p>No groups found.</p>
-          ) : (
-            <div className="groups-grid">
-              {groups.map((group) => {
-                const members = group.members || [];
-                const isMember =
-                  user && members.some((m) => m?._id === user?.id);
+        <div className="groups-grid">
+          {groups.map(group => {
+            const isMember = user && group.members?.some(m => m._id === user.id);
+            const isOpen = expandedGroupId === group._id;
 
-                return (
-                  <div key={group._id} className="group-card">
-                    <h3>{group.name}</h3>
-                    <p>{group.description}</p>
-                    <p>
-                      {members.length}/{group.maxMembers} members
-                    </p>
+            return (
+              <div key={group._id} className="group-card">
+                <h3>{group.name}</h3>
+                <p>{group.description}</p>
+                <p><strong>{group.members?.length || 0}/{group.maxMembers}</strong> members</p>
 
-                    {!isMember && (
-                      <button
-                        onClick={() => handleJoinGroup(group._id)}
-                        disabled={loading}
-                      >
-                        Join Group
-                      </button>
-                    )}
-
-                    {isMember && <span className="member-badge">✓ Member</span>}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* =========================
-         MY GROUPS
-      ========================= */}
-      {activeTab === 'my-groups' && (
-        <div className="tab-content">
-          {loading ? (
-            <p>Loading your groups...</p>
-          ) : myGroups.length === 0 ? (
-            <p>You haven’t joined any groups yet.</p>
-          ) : (
-            <div className="groups-grid">
-              {myGroups.map((group) => (
-                <div key={group._id} className="group-card">
-                  <h3>{group.name}</h3>
-                  <button className="leave-button" onClick={() => handleLeaveGroup(group._id)}>
-                    Leave Group
+                {!isMember ? (
+                  <button onClick={() => handleJoinGroup(group._id)} disabled={loading}>
+                    Join Group
                   </button>
-                  <ResourcesToggle group={group} />
-                </div>
-              ))}
-            </div>
-          )}
+                ) : (
+                  <span style={{color: 'green', fontWeight: 'bold'}}>✓ You're a member</span>
+                )}
+
+                {/* Only this group's resources will show when clicked */}
+                <ResourcesToggle 
+                  group={group} 
+                  isOpen={isOpen} 
+                  onToggle={() => toggleResources(group._id)} 
+                />
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* =========================
-         CREATE GROUP
-      ========================= */}
-      {activeTab === 'create' && (
-        <div className="tab-content">
-          <form onSubmit={handleCreateGroup} className="create-group-form">
-            <div className="form-group">
-              <label>Group Name</label>
-              <input
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+      {/* MY GROUPS TAB */}
+      {activeTab === 'my-groups' && (
+        <div className="groups-grid">
+          {myGroups.map(group => {
+            const isOpen = expandedGroupId === group._id;
 
-            <div className="form-group">
-              <label>Description</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+            return (
+              <div key={group._id} className="group-card">
+                <h3>{group.name}</h3>
+                <p>{group.description}</p>
+                <p><strong>{group.members?.length || 0}/{group.maxMembers}</strong> members</p>
 
-            <div className="form-group">
-              <label>Subject</label>
-              <select
-                name="subject"
-                value={formData.subject}
-                onChange={handleInputChange}
-              >
-                {subjects.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <button className="leave-button" onClick={() => handleLeaveGroup(group._id)}>
+                  Leave Group
+                </button>
 
-            <button type="submit" className="create-button" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Group'}
-            </button>
-          </form>
+                <ResourcesToggle 
+                  group={group} 
+                  isOpen={isOpen} 
+                  onToggle={() => toggleResources(group._id)} 
+                />
+              </div>
+            );
+          })}
         </div>
+      )}
+
+      {/* CREATE TAB */}
+      {activeTab === 'create' && (
+        <form onSubmit={handleCreateGroup} className="create-group-form">
+          <input name="name" placeholder="Group Name" value={formData.name} onChange={handleInputChange} required />
+          <textarea name="description" placeholder="Description" value={formData.description} onChange={handleInputChange} required />
+          <select name="subject" value={formData.subject} onChange={handleInputChange}>
+            {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <button type="submit" disabled={loading}>
+            {loading ? 'Creating...' : 'Create Group'}
+          </button>
+        </form>
       )}
     </div>
   );
