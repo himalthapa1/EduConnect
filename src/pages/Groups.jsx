@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { groupsAPI, sessionsAPI } from '../utils/api';
 import ResourcesList from '../components/ResourcesList';
+import CompleteSessionModal from '../components/CompleteSessionModal';
 import './Groups.css';
 
 /* =========================
@@ -48,7 +49,7 @@ const ResourcesToggle = ({ group, isOpen, onToggle }) => {
 /* =========================
    Sessions Toggle (Accordion Style)
 ========================= */
-const SessionsToggle = ({ group, sessions, isOpen, onToggle, onJoinSession, onLeaveSession, currentUserId }) => {
+const SessionsToggle = ({ group, sessions, isOpen, onToggle, onJoinSession, onLeaveSession, onCompleteSession, currentUserId }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -120,7 +121,24 @@ const SessionsToggle = ({ group, sessions, isOpen, onToggle, onJoinSession, onLe
                       📍 {session.location} • 👥 {session.participants.length}/{session.maxParticipants} joined
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    {session.organizer._id === currentUserId && session.status === 'scheduled' && onCompleteSession && (
+                      <button
+                        onClick={() => onCompleteSession(session)}
+                        style={{
+                          padding: '6px 12px',
+                          background: '#3b82f6',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          marginBottom: '4px'
+                        }}
+                      >
+                        Complete Session
+                      </button>
+                    )}
                     {session.participants.some(p => p.user._id === currentUserId) ? (
                       <button
                         onClick={() => onLeaveSession(session._id)}
@@ -182,6 +200,8 @@ const Groups = () => {
   const [expandedMyGroupId, setExpandedMyGroupId] = useState(null);
   const [expandedBrowseSessionsId, setExpandedBrowseSessionsId] = useState(null);
   const [expandedMySessionsId, setExpandedMySessionsId] = useState(null);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [selectedSession, setSelectedSession] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -314,6 +334,18 @@ const Groups = () => {
     setFormData(prev => ({ ...prev, tag: color }));
   };
 
+  const handleCompleteSession = (session) => {
+    setSelectedSession(session);
+    setShowCompleteModal(true);
+  };
+
+  const handleCompleteSuccess = () => {
+    fetchSessions();
+    setShowCompleteModal(false);
+    setSelectedSession(null);
+    setSuccess('Session completed successfully!');
+  };
+
   /* =========================
      ✅ FIXED CREATE GROUP
   ========================= */
@@ -409,6 +441,7 @@ const Groups = () => {
                     onToggle={() => setExpandedBrowseSessionsId(sessionsOpen ? null : group._id)}
                     onJoinSession={handleJoinSession}
                     onLeaveSession={handleLeaveSession}
+                    onCompleteSession={handleCompleteSession}
                     currentUserId={user?.id}
                   />
                 )}
@@ -449,6 +482,7 @@ const Groups = () => {
                   onToggle={() => setExpandedMySessionsId(sessionsOpen ? null : group._id)}
                   onJoinSession={handleJoinSession}
                   onLeaveSession={handleLeaveSession}
+                  onCompleteSession={handleCompleteSession}
                   currentUserId={user?.id}
                 />
               </div>
@@ -497,6 +531,17 @@ const Groups = () => {
             {loading ? 'Creating...' : 'Create'}
           </button>
         </form>
+      )}
+
+      {showCompleteModal && selectedSession && (
+        <CompleteSessionModal
+          session={selectedSession}
+          onClose={() => {
+            setShowCompleteModal(false);
+            setSelectedSession(null);
+          }}
+          onSuccess={handleCompleteSuccess}
+        />
       )}
     </div>
   );

@@ -359,3 +359,164 @@ export const deleteSession = async (req, res) => {
     });
   }
 };
+
+/* =========================
+   COMPLETE SESSION
+========================= */
+export const completeSession = async (req, res) => {
+  try {
+    const session = await Session.findById(req.params.id);
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Session not found' }
+      });
+    }
+
+    if (session.organizer.toString() !== req.user.userId) {
+      return res.status(403).json({
+        success: false,
+        error: { message: 'Not authorized' }
+      });
+    }
+
+    if (session.status === 'completed') {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Session is already completed' }
+      });
+    }
+
+    const { notes } = req.body;
+    await session.completeSession(notes);
+
+    await session.populate('organizer participants.user', 'username email');
+
+    res.json({
+      success: true,
+      message: 'Session completed successfully',
+      data: { session }
+    });
+  } catch (error) {
+    console.error('Complete session error:', error);
+    res.status(500).json({
+      success: false,
+      error: { message: 'Internal server error' }
+    });
+  }
+};
+
+/* =========================
+   ADD SESSION NOTES
+========================= */
+export const addSessionNotes = async (req, res) => {
+  try {
+    const session = await Session.findById(req.params.id);
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Session not found' }
+      });
+    }
+
+    if (session.organizer.toString() !== req.user.userId) {
+      return res.status(403).json({
+        success: false,
+        error: { message: 'Not authorized' }
+      });
+    }
+
+    const { notes } = req.body;
+
+    if (!notes || !notes.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Notes are required' }
+      });
+    }
+
+    await session.addNotes(notes.trim());
+
+    res.json({
+      success: true,
+      message: 'Session notes added successfully',
+      data: { session }
+    });
+  } catch (error) {
+    console.error('Add session notes error:', error);
+    res.status(500).json({
+      success: false,
+      error: { message: 'Internal server error' }
+    });
+  }
+};
+
+/* =========================
+   ADD SESSION RESOURCE
+========================= */
+export const addSessionResource = async (req, res) => {
+  try {
+    const session = await Session.findById(req.params.id);
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Session not found' }
+      });
+    }
+
+    if (session.organizer.toString() !== req.user.userId) {
+      return res.status(403).json({
+        success: false,
+        error: { message: 'Not authorized' }
+      });
+    }
+
+    const { title, url, description, type } = req.body;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Resource title is required' }
+      });
+    }
+
+    const resourceData = {
+      title: title.trim(),
+      url: url ? url.trim() : null,
+      description: description ? description.trim() : null,
+      type: type || 'resource',
+      creator: req.user.userId
+    };
+
+    await session.addResource(resourceData);
+
+    res.json({
+      success: true,
+      message: 'Session resource added successfully',
+      data: { session }
+    });
+  } catch (error) {
+    console.error('Add session resource error:', error);
+
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Validation failed',
+          details: Object.values(error.errors).map(e => ({
+            field: e.path,
+            message: e.message
+          }))
+        }
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      error: { message: 'Internal server error' }
+    });
+  }
+};

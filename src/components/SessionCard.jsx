@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './SessionCard.css';
 
-function SessionCard({ session, onJoin, onLeave, isOrganizer = false, showJoinButton = false, showLeaveButton = false }) {
+function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false, showJoinButton = false, showLeaveButton = false, showCompleteButton = false }) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
@@ -35,6 +35,7 @@ function SessionCard({ session, onJoin, onLeave, isOrganizer = false, showJoinBu
   const isUserOrganizer = session.organizer._id === user?.id;
   const canShowJoin = (showJoinButton ?? true) && !isUserOrganizer && !isUserJoined && !isFull;
   const canShowLeave = !isUserOrganizer && isUserJoined;
+  const canShowComplete = showCompleteButton && isUserOrganizer && session.status === 'scheduled';
 
   return (
     <div className="session-card">
@@ -45,6 +46,21 @@ function SessionCard({ session, onJoin, onLeave, isOrganizer = false, showJoinBu
         </div>
 
         <div className="card-content">
+          {/* Status Badge */}
+          <div className="session-status">
+            <span className={`status-badge status-${session.status}`}>
+              {session.status === 'completed' ? '✓ Completed' :
+               session.status === 'ongoing' ? '🔴 Ongoing' :
+               session.status === 'cancelled' ? '❌ Cancelled' :
+               '📅 Scheduled'}
+            </span>
+            {session.status === 'completed' && session.completedAt && (
+              <span className="completed-date">
+                {new Date(session.completedAt).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+
           {session.description && <p className="session-description">{session.description}</p>}
 
           <div className="session-details">
@@ -94,6 +110,12 @@ function SessionCard({ session, onJoin, onLeave, isOrganizer = false, showJoinBu
 
             {canShowLeave && (
               <button className="leave-btn" onClick={() => onLeave?.(session._id)} disabled={loading}>{loading ? 'Leaving...' : 'Leave Session'}</button>
+            )}
+
+            {canShowComplete && (
+              <button className="complete-btn" onClick={() => onComplete?.(session)} disabled={loading}>
+                {loading ? 'Completing...' : 'Complete Session'}
+              </button>
             )}
 
             {isUserJoined && !isUserOrganizer && <span className="joined-badge">✓ Joined</span>}

@@ -15,6 +15,39 @@ const participantSchema = new mongoose.Schema(
   { _id: false }
 );
 
+// Resources subdocument schema for sessions
+const sessionResourceSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: [true, 'Resource title is required'],
+    trim: true,
+    maxlength: [200, 'Title must not exceed 200 characters']
+  },
+  url: {
+    type: String,
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true,
+    maxlength: [1000, 'Description must not exceed 1000 characters']
+  },
+  type: {
+    type: String,
+    enum: ['resource', 'note'],
+    default: 'resource'
+  },
+  creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'Creator is required']
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
 const sessionSchema = new mongoose.Schema(
   {
     title: {
@@ -76,6 +109,15 @@ const sessionSchema = new mongoose.Schema(
       enum: ['scheduled', 'ongoing', 'completed', 'cancelled'],
       default: 'scheduled'
     },
+    notes: {
+      type: String,
+      trim: true,
+      maxlength: [2000, 'Notes must not exceed 2000 characters']
+    },
+    resources: [sessionResourceSchema],
+    completedAt: {
+      type: Date
+    },
     isPublic: {
       type: Boolean,
       default: true
@@ -124,6 +166,25 @@ sessionSchema.methods.removeParticipant = async function (userId) {
   this.participants = this.participants.filter(
     (p) => p.user.toString() !== userId.toString()
   );
+  return this.save();
+};
+
+sessionSchema.methods.completeSession = async function (notes = null) {
+  this.status = 'completed';
+  this.completedAt = new Date();
+  if (notes) {
+    this.notes = notes;
+  }
+  return this.save();
+};
+
+sessionSchema.methods.addNotes = async function (notes) {
+  this.notes = notes;
+  return this.save();
+};
+
+sessionSchema.methods.addResource = async function (resourceData) {
+  this.resources.push(resourceData);
   return this.save();
 };
 
