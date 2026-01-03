@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { groupsAPI, sessionsAPI } from '../utils/api';
 import ResourcesList from '../components/ResourcesList';
 import CompleteSessionModal from '../components/CompleteSessionModal';
+import ChatWindow from '../components/chat/ChatWindow';
 import './Groups.css';
 
 /* =========================
@@ -40,6 +41,51 @@ const ResourcesToggle = ({ group, isOpen, onToggle }) => {
           }}
         >
           <ResourcesList group={group} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* =========================
+   Chat Toggle (Accordion Style)
+========================= */
+const ChatToggle = ({ group, isOpen, onToggle, currentUserId }) => {
+  const isMember = currentUserId && group.members?.some(m => m._id === currentUserId);
+
+  if (!isMember) return null;
+
+  return (
+    <div className="chat-toggle" style={{ marginTop: '12px' }}>
+      <button
+        className="chat-button"
+        onClick={onToggle}
+        style={{
+          padding: '8px 16px',
+          background: isOpen ? '#7c3aed' : '#8b5cf6',
+          color: 'white',
+          border: 'none',
+          borderRadius: '6px',
+          cursor: 'pointer',
+          fontSize: '14px',
+          width: '100%',
+          textAlign: 'center'
+        }}
+      >
+        {isOpen ? '↑ Hide Chat' : '💬 Show Group Chat'}
+      </button>
+
+      {isOpen && (
+        <div
+          style={{
+            marginTop: '12px',
+            background: '#faf5ff',
+            borderRadius: '8px',
+            border: '1px solid #d8b4fe',
+            overflow: 'hidden'
+          }}
+        >
+          <ChatWindow type="group" groupId={group._id} />
         </div>
       )}
     </div>
@@ -200,6 +246,8 @@ const Groups = () => {
   const [expandedMyGroupId, setExpandedMyGroupId] = useState(null);
   const [expandedBrowseSessionsId, setExpandedBrowseSessionsId] = useState(null);
   const [expandedMySessionsId, setExpandedMySessionsId] = useState(null);
+  const [expandedBrowseChatId, setExpandedBrowseChatId] = useState(null);
+  const [expandedMyChatId, setExpandedMyChatId] = useState(null);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
 
@@ -434,16 +482,25 @@ const Groups = () => {
                 />
 
                 {isMember && (
-                  <SessionsToggle
-                    group={group}
-                    sessions={groupSessions}
-                    isOpen={sessionsOpen}
-                    onToggle={() => setExpandedBrowseSessionsId(sessionsOpen ? null : group._id)}
-                    onJoinSession={handleJoinSession}
-                    onLeaveSession={handleLeaveSession}
-                    onCompleteSession={handleCompleteSession}
-                    currentUserId={user?.id}
-                  />
+                  <>
+                    <ChatToggle
+                      group={group}
+                      isOpen={expandedBrowseChatId === group._id}
+                      onToggle={() => setExpandedBrowseChatId(expandedBrowseChatId === group._id ? null : group._id)}
+                      currentUserId={user?.id}
+                    />
+
+                    <SessionsToggle
+                      group={group}
+                      sessions={groupSessions}
+                      isOpen={sessionsOpen}
+                      onToggle={() => setExpandedBrowseSessionsId(sessionsOpen ? null : group._id)}
+                      onJoinSession={handleJoinSession}
+                      onLeaveSession={handleLeaveSession}
+                      onCompleteSession={handleCompleteSession}
+                      currentUserId={user?.id}
+                    />
+                  </>
                 )}
               </div>
             );
@@ -473,6 +530,13 @@ const Groups = () => {
                   group={group}
                   isOpen={isOpen}
                   onToggle={() => setExpandedMyGroupId(isOpen ? null : group._id)}
+                />
+
+                <ChatToggle
+                  group={group}
+                  isOpen={expandedMyChatId === group._id}
+                  onToggle={() => setExpandedMyChatId(expandedMyChatId === group._id ? null : group._id)}
+                  currentUserId={user?.id}
                 />
 
                 <SessionsToggle

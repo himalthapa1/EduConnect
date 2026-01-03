@@ -8,12 +8,14 @@ import compression from "compression";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import mongoose from "mongoose";
+import { Server } from "socket.io";
 import { fileURLToPath } from "url";
 
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import groupRoutes from "./routes/groups.js";
 import sessionRoutes from "./routes/sessions.js";
+import { registerChatHandlers } from "./sockets/chatSocket.js";
 
 /* =========================
    ENV + PATH SETUP
@@ -166,6 +168,53 @@ let server;
     server = app.listen(PORT, () => {
       console.log(`✅ Server running on port ${PORT} (${NODE_ENV})`);
     });
+
+    /* =========================
+       SOCKET.IO SETUP
+    ========================= */
+    const io = new Server(server, {
+      cors: {
+        origin: (origin, callback) => {
+          // Allow non-browser clients (curl/postman) with no origin
+          if (!origin) return callback(null, true);
+
+          if (allowlist.has(origin) || /^http:\/\/localhost:\d+$/.test(origin)) {
+            return callback(null, true);
+          }
+          return callback(new Error("CORS: Origin not allowed"));
+        },
+        credentials: true,
+      },
+    });
+
+    // Socket.IO authentication middleware
+    io.use(async (socket, next) => {
+      try {
+        const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
+
+        if (!token) {
+          return next(new Error('Authentication required'));
+        }
+
+        // Verify JWT token (reuse existing logic from auth middleware)
+        const jwt = await import('jsonwebtoken');
+        const decoded = jwt.default.verify(token, process.env.JWT_SECRET);
+
+        // Attach user ID to socket
+        socket.userId = decoded.userId;
+        next();
+      } catch (error) {
+        console.error('Socket authentication error:', error.message);
+        next(new Error('Authentication failed'));
+      }
+    });
+
+    // Register chat handlers
+    io.on('connection', (socket) => {
+      registerChatHandlers(io, socket);
+    });
+
+    console.log('✅ Socket.IO server initialized');
   } catch (error) {
     console.error("❌ Failed to start server:", error);
     process.exit(1);
