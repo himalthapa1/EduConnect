@@ -128,45 +128,41 @@ const ResourcesList = ({ group }) => {
   };
 
   const renderResourceList = (resourceList, isMyUploads = false) => (
-    <ul className="resources-list">
+    <div className="resources-list">
       {resourceList.map(r => (
-        <li key={r._id} className="resource-item">
-          <div className="resource-main">
-            <strong>{r.title}</strong> <em>({r.resourceType})</em>
-            {r.url && <div><a href={r.url} target="_blank" rel="noreferrer">Open link</a></div>}
-            {r.file && <div><a href={`${API_BASE_URL}/${r.file}`} target="_blank" rel="noreferrer">Download file</a></div>}
-            {r.description && <div className="resource-desc">{r.description}</div>}
+        <div key={r._id} className="resource-card">
+          <div className="resource-info">
+            <h4>{r.title}</h4>
             <div className="resource-meta">
-              {isMyUploads ? (
-                <>Uploaded by you · {new Date(r.createdAt).toLocaleString()}</>
-              ) : (
-                <>Shared by {r.addedBy?.username} · {new Date(r.createdAt).toLocaleString()}</>
-              )}
+              <div>({r.resourceType})</div>
+              {r.file && <a href={`${API_BASE_URL}/${r.file}`} target="_blank" rel="noreferrer" className="download-link">Download file</a>}
+              {r.url && <a href={r.url} target="_blank" rel="noreferrer" className="download-link">Open link</a>}
+              <div>{isMyUploads ? 'Uploaded by you' : `Shared by ${r.addedBy?.username}`} · {new Date(r.createdAt).toLocaleString()}</div>
             </div>
           </div>
           {canManage(r) && (
             <div className="resource-actions">
               {isMyUploads && !r.isShared && (
-                <button 
+                <button
                   onClick={() => handleShare(r._id)}
-                  className="share-btn"
+                  className="btn-share"
                   title="Share this file with the group"
                 >
                   Share with Group
                 </button>
               )}
-              <button 
+              <button
                 onClick={() => handleDelete(r._id)}
-                className="delete-btn"
+                className="btn-delete"
                 title="Delete this file"
               >
                 Delete
               </button>
             </div>
           )}
-        </li>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 
   return (

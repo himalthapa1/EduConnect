@@ -9,8 +9,7 @@ export default function AccountSettings() {
      { id: 'my-profile', label: 'My Profile' },
      { id: 'teams', label: 'Teams' },
      { id: 'team-member', label: 'Team Member' },
-     { id: 'notifications', label: 'Notifications' },
-     { id: 'delete', label: 'Delete Account', danger: true }
+     { id: 'notifications', label: 'Notifications' }
   ];
 
     const [active, setActive] = useState('my-profile');
@@ -79,76 +78,93 @@ export default function AccountSettings() {
         </aside>
 
         <main className="account-main">
-          <div className="profile-card">
-            <div className="profile-card-header">
-              <div className="avatar">{(user?.username || 'U').charAt(0).toUpperCase()}</div>
-              <div className="profile-info">
-                <h4>{user?.username || 'User'}</h4>
-                <div className="muted">{user?.email || ''}</div>
+          {active === 'my-profile' ? (
+            <>
+              {/* Profile Header */}
+              <div className="profile-header">
+                <div className="avatar">{(user?.username || 'U').charAt(0).toUpperCase()}</div>
+                <div>
+                  <h2>{user?.username || 'User'}</h2>
+                  <p className="muted">{user?.email || ''}</p>
+                </div>
               </div>
-              <div className="profile-edit">
+
+              {/* Account Information Card */}
+              <div className="card">
+                <h3>Account Information</h3>
+
+                <div className="form-group">
+                  <label>Username</label>
+                  <input
+                    type="text"
+                    name="username"
+                    value={form.username}
+                    onChange={handleChange}
+                    disabled={!editing}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    disabled={true}
+                  />
+                  <small>Email cannot be changed</small>
+                </div>
+              </div>
+
+              {/* Action Bar */}
+              <div className="action-bar">
                 {!editing ? (
-                  <button className="edit-btn" onClick={() => setEditing(true)}>Edit</button>
+                  <button className="btn-primary" onClick={() => setEditing(true)}>Edit Profile</button>
                 ) : (
                   <>
-                    <button className="edit-btn" onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
-                    <button className="edit-btn" onClick={() => { setEditing(false); setForm({ username: user?.username || '', email: user?.email || '', name: user?.name || '' }); }}>Cancel</button>
+                    <button className="btn-secondary" onClick={() => {
+                      setEditing(false);
+                      setForm({
+                        username: user?.username || '',
+                        email: user?.email || '',
+                        name: user?.name || ''
+                      });
+                    }}>
+                      Cancel
+                    </button>
+                    <button className="btn-primary" onClick={handleSave} disabled={saving}>
+                      {saving ? 'Saving...' : 'Save Changes'}
+                    </button>
                   </>
                 )}
               </div>
+
+              {/* Danger Zone */}
+              <div className="danger-zone">
+                <h4>Danger Zone</h4>
+                <div className="card danger">
+                  <p>Deleting your account is permanent. This will remove all your data and cannot be undone.</p>
+                  <button className="btn-danger">Delete Account</button>
+                </div>
+              </div>
+
+              {/* Success/Error Messages */}
+              {message && (
+                <div className={`alert ${message.includes('failed') ? 'alert-error' : 'alert-success'}`}>
+                  {message}
+                </div>
+              )}
+            </>
+          ) : (
+            /* Placeholder content for other sections */
+            <div className="section-placeholder">
+              <h2>{sections.find(s => s.id === active)?.label}</h2>
+              <div className="card">
+                <p>This feature is coming soon. Check back later for updates!</p>
+              </div>
             </div>
-
-            <div className="profile-sections">
-              {active === 'my-profile' && (
-                <section>
-                  <h5>My Profile</h5>
-                  <div className="card">
-                    {editing ? (
-                      <div className="edit-form">
-                        <label>Username</label>
-                        <input name="username" value={form.username} onChange={handleChange} />
-                        <label>Email</label>
-                        <input name="email" type="email" value={form.email} onChange={handleChange} />
-                      </div>
-                    ) : (
-                      <div>
-                        <strong>{user?.username}</strong>
-                        <div className="muted">{user?.email}</div>
-                      </div>
-                    )}
-                  </div>
-                </section>
-              )}
-
-              {active === 'team-member' && (
-                <section>
-                  <h5>Team Member</h5>
-                  <div className="card">{/* Place for list of team members. */}
-                    <div>No team members to show.</div>
-                  </div>
-                </section>
-              )}
-
-              {active === 'notifications' && (
-                <section>
-                  <h5>Notifications</h5>
-                  <div className="card">Notification preferences will appear here.</div>
-                </section>
-              )}
-
-              {active === 'delete' && (
-                <section>
-                  <h5>Delete Account</h5>
-                  <div className="card danger">
-                    <p>Deleting your account is permanent. This will remove all your data.</p>
-                    <button className="delete-btn">Delete Account</button>
-                  </div>
-                </section>
-              )}
-
-              {message && <div style={{ marginTop: 12 }}>{message}</div>}
-            </div>
-          </div>
+          )}
         </main>
       </div>
     </div>
