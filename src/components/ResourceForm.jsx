@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { groupsAPI } from '../utils/api';
 
 const ResourceForm = ({ onSubmit, initial = {} }) => {
   const [title, setTitle] = useState(initial.title || '');

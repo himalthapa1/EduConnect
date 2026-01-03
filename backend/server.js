@@ -88,8 +88,8 @@ const uploadLimiter = rateLimit({
 /* =========================
    BODY PARSERS (with limits)
 ========================= */
-app.use(express.json({ limit: "200kb" }));
-app.use(express.urlencoded({ extended: true, limit: "200kb" }));
+app.use(express.json({ limit: "500mb" }));
+app.use(express.urlencoded({ extended: true, limit: "500mb" }));
 
 /* =========================
    STATIC FILES (UPLOADS)

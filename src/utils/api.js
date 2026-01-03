@@ -102,7 +102,10 @@ export const groupsAPI = {
     // Let the browser/axios set the correct multipart boundary header for FormData.
     // Passing a manual 'Content-Type' without the boundary can break multer parsing.
     if (data instanceof FormData) {
-      return api.post(`/groups/${groupId}/resources`, data);
+      return api.post(`/groups/${groupId}/resources`, data, {
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+      });
     }
     return api.post(`/groups/${groupId}/resources`, data);
   },

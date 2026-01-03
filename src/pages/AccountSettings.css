@@ -109,6 +109,8 @@
   margin-top: 10px;
 }
 
+
+
 @media (max-width: 900px) {
   .account-wrapper { flex-direction: column; }
   .account-sidebar { width: 100%; display: flex; overflow-x: auto; gap: 8px; }

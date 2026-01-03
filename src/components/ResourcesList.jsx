@@ -12,6 +12,8 @@ const ResourcesList = ({ group }) => {
   const [successMessage, setSuccessMessage] = useState(null);
   const [openForm, setOpenForm] = useState(false);
   const [activeTab, setActiveTab] = useState('my-uploads'); // 'my-uploads' or 'shared'
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
 
   const fetchResources = async () => {
     setLoading(true);
@@ -56,6 +58,9 @@ const ResourcesList = ({ group }) => {
   const handleAdd = async (data) => {
     setError(null);
     setSuccessMessage(null);
+    setUploadProgress(0);
+    setIsUploading(true);
+
     try {
       const formData = new FormData();
       formData.append('title', data.title);
@@ -65,7 +70,13 @@ const ResourcesList = ({ group }) => {
       formData.append('isShared', 'false'); // Always upload as private (send as string)
       if (data.file) formData.append('file', data.file);
 
-      await groupsAPI.addResource(group._id, formData);
+      await groupsAPI.addResource(group._id, formData, {
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(percentCompleted);
+        }
+      });
+
       await fetchResources();
       setOpenForm(false);
       setSuccessMessage('File uploaded successfully to "My Upload"!');
@@ -74,6 +85,9 @@ const ResourcesList = ({ group }) => {
       console.error('Upload error:', err);
       const msg = err?.response?.data?.message || err?.response?.data?.error?.message || 'Failed to add resource';
       setError(msg);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -165,6 +179,20 @@ const ResourcesList = ({ group }) => {
       </div>
 
       {openForm && <ResourceForm onSubmit={handleAdd} />}
+
+      {isUploading && (
+        <div className="upload-progress">
+          <div className="progress-bar">
+            <div
+              className="progress-fill"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
+          <div className="progress-text">
+            Uploading... {uploadProgress}%
+          </div>
+        </div>
+      )}
 
       {error && <div className="alert alert-error">{error}</div>}
       {successMessage && <div className="alert alert-success">{successMessage}</div>}
