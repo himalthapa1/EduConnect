@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { sessionsAPI } from '../utils/api';
+import { sessionsAPI, groupsAPI } from '../utils/api';
 import './CreateSessionModal.css';
 
 const CreateSessionModal = ({ onClose, onSuccess }) => {
@@ -14,10 +14,30 @@ const CreateSessionModal = ({ onClose, onSuccess }) => {
     endTime: '',
     location: '',
     maxParticipants: 10,
+    group: '',
     isPublic: true
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [userGroups, setUserGroups] = useState([]);
+  const [groupsLoading, setGroupsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserGroups = async () => {
+      try {
+        const response = await groupsAPI.getMyGroups();
+        setUserGroups(response.data.data.groups || []);
+      } catch (error) {
+        console.error('Error fetching user groups:', error);
+      } finally {
+        setGroupsLoading(false);
+      }
+    };
+
+    if (token) {
+      fetchUserGroups();
+    }
+  }, [token]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -63,6 +83,10 @@ const CreateSessionModal = ({ onClose, onSuccess }) => {
 
     if (formData.maxParticipants < 1 || formData.maxParticipants > 50) {
       newErrors.maxParticipants = 'Max participants must be between 1 and 50';
+    }
+
+    if (!formData.isPublic && !formData.group) {
+      newErrors.group = 'Group selection is required for private sessions';
     }
 
     setErrors(newErrors);
@@ -161,6 +185,27 @@ const CreateSessionModal = ({ onClose, onSuccess }) => {
               />
               {errors.subject && <span className="field-error">{errors.subject}</span>}
             </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="group">Study Group {formData.isPublic ? '(Optional for public sessions)' : '*'}</label>
+            <select
+              id="group"
+              value={formData.group}
+              onChange={(e) => handleInputChange('group', e.target.value)}
+              className={errors.group ? 'error' : ''}
+              disabled={loading || groupsLoading}
+            >
+              <option value="">
+                {groupsLoading ? 'Loading groups...' : formData.isPublic ? 'No group (public session)' : 'Select a group'}
+              </option>
+              {userGroups.map(group => (
+                <option key={group._id} value={group._id}>
+                  {group.name} ({group.subject})
+                </option>
+              ))}
+            </select>
+            {errors.group && <span className="field-error">{errors.group}</span>}
           </div>
 
           <div className="form-group">
@@ -265,8 +310,8 @@ const CreateSessionModal = ({ onClose, onSuccess }) => {
             <button type="button" onClick={onClose} className="cancel-btn" disabled={loading}>
               Cancel
             </button>
-            <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Session'}
+            <button type="submit" className="submit-btn" disabled={loading || groupsLoading || (!formData.isPublic && !formData.group)}>
+              {loading ? 'Creating...' : groupsLoading ? 'Loading groups...' : (!formData.isPublic && !formData.group) ? 'Select a group' : 'Create Session'}
             </button>
           </div>
         </form>

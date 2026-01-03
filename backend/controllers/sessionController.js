@@ -21,8 +21,28 @@ export const createSession = async (req, res) => {
       endTime,
       location,
       maxParticipants,
+      group,
       isPublic
     } = req.body;
+
+    // Validate group membership if group is specified
+    if (group) {
+      const StudyGroup = (await import('../models/StudyGroup.js')).default;
+      const groupDoc = await StudyGroup.findById(group);
+      if (!groupDoc) {
+        return res.status(404).json({
+          success: false,
+          error: { message: 'Group not found' }
+        });
+      }
+
+      if (!groupDoc.members.includes(req.user.userId)) {
+        return res.status(403).json({
+          success: false,
+          error: { message: 'You must be a member of the group to create sessions' }
+        });
+      }
+    }
 
     // Validate time range
     const start = parseTime(startTime);
@@ -47,7 +67,8 @@ export const createSession = async (req, res) => {
       endTime,
       location,
       maxParticipants,
-      organizer: req.user.userId, // ✅ JWT payload
+      organizer: req.user.userId,
+      group,
       isPublic: isPublic ?? true
     });
 
@@ -91,8 +112,24 @@ export const createSession = async (req, res) => {
 export const getSessions = async (req, res) => {
   try {
     const { page = 1, limit = 10, subject, date, status = 'scheduled' } = req.query;
+    const userId = req.user?.userId;
 
-    const query = { isPublic: true, status };
+    // Base query: public sessions OR sessions from groups the user is a member of
+    const query = {
+      status,
+      $or: [
+        { isPublic: true }
+      ]
+    };
+
+    if (userId) {
+      // Get user's groups
+      const StudyGroup = (await import('../models/StudyGroup.js')).default;
+      const userGroups = await StudyGroup.find({ members: userId }).select('_id');
+      const groupIds = userGroups.map(g => g._id);
+
+      query.$or.push({ group: { $in: groupIds } });
+    }
 
     if (subject) {
       query.subject = { $regex: subject, $options: 'i' };
@@ -108,6 +145,7 @@ export const getSessions = async (req, res) => {
     const sessions = await Session.find(query)
       .populate('organizer', 'username email')
       .populate('participants.user', 'username email')
+      .populate('group', 'name subject')
       .sort({ date: 1, startTime: 1 })
       .skip((page - 1) * limit)
       .limit(Number(limit));
@@ -145,6 +183,7 @@ export const getMySessions = async (req, res) => {
     const organized = await Session.find({ organizer: userId })
       .populate('organizer', 'username email')
       .populate('participants.user', 'username email')
+      .populate('group', 'name subject')
       .sort({ date: 1, startTime: 1 });
 
     const joined = await Session.find({
@@ -153,6 +192,7 @@ export const getMySessions = async (req, res) => {
     })
       .populate('organizer', 'username email')
       .populate('participants.user', 'username email')
+      .populate('group', 'name subject')
       .sort({ date: 1, startTime: 1 });
 
     res.json({
@@ -173,7 +213,7 @@ export const getMySessions = async (req, res) => {
 ========================= */
 export const joinSession = async (req, res) => {
   try {
-    const session = await Session.findById(req.params.id);
+    const session = await Session.findById(req.params.id).populate('group');
 
     if (!session) {
       return res.status(404).json({
@@ -186,6 +226,14 @@ export const joinSession = async (req, res) => {
       return res.status(400).json({
         success: false,
         error: { message: 'Cannot join your own session' }
+      });
+    }
+
+    // Check group membership if session belongs to a group
+    if (session.group && !session.group.members.includes(req.user.userId)) {
+      return res.status(403).json({
+        success: false,
+        error: { message: 'You must be a member of the group to join this session' }
       });
     }
 

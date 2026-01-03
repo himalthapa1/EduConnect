@@ -65,6 +65,11 @@ const sessionSchema = new mongoose.Schema(
       ref: 'User',
       required: true
     },
+    group: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'StudyGroup',
+      required: false
+    },
     participants: [participantSchema],
     status: {
       type: String,

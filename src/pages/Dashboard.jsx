@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { sessionsAPI } from '../utils/api';
+import { sessionsAPI, groupsAPI } from '../utils/api';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -23,13 +23,15 @@ const Dashboard = () => {
 
   const loadDashboardData = async () => {
     try {
-      const [sessionsRes, mySessionsRes] = await Promise.all([
+      const [sessionsRes, mySessionsRes, groupsRes] = await Promise.all([
         sessionsAPI.getSessions({ limit: 5 }),
-        sessionsAPI.getMySessions()
+        sessionsAPI.getMySessions(),
+        groupsAPI.getMyGroups()
       ]);
 
       const allSessions = sessionsRes.data.data.sessions;
       const mySessions = mySessionsRes.data.data;
+      const myGroups = groupsRes.data.data.groups || [];
 
       // Calculate stats
       const now = new Date();
@@ -40,7 +42,7 @@ const Dashboard = () => {
       setStats({
         totalSessions: allSessions.length,
         upcomingSessions: upcoming.length,
-        joinedGroups: 0, // TODO: implement groups API
+        joinedGroups: myGroups.length,
         organizedSessions: organized
       });
 
@@ -161,7 +163,12 @@ const Dashboard = () => {
                   <div key={session._id} className="session-card">
                     <div className="session-info">
                       <h4>{session.title}</h4>
-                      <p className="session-subject">{session.subject}</p>
+                      <p className="session-subject">
+                        {session.subject}
+                        {session.group && <span style={{ fontSize: '12px', color: '#666', marginLeft: '8px' }}>
+                          • {session.group.name}
+                        </span>}
+                      </p>
                       <div className="session-details">
                         <span>📅 {formatDate(session.date)}</span>
                         <span>🕐 {formatTime(session.startTime)} - {formatTime(session.endTime)}</span>
