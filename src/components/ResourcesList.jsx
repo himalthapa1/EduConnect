@@ -12,6 +12,8 @@ const ResourcesList = ({ group }) => {
   const [successMessage, setSuccessMessage] = useState(null);
   const [openForm, setOpenForm] = useState(false);
   const [activeTab, setActiveTab] = useState('my-uploads'); // 'my-uploads' or 'shared'
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
 
   const fetchResources = async () => {
     setLoading(true);
@@ -56,6 +58,9 @@ const ResourcesList = ({ group }) => {
   const handleAdd = async (data) => {
     setError(null);
     setSuccessMessage(null);
+    setUploadProgress(0);
+    setIsUploading(true);
+
     try {
       const formData = new FormData();
       formData.append('title', data.title);
@@ -65,7 +70,13 @@ const ResourcesList = ({ group }) => {
       formData.append('isShared', 'false'); // Always upload as private (send as string)
       if (data.file) formData.append('file', data.file);
 
-      await groupsAPI.addResource(group._id, formData);
+      await groupsAPI.addResource(group._id, formData, {
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(percentCompleted);
+        }
+      });
+
       await fetchResources();
       setOpenForm(false);
       setSuccessMessage('File uploaded successfully to "My Upload"!');
@@ -74,6 +85,9 @@ const ResourcesList = ({ group }) => {
       console.error('Upload error:', err);
       const msg = err?.response?.data?.message || err?.response?.data?.error?.message || 'Failed to add resource';
       setError(msg);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -114,45 +128,41 @@ const ResourcesList = ({ group }) => {
   };
 
   const renderResourceList = (resourceList, isMyUploads = false) => (
-    <ul className="resources-list">
+    <div className="resources-list">
       {resourceList.map(r => (
-        <li key={r._id} className="resource-item">
-          <div className="resource-main">
-            <strong>{r.title}</strong> <em>({r.resourceType})</em>
-            {r.url && <div><a href={r.url} target="_blank" rel="noreferrer">Open link</a></div>}
-            {r.file && <div><a href={`${API_BASE_URL}/${r.file}`} target="_blank" rel="noreferrer">Download file</a></div>}
-            {r.description && <div className="resource-desc">{r.description}</div>}
+        <div key={r._id} className="resource-card">
+          <div className="resource-info">
+            <h4>{r.title}</h4>
             <div className="resource-meta">
-              {isMyUploads ? (
-                <>Uploaded by you · {new Date(r.createdAt).toLocaleString()}</>
-              ) : (
-                <>Shared by {r.addedBy?.username} · {new Date(r.createdAt).toLocaleString()}</>
-              )}
+              <div>({r.resourceType})</div>
+              {r.file && <a href={`${API_BASE_URL}/${r.file}`} target="_blank" rel="noreferrer" className="download-link">Download file</a>}
+              {r.url && <a href={r.url} target="_blank" rel="noreferrer" className="download-link">Open link</a>}
+              <div>{isMyUploads ? 'Uploaded by you' : `Shared by ${r.addedBy?.username}`} · {new Date(r.createdAt).toLocaleString()}</div>
             </div>
           </div>
           {canManage(r) && (
             <div className="resource-actions">
               {isMyUploads && !r.isShared && (
-                <button 
+                <button
                   onClick={() => handleShare(r._id)}
-                  className="share-btn"
+                  className="btn-share"
                   title="Share this file with the group"
                 >
                   Share with Group
                 </button>
               )}
-              <button 
+              <button
                 onClick={() => handleDelete(r._id)}
-                className="delete-btn"
+                className="btn-delete"
                 title="Delete this file"
               >
                 Delete
               </button>
             </div>
           )}
-        </li>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 
   return (
@@ -165,6 +175,20 @@ const ResourcesList = ({ group }) => {
       </div>
 
       {openForm && <ResourceForm onSubmit={handleAdd} />}
+
+      {isUploading && (
+        <div className="upload-progress">
+          <div className="progress-bar">
+            <div
+              className="progress-fill"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
+          <div className="progress-text">
+            Uploading... {uploadProgress}%
+          </div>
+        </div>
+      )}
 
       {error && <div className="alert alert-error">{error}</div>}
       {successMessage && <div className="alert alert-success">{successMessage}</div>}

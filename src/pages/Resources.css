@@ -81,6 +81,53 @@
   margin: 0;
 }
 
+/* Improved Resource Card Layout */
+.resource-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background-color: #f9fafb;
+  transition: all 0.2s;
+  margin-bottom: 12px;
+}
+
+.resource-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.resource-info h4 {
+  margin: 0 0 6px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.resource-meta {
+  font-size: 0.8rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.resource-meta > div {
+  margin-bottom: 4px;
+}
+
+.resource-meta > div:last-child {
+  margin-bottom: 0;
+}
+
+.resource-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  align-self: center;
+}
+
+/* Legacy support for old structure */
 .resource-item {
   display: flex;
   justify-content: space-between;
@@ -129,48 +176,48 @@
   font-size: 0.95rem;
 }
 
-.resource-meta {
-  color: #6b7280;
-  font-size: 0.85rem;
-  margin-top: 8px;
-}
-
-.resource-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.share-btn {
-  background: #10b981;
-  color: white;
+/* Modern Button Classes */
+.btn-share {
+  background-color: #1dea27; /* green-600 */
+  color: #ffffff;
   border: none;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 500;
-  transition: background 0.2s;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.share-btn:hover {
-  background: #059669;
+.btn-share:hover {
+  background-color: #15803d; /* green-700 */
 }
 
-.delete-btn {
-  background: #ef4444;
-  color: white;
+.btn-delete {
+  background-color: #dc2626; /* red-600 */
+  color: #ffffff;
   border: none;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 500;
-  transition: background 0.2s;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.delete-btn:hover {
-  background: #dc2626;
+.btn-delete:hover {
+  background-color: #b91c1c; /* red-700 */
+}
+
+/* Download Link Styling */
+.download-link {
+  color: #6366f1; /* indigo */
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.download-link:hover {
+  text-decoration: underline;
 }
 
 .empty-state {
@@ -204,6 +251,38 @@
   background: #f0fdf4;
   color: #16a34a;
   border: 1px solid #bbf7d0;
+}
+
+/* Upload Progress Bar */
+.upload-progress {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4f46e5, #7c3aed);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #4f46e5;
+  font-weight: 500;
 }
 
 /* Resource Form Styling */

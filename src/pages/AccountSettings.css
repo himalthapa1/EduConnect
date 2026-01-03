@@ -1,113 +1,296 @@
-/* Simple, clean account settings styles inspired by provided mock */
+/* Modern SaaS Account Settings */
 .account-settings {
   padding: 28px 24px;
   color: #0f172a;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
 .account-wrapper {
   display: flex;
-  gap: 24px;
+  gap: 32px;
   align-items: flex-start;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .account-sidebar {
-  width: 200px;
+  width: 240px;
+  flex-shrink: 0;
 }
 
 .account-title {
-  margin: 0 0 12px 0;
-  font-size: 16px;
-  font-weight: 700;
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .account-nav {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .account-nav-item {
   text-align: left;
-  padding: 10px 12px;
+  padding: 12px 16px;
   border-radius: 8px;
   background: transparent;
   border: 1px solid transparent;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 14px;
+  color: #374151;
+  transition: all 0.2s;
 }
 
 .account-nav-item:hover {
   background: rgba(99,102,241,0.06);
+  color: #4f46e5;
 }
 
 .account-nav-item.active {
   background: linear-gradient(90deg,#eef2ff,#f3e8ff);
   border-color: rgba(99,102,241,0.18);
+  color: #4f46e5;
+  font-weight: 600;
 }
 
 .account-nav-item.danger {
   color: #ef4444;
 }
 
+.account-nav-item.danger:hover {
+  background: rgba(239, 68, 68, 0.06);
+  color: #dc2626;
+}
+
 .account-main {
   flex: 1 1 auto;
+  max-width: 640px;
 }
 
-.profile-card {
-  background: #fff;
-  border-radius: 10px;
-  padding: 18px;
-  border: 1px solid rgba(15,23,42,0.06);
-  box-shadow: 0 6px 18px rgba(16,24,40,0.04);
-}
-
-.profile-card-header {
+/* Profile Header - Identity First */
+.profile-header {
   display: flex;
   align-items: center;
   gap: 16px;
+  margin-bottom: 24px;
 }
 
 .avatar {
   width: 56px;
   height: 56px;
-  border-radius: 999px;
-  background: linear-gradient(90deg,#667eea,#764ba2);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
+  font-size: 20px;
+}
+
+.profile-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.muted {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 4px 0 0 0;
+}
+
+/* Card Container */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 640px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+  border: 1px solid #e5e7eb;
+  margin-bottom: 20px;
+}
+
+.card h3 {
+  margin: 0 0 20px 0;
   font-size: 18px;
+  font-weight: 600;
+  color: #374151;
 }
 
-.profile-info h4 { margin: 0; }
-.muted { color: #6b7280; font-size: 13px; }
-
-.profile-edit { margin-left: auto; }
-.edit-btn {
-  background: transparent;
-  border: 1px solid rgba(15,23,42,0.06);
-  padding: 8px 12px;
-  border-radius: 10px;
-  cursor: pointer;
+.card.danger {
+  background: #fef2f2;
+  border-color: #fecaca;
+  margin-top: 0;
 }
 
-.profile-sections { margin-top: 16px; }
-.profile-sections h5 { margin: 0 0 8px 0; }
+.card.danger p {
+  margin: 0 0 16px 0;
+  color: #dc2626;
+}
 
-.card { background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid rgba(15,23,42,0.04); }
+/* Form Groups */
+.form-group {
+  margin-bottom: 20px;
+}
 
-.card.danger { background: #fff6f6; border-color: rgba(239,68,68,0.12); }
+.form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #374151;
+  font-size: 14px;
+}
 
-.delete-btn {
-  background: #ef4444;
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-group input:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Action Bar */
+.action-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  margin-bottom: 40px;
+}
+
+/* Button Classes */
+.btn-primary {
+  background: #6366f1;
   color: white;
   border: none;
-  padding: 8px 12px;
+  padding: 10px 18px;
   border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  margin-top: 10px;
+  transition: background-color 0.2s;
 }
+
+.btn-primary:hover:not(:disabled) {
+  background: #4f46e5;
+}
+
+.btn-primary:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid #d1d5db;
+  color: #6b7280;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* Danger Zone */
+.danger-zone {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid #fee2e2;
+}
+
+.danger-zone h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
+/* Alert Messages */
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 16px;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.alert-error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+/* Section Placeholder */
+.section-placeholder {
+  max-width: 640px;
+}
+
+.section-placeholder h2 {
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+}
+
+
 
 @media (max-width: 900px) {
   .account-wrapper { flex-direction: column; }

@@ -102,7 +102,10 @@ export const groupsAPI = {
     // Let the browser/axios set the correct multipart boundary header for FormData.
     // Passing a manual 'Content-Type' without the boundary can break multer parsing.
     if (data instanceof FormData) {
-      return api.post(`/groups/${groupId}/resources`, data);
+      return api.post(`/groups/${groupId}/resources`, data, {
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+      });
     }
     return api.post(`/groups/${groupId}/resources`, data);
   },
@@ -183,6 +186,27 @@ export const sessionsAPI = {
    */
   deleteSession: (sessionId) =>
     api.delete(`/sessions/${sessionId}`),
+
+  /**
+   * Complete a session
+   * PUT /api/sessions/:id/complete
+   */
+  completeSession: (sessionId, data) =>
+    api.put(`/sessions/${sessionId}/complete`, data),
+
+  /**
+   * Add notes to a session
+   * PUT /api/sessions/:id/notes
+   */
+  addSessionNotes: (sessionId, data) =>
+    api.put(`/sessions/${sessionId}/notes`, data),
+
+  /**
+   * Add resource to a session
+   * POST /api/sessions/:id/resources
+   */
+  addSessionResource: (sessionId, data) =>
+    api.post(`/sessions/${sessionId}/resources`, data),
 };
 
 export default api;

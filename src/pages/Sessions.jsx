@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { sessionsAPI } from '../utils/api';
 import SessionCard from '../components/SessionCard';
 import CreateSessionModal from '../components/CreateSessionModal';
+import CompleteSessionModal from '../components/CompleteSessionModal';
 import './Sessions.css';
 
 const Sessions = () => {
@@ -12,6 +13,8 @@ const Sessions = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [selectedSession, setSelectedSession] = useState(null);
   const [filters, setFilters] = useState({
     subject: '',
     date: ''
@@ -87,6 +90,18 @@ const Sessions = () => {
     setTimeout(fetchSessions, 100);
   };
 
+  const handleCompleteSession = (session) => {
+    setSelectedSession(session);
+    setShowCompleteModal(true);
+  };
+
+  const handleCompleteSuccess = () => {
+    fetchSessions();
+    fetchMySessions();
+    setShowCompleteModal(false);
+    setSelectedSession(null);
+  };
+
   if (loading) {
     return (
       <div className="sessions-container">
@@ -160,7 +175,9 @@ const Sessions = () => {
                   session={session}
                   onJoin={handleJoinSession}
                   onLeave={handleLeaveSession}
+                  onComplete={handleCompleteSession}
                   showJoinButton={true}
+                  showCompleteButton={true}
                 />
               ))
             )}
@@ -177,10 +194,12 @@ const Sessions = () => {
                   key={session._id}
                   session={session}
                   isOrganizer={true}
+                  onComplete={handleCompleteSession}
                   onUpdate={() => {
                     fetchSessions();
                     fetchMySessions();
                   }}
+                  showCompleteButton={true}
                 />
               ))
             )}
@@ -209,6 +228,17 @@ const Sessions = () => {
         <CreateSessionModal
           onClose={() => setShowCreateModal(false)}
           onSuccess={handleCreateSession}
+        />
+      )}
+
+      {showCompleteModal && selectedSession && (
+        <CompleteSessionModal
+          session={selectedSession}
+          onClose={() => {
+            setShowCompleteModal(false);
+            setSelectedSession(null);
+          }}
+          onSuccess={handleCompleteSuccess}
         />
       )}
     </div>

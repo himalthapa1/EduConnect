@@ -7,7 +7,10 @@ import {
   joinSession,
   leaveSession,
   updateSession,
-  deleteSession
+  deleteSession,
+  completeSession,
+  addSessionNotes,
+  addSessionResource
 } from '../controllers/sessionController.js';
 import { authenticateToken } from '../middleware/auth.js';
 
@@ -91,6 +94,9 @@ router.get('/my', getMySessions);
 router.post('/:id/join', joinSession);
 router.post('/:id/leave', leaveSession);
 router.put('/:id', validateSession, updateSession);
+router.put('/:id/complete', completeSession);
+router.put('/:id/notes', addSessionNotes);
+router.post('/:id/resources', addSessionResource);
 router.delete('/:id', deleteSession);
 
 export default router;
