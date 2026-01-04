@@ -21,6 +21,6 @@ const groupMemberSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ DEFAULT EXPORT (THIS FIXES YOUR ERROR)
+// DEFAULT EXPORT (THIS FIXES YOUR ERROR)
 const GroupMember = mongoose.model("GroupMember", groupMemberSchema);
 export default GroupMember;

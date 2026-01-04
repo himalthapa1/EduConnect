@@ -21,8 +21,8 @@ const studyGroupSchema = new mongoose.Schema({
   },
   tag: {
     type: String,
-    // ✅ Removed required: [true, 'Group tag is required'] - tag is now optional
-    // ✅ Removed enum restriction - any tag value is allowed
+    // Removed required: [true, 'Group tag is required'] - tag is now optional
+    // Removed enum restriction - any tag value is allowed
     default: 'Other'
   },
   creator: {

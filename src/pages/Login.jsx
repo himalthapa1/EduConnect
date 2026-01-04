@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import PasswordInput from '../components/PasswordInput';
 import './Auth.css';
 
 const Login = () => {
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  
+
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -96,13 +97,14 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label className="form-label" htmlFor="email">Email</label>
             <input
               type="email"
               id="email"
+              className={`form-input ${errors.email ? 'error' : ''}`}
+              placeholder="Enter your email"
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
-              className={errors.email ? 'error' : ''}
               disabled={isLoading}
               autoComplete="email"
             />
@@ -112,15 +114,15 @@ const Login = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
+            <label className="form-label" htmlFor="password">Password</label>
+            <PasswordInput
               id="password"
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
-              className={errors.password ? 'error' : ''}
               disabled={isLoading}
-              autoComplete="current-password"
+              showStrengthMeter={false}
+              placeholder="Enter your password"
+              className={errors.password ? 'error' : ''}
             />
             {errors.password && (
               <span className="field-error">{errors.password}</span>

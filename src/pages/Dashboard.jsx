@@ -233,6 +233,10 @@ const Dashboard = () => {
               <span className="action-icon">📅</span>
               <span>Schedule Session</span>
             </button>
+            <button onClick={() => navigate('/study-with-me')} className="action-btn primary">
+              <span className="action-icon">📚</span>
+              <span>Study With Me</span>
+            </button>
             <button onClick={() => navigate('/groups')} className="action-btn secondary">
               <span className="action-icon">👥</span>
               <span>Browse Groups</span>

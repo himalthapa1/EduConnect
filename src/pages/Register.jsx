@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import PasswordInput from '../components/PasswordInput';
 import './Auth.css';
 
 const Register = () => {
   const navigate = useNavigate();
   const { register, isAuthenticated } = useAuth();
-  
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -16,7 +17,7 @@ const Register = () => {
     collegeName: '',
     currentYear: '1st Year'
   });
-  
+
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -148,7 +149,7 @@ const Register = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
+      <div className="auth-card register-card">
         <h1>Create Account</h1>
         <p className="auth-subtitle">Join our study group community</p>
 
@@ -160,130 +161,141 @@ const Register = () => {
           <div className="error-message">{errors.general}</div>
         )}
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              value={formData.username}
-              onChange={(e) => handleInputChange('username', e.target.value)}
-              className={errors.username ? 'error' : ''}
-              disabled={isLoading}
-              autoComplete="username"
-            />
-            {errors.username && (
-              <span className="field-error">{errors.username}</span>
-            )}
+        <form onSubmit={handleSubmit} className="auth-form two-column">
+          {/* Left Column */}
+          <div className="form-section">
+            <div className="form-group">
+              <label className="form-label" htmlFor="username">Username</label>
+              <input
+                type="text"
+                id="username"
+                className={`form-input ${errors.username ? 'error' : ''}`}
+                placeholder="Choose a username"
+                value={formData.username}
+                onChange={(e) => handleInputChange('username', e.target.value)}
+                disabled={isLoading}
+                autoComplete="username"
+              />
+              {errors.username && (
+                <span className="field-error">{errors.username}</span>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                className={`form-input ${errors.email ? 'error' : ''}`}
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                disabled={isLoading}
+                autoComplete="email"
+              />
+              {errors.email && (
+                <span className="field-error">{errors.email}</span>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="password">Password</label>
+              <PasswordInput
+                id="password"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                disabled={isLoading}
+                showStrengthMeter={true}
+                placeholder="Create a password"
+                className={errors.password ? 'error' : ''}
+              />
+              {errors.password && (
+                <span className="field-error">{errors.password}</span>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="confirmPassword">Confirm Password</label>
+              <PasswordInput
+                id="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                disabled={isLoading}
+                showStrengthMeter={false}
+                placeholder="Confirm your password"
+                className={errors.confirmPassword ? 'error' : ''}
+              />
+              {errors.confirmPassword && (
+                <span className="field-error">{errors.confirmPassword}</span>
+              )}
+            </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              className={errors.email ? 'error' : ''}
-              disabled={isLoading}
-              autoComplete="email"
-            />
-            {errors.email && (
-              <span className="field-error">{errors.email}</span>
-            )}
+          {/* Right Column */}
+          <div className="form-section">
+            <div className="form-group">
+              <label className="form-label" htmlFor="dateOfBirth">Date of Birth</label>
+              <input
+                type="date"
+                id="dateOfBirth"
+                className={`form-input ${errors.dateOfBirth ? 'error' : ''}`}
+                value={formData.dateOfBirth}
+                onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                disabled={isLoading}
+              />
+              {errors.dateOfBirth && (
+                <span className="field-error">{errors.dateOfBirth}</span>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="collegeName">College Name</label>
+              <input
+                type="text"
+                id="collegeName"
+                className={`form-input ${errors.collegeName ? 'error' : ''}`}
+                placeholder="e.g., IIT Delhi, Delhi University"
+                value={formData.collegeName}
+                onChange={(e) => handleInputChange('collegeName', e.target.value)}
+                disabled={isLoading}
+                autoComplete="organization"
+              />
+              {errors.collegeName && (
+                <span className="field-error">{errors.collegeName}</span>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="currentYear">Current Year</label>
+              <select
+                id="currentYear"
+                className={`form-select ${errors.currentYear ? 'error' : ''}`}
+                value={formData.currentYear}
+                onChange={(e) => handleInputChange('currentYear', e.target.value)}
+                disabled={isLoading}
+              >
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+                <option value="Other">Other</option>
+              </select>
+              {errors.currentYear && (
+                <span className="field-error">{errors.currentYear}</span>
+              )}
+            </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              value={formData.password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
-              className={errors.password ? 'error' : ''}
-              disabled={isLoading}
-              autoComplete="new-password"
-            />
-            {errors.password && (
-              <span className="field-error">{errors.password}</span>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-              className={errors.confirmPassword ? 'error' : ''}
-              disabled={isLoading}
-              autoComplete="new-password"
-            />
-            {errors.confirmPassword && (
-              <span className="field-error">{errors.confirmPassword}</span>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="dateOfBirth">Date of Birth</label>
-            <input
-              type="date"
-              id="dateOfBirth"
-              value={formData.dateOfBirth}
-              onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-              className={errors.dateOfBirth ? 'error' : ''}
-              disabled={isLoading}
-            />
-            {errors.dateOfBirth && (
-              <span className="field-error">{errors.dateOfBirth}</span>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="collegeName">College Name</label>
-            <input
-              type="text"
-              id="collegeName"
-              placeholder="e.g., IIT Delhi, Delhi University"
-              value={formData.collegeName}
-              onChange={(e) => handleInputChange('collegeName', e.target.value)}
-              className={errors.collegeName ? 'error' : ''}
-              disabled={isLoading}
-              autoComplete="organization"
-            />
-            {errors.collegeName && (
-              <span className="field-error">{errors.collegeName}</span>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="currentYear">Current Year</label>
-            <select
-              id="currentYear"
-              value={formData.currentYear}
-              onChange={(e) => handleInputChange('currentYear', e.target.value)}
-              className={errors.currentYear ? 'error' : ''}
+          {/* Full Width Button */}
+          <div className="full-width">
+            <button
+              type="submit"
+              className="auth-button"
               disabled={isLoading}
             >
-              <option value="1st Year">1st Year</option>
-              <option value="2nd Year">2nd Year</option>
-              <option value="3rd Year">3rd Year</option>
-              <option value="4th Year">4th Year</option>
-              <option value="Other">Other</option>
-            </select>
-            {errors.currentYear && (
-              <span className="field-error">{errors.currentYear}</span>
-            )}
+              {isLoading ? 'Creating Account...' : 'Register'}
+            </button>
           </div>
-
-          <button 
-            type="submit" 
-            className="auth-button"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Creating Account...' : 'Register'}
-          </button>
         </form>
 
         <p className="auth-link">

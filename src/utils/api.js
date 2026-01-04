@@ -209,4 +209,53 @@ export const sessionsAPI = {
     api.post(`/sessions/${sessionId}/resources`, data),
 };
 
+/**
+ * ======================================================
+ * STUDY WITH ME API
+ * ======================================================
+ */
+export const studyWithMeAPI = {
+  /**
+   * Start a new study session
+   * POST /api/study-with-me/start
+   */
+  startSession: (data) =>
+    api.post('/study-with-me/start', data),
+
+  /**
+   * End a study session
+   * PUT /api/study-with-me/:id/end
+   */
+  endSession: (sessionId, data = {}) =>
+    api.put(`/study-with-me/${sessionId}/end`, data),
+
+  /**
+   * Get study history
+   * GET /api/study-with-me/history
+   */
+  getHistory: (params = {}) =>
+    api.get('/study-with-me/history', { params }),
+
+  /**
+   * Get active study session
+   * GET /api/study-with-me/active
+   */
+  getActiveSession: () =>
+    api.get('/study-with-me/active'),
+
+  /**
+   * Pause study session
+   * PUT /api/study-with-me/:id/pause
+   */
+  pauseSession: (sessionId) =>
+    api.put(`/study-with-me/${sessionId}/pause`),
+
+  /**
+   * Resume study session
+   * PUT /api/study-with-me/:id/resume
+   */
+  resumeSession: (sessionId) =>
+    api.put(`/study-with-me/${sessionId}/resume`),
+};
+
 export default api;
