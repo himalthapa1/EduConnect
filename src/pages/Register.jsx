@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import PasswordInput from '../components/PasswordInput';
 import './Auth.css';
 
 const Register = () => {
   const navigate = useNavigate();
   const { register, isAuthenticated } = useAuth();
-  
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -16,7 +17,7 @@ const Register = () => {
     collegeName: '',
     currentYear: '1st Year'
   });
-  
+
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -162,13 +163,14 @@ const Register = () => {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="username">Username</label>
+            <label className="form-label" htmlFor="username">Username</label>
             <input
               type="text"
               id="username"
+              className={`auth-input ${errors.username ? 'error' : ''}`}
+              placeholder="Choose a username"
               value={formData.username}
               onChange={(e) => handleInputChange('username', e.target.value)}
-              className={errors.username ? 'error' : ''}
               disabled={isLoading}
               autoComplete="username"
             />
@@ -178,13 +180,14 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label className="form-label" htmlFor="email">Email</label>
             <input
               type="email"
               id="email"
+              className={`auth-input ${errors.email ? 'error' : ''}`}
+              placeholder="Enter your email"
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
-              className={errors.email ? 'error' : ''}
               disabled={isLoading}
               autoComplete="email"
             />
@@ -194,15 +197,15 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
+            <label className="form-label" htmlFor="password">Password</label>
+            <PasswordInput
               id="password"
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
-              className={errors.password ? 'error' : ''}
               disabled={isLoading}
-              autoComplete="new-password"
+              showStrengthMeter={true}
+              placeholder="Create a password"
+              className={errors.password ? 'error' : ''}
             />
             {errors.password && (
               <span className="field-error">{errors.password}</span>
@@ -210,15 +213,15 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
+            <label className="form-label" htmlFor="confirmPassword">Confirm Password</label>
+            <PasswordInput
               id="confirmPassword"
               value={formData.confirmPassword}
               onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-              className={errors.confirmPassword ? 'error' : ''}
               disabled={isLoading}
-              autoComplete="new-password"
+              showStrengthMeter={false}
+              placeholder="Confirm your password"
+              className={errors.confirmPassword ? 'error' : ''}
             />
             {errors.confirmPassword && (
               <span className="field-error">{errors.confirmPassword}</span>
@@ -226,13 +229,13 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="dateOfBirth">Date of Birth</label>
+            <label className="form-label" htmlFor="dateOfBirth">Date of Birth</label>
             <input
               type="date"
               id="dateOfBirth"
+              className={`auth-input ${errors.dateOfBirth ? 'error' : ''}`}
               value={formData.dateOfBirth}
               onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-              className={errors.dateOfBirth ? 'error' : ''}
               disabled={isLoading}
             />
             {errors.dateOfBirth && (
@@ -241,14 +244,14 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="collegeName">College Name</label>
+            <label className="form-label" htmlFor="collegeName">College Name</label>
             <input
               type="text"
               id="collegeName"
+              className={`auth-input ${errors.collegeName ? 'error' : ''}`}
               placeholder="e.g., IIT Delhi, Delhi University"
               value={formData.collegeName}
               onChange={(e) => handleInputChange('collegeName', e.target.value)}
-              className={errors.collegeName ? 'error' : ''}
               disabled={isLoading}
               autoComplete="organization"
             />
@@ -258,12 +261,12 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="currentYear">Current Year</label>
+            <label className="form-label" htmlFor="currentYear">Current Year</label>
             <select
               id="currentYear"
+              className={`auth-input ${errors.currentYear ? 'error' : ''}`}
               value={formData.currentYear}
               onChange={(e) => handleInputChange('currentYear', e.target.value)}
-              className={errors.currentYear ? 'error' : ''}
               disabled={isLoading}
             >
               <option value="1st Year">1st Year</option>
