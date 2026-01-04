@@ -93,12 +93,12 @@ const PasswordInput = ({
 
         <button
           type="button"
-          className={`password-toggle-btn ${showPassword ? 'visible' : ''}`}
+          className="password-toggle-btn"
           onClick={togglePasswordVisibility}
           disabled={disabled}
           aria-label={showPassword ? "Hide password" : "Show password"}
         >
-          <EyeIcon />
+          {showPassword ? <EyeIcon /> : <EyeOffIcon />}
         </button>
 
         {capsLockOn && (
@@ -130,7 +130,7 @@ const PasswordInput = ({
   );
 };
 
-// SVG Eye Icon Component
+// SVG Eye Icon Components
 const EyeIcon = () => (
   <svg
     width="20"
@@ -150,6 +150,40 @@ const EyeIcon = () => (
       cx="12"
       cy="12"
       r="3"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const EyeOffIcon = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    className="eye-icon"
+  >
+    <path
+      d="M1 12C3.5 7 7.5 4 12 4s8.5 3 11 8c-2.5 5-6.5 8-11 8S3.5 17 1 12Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <circle
+      cx="12"
+      cy="12"
+      r="3"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M3 3l18 18"
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
