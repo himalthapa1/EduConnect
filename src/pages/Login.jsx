@@ -101,7 +101,7 @@ const Login = () => {
             <input
               type="email"
               id="email"
-              className={`auth-input ${errors.email ? 'error' : ''}`}
+              className={`form-input ${errors.email ? 'error' : ''}`}
               placeholder="Enter your email"
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
@@ -121,6 +121,7 @@ const Login = () => {
               onChange={(e) => handleInputChange('password', e.target.value)}
               disabled={isLoading}
               showStrengthMeter={false}
+              placeholder="Enter your password"
               className={errors.password ? 'error' : ''}
             />
             {errors.password && (
