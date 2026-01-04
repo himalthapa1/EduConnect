@@ -9,6 +9,7 @@ import Sessions from './pages/Sessions';
 import Groups from './pages/Groups';
 import AccountSettings from './pages/AccountSettings';
 import Resources from './pages/Resources';
+import StudyWithMe from './pages/StudyWithMe';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route path="sessions" element={<Sessions />} />
             <Route path="groups" element={<Groups />} />
             <Route path="resources" element={<Resources />} />
+            <Route path="study-with-me" element={<StudyWithMe />} />
             <Route path="profile" element={<AccountSettings />} />
           </Route>
           

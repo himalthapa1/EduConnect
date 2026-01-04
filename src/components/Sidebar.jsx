@@ -17,6 +17,12 @@ const Sidebar = () => {
       path: '/dashboard'
     },
     {
+      id: 'study-with-me',
+      label: 'Study With Me',
+      icon: '📚',
+      path: '/study-with-me'
+    },
+    {
       id: 'sessions',
       label: 'Study Sessions',
       icon: '📅',

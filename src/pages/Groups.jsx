@@ -395,7 +395,7 @@ const Groups = () => {
   };
 
   /* =========================
-     ✅ FIXED CREATE GROUP
+     FIXED CREATE GROUP
   ========================= */
   const handleCreateGroup = async (e) => {
     e.preventDefault();
@@ -403,12 +403,12 @@ const Groups = () => {
     setError(null);
 
     try {
-      // ✅ Include tag field in the payload
+      //  Include tag field in the payload
       const payload = {
         name: formData.name,
         description: formData.description,
         subject: formData.subject,
-        tag: formData.tag, // ✅ Added tag field
+        tag: formData.tag, // Added tag field
         maxMembers: formData.maxMembers,
         isPublic: formData.isPublic,
       };

@@ -15,6 +15,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import groupRoutes from "./routes/groups.js";
 import sessionRoutes from "./routes/sessions.js";
+import studyWithMeRoutes from "./routes/studyWithMe.js";
 import { registerChatHandlers } from "./sockets/chatSocket.js";
 
 /* =========================
@@ -137,6 +138,7 @@ let server;
       return next();
     }, groupRoutes);
     app.use("/api/sessions", sessionRoutes);
+    app.use("/api/study-with-me", studyWithMeRoutes);
 
     // 404 HANDLER
     app.use((req, res) => {
