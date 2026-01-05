@@ -38,6 +38,16 @@ const userSchema = new mongoose.Schema(
     interests: {
       type: [String],
       default: []
+    },
+    skillsLevel: {
+      type: Map,
+      of: String, // 'beginner', 'intermediate', 'advanced'
+      default: new Map()
+    },
+    studyTimePreference: {
+      type: [String],
+      enum: ['morning', 'afternoon', 'evening', 'night'],
+      default: []
     }
   },
   onboarding: {
@@ -45,6 +55,19 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     }
+  },
+  // Recommendation tracking
+  joinedGroups: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'StudyGroup'
+  }],
+  attendedSessions: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Session'
+  }],
+  activityScore: {
+    type: Number,
+    default: 0
   }
   },
   { timestamps: true }

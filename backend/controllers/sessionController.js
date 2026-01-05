@@ -1,4 +1,5 @@
 import Session from '../models/Session.js';
+import User from '../models/User.js';
 
 /* =========================
    HELPERS
@@ -240,6 +241,12 @@ export const joinSession = async (req, res) => {
     await session.addParticipant(req.user.userId);
     await session.populate('organizer participants.user', 'username email');
 
+    // Update user tracking for recommendations
+    await User.findByIdAndUpdate(req.user.userId, {
+      $addToSet: { attendedSessions: session._id },
+      $inc: { activityScore: 8 } // Joining session increases activity (less than joining group)
+    });
+
     res.json({
       success: true,
       message: 'Successfully joined the session',
@@ -270,6 +277,12 @@ export const leaveSession = async (req, res) => {
 
     await session.removeParticipant(req.user.userId);
     await session.populate('organizer participants.user', 'username email');
+
+    // Update user tracking for recommendations
+    await User.findByIdAndUpdate(req.user.userId, {
+      $pull: { attendedSessions: session._id },
+      $inc: { activityScore: -4 } // Leaving session decreases activity (less than joining)
+    });
 
     res.json({
       success: true,

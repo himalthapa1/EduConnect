@@ -4,6 +4,7 @@ import { groupsAPI, sessionsAPI } from '../utils/api';
 import ResourcesList from '../components/ResourcesList';
 import CompleteSessionModal from '../components/CompleteSessionModal';
 import ChatWindow from '../components/chat/ChatWindow';
+import GroupRecommendations from '../components/GroupRecommendations';
 import './Groups.css';
 
 /* =========================
@@ -454,7 +455,9 @@ const Groups = () => {
 
       {/* BROWSE TAB */}
       {activeTab === 'browse' && (
-        <div className="groups-grid">
+        <>
+          <GroupRecommendations limit={6} compact={true} />
+          <div className="groups-grid">
           {groups.map(group => {
             const isMember = user && group.members?.some(m => m._id === user.id);
             const isOpen = expandedBrowseGroupId === group._id;
@@ -505,7 +508,8 @@ const Groups = () => {
               </div>
             );
           })}
-        </div>
+          </div>
+        </>
       )}
 
       {/* MY GROUPS TAB */}

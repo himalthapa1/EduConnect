@@ -6,7 +6,7 @@ import './Auth.css';
 
 const Register = () => {
   const navigate = useNavigate();
-  const { register, isAuthenticated } = useAuth();
+  const { register, isAuthenticated, user } = useAuth();
 
   const [formData, setFormData] = useState({
     username: '',
@@ -25,9 +25,14 @@ const Register = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      // Check if user has completed onboarding
+      if (user && !user.onboarding?.completed) {
+        navigate('/onboarding/interests');
+      } else {
+        navigate('/dashboard');
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const validateForm = () => {
     const newErrors = {};

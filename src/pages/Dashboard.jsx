@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { sessionsAPI, groupsAPI } from '../utils/api';
+import GroupRecommendations from '../components/GroupRecommendations';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -223,6 +224,9 @@ const Dashboard = () => {
               )}
             </div>
           </section>
+
+          {/* Group Recommendations */}
+          <GroupRecommendations limit={3} />
         </div>
 
         {/* Quick Actions */}

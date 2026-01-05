@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import StudyGroup from "../models/StudyGroup.js";
 import GroupResource from "../models/GroupResource.js";
+import User from "../models/User.js";
 import { upload } from "../middleware/upload.js";
 import path from "path";
 import fs from "fs";
@@ -129,10 +130,20 @@ export const joinGroup = async (req, res) => {
     if (!group.members.some((m) => m.equals(userId))) {
       group.members.push(userId);
       await group.save();
+
+      // Update user tracking for recommendations
+      await User.findByIdAndUpdate(userId, {
+        $addToSet: { joinedGroups: group._id },
+        $inc: { activityScore: 10 } // Joining group increases activity
+      });
+
+      // Update group activity score
+      await group.updateActivityScore();
     }
 
     res.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error('Join group error:', error);
     res.status(500).json({ message: "Join failed" });
   }
 };
@@ -145,8 +156,19 @@ export const leaveGroup = async (req, res) => {
 
     group.members = group.members.filter((m) => !m.equals(userId));
     await group.save();
+
+    // Update user tracking for recommendations
+    await User.findByIdAndUpdate(userId, {
+      $pull: { joinedGroups: group._id },
+      $inc: { activityScore: -5 } // Leaving group decreases activity (less than joining)
+    });
+
+    // Update group activity score
+    await group.updateActivityScore();
+
     res.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error('Leave group error:', error);
     res.status(500).json({ message: "Leave failed" });
   }
 };
@@ -205,6 +227,14 @@ export const addResource = [
       }
 
       const resource = await GroupResource.create(resourceData);
+
+      // Update user activity score for uploading resource
+      await User.findByIdAndUpdate(userId, {
+        $inc: { activityScore: 5 } // Uploading resource increases activity
+      });
+
+      // Update group activity score
+      await group.updateActivityScore();
 
       res.status(201).json({ success: true, data: { resource } });
     } catch (err) {

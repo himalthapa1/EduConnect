@@ -1,0 +1,259 @@
+.group-recommendations {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.group-recommendations.compact {
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.recommendations-header {
+  margin-bottom: 20px;
+}
+
+.recommendations-header h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.recommendations-header p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recommendation-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fafbfc;
+}
+
+.recommendation-card:hover {
+  border-color: #007bff;
+  background: #f8f9ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+.recommendation-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 16px;
+}
+
+.recommendation-main {
+  flex: 1;
+}
+
+.group-name {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.group-subject {
+  margin: 0 0 8px 0;
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.group-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.difficulty {
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.members-count {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.recommendation-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+
+.score-badge {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.score-label {
+  font-size: 0.7rem;
+  color: #666;
+  margin-top: 2px;
+}
+
+.recommendation-actions {
+  margin-left: 16px;
+}
+
+.join-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.join-btn:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+.view-more {
+  text-align: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e1e5e9;
+}
+
+.view-more-btn {
+  background: none;
+  border: 1px solid #007bff;
+  color: #007bff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-more-btn:hover {
+  background: #007bff;
+  color: white;
+}
+
+/* Loading and Error States */
+.loading-state,
+.error-state,
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: #666;
+}
+
+.loading-state .loading-spinner.small {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-state p {
+  color: #dc3545;
+  margin-bottom: 12px;
+}
+
+.retry-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.retry-btn:hover {
+  background: #c82333;
+}
+
+.empty-state p {
+  margin: 0 0 8px 0;
+  font-weight: 500;
+}
+
+.empty-subtitle {
+  font-size: 0.9rem;
+  color: #888;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .group-recommendations {
+    padding: 16px;
+  }
+
+  .recommendation-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .recommendation-content {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .recommendation-score {
+    align-self: flex-end;
+    margin-top: -8px;
+  }
+
+  .recommendation-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .join-btn {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .group-meta {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

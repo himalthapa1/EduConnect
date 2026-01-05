@@ -17,6 +17,7 @@ import groupRoutes from "./routes/groups.js";
 import sessionRoutes from "./routes/sessions.js";
 import studyWithMeRoutes from "./routes/studyWithMe.js";
 import userRoutes from "./routes/users.js";
+import recommendationRoutes from "./routes/recommendations.js";
 import { registerChatHandlers } from "./sockets/chatSocket.js";
 
 /* =========================
@@ -141,6 +142,7 @@ let server;
     app.use("/api/sessions", sessionRoutes);
     app.use("/api/study-with-me", studyWithMeRoutes);
     app.use("/api/users", userRoutes);
+    app.use("/api/recommendations", recommendationRoutes);
 
     // 404 HANDLER
     app.use((req, res) => {

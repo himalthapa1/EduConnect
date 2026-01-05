@@ -90,7 +90,7 @@ textarea.form-textarea {
   /* Always visible border - key fix */
   border: 2px solid #b8c2d5 !important; /* Darker, more visible */
   background-color: #ffffff !important;
-  color: #a1b9ec !important;
+  color: #040f27 !important;
 
   outline: none !important;
   box-sizing: border-box !important;
@@ -169,7 +169,7 @@ textarea.form-textarea.error:focus {
 }
 
 .auth-input::placeholder {
-  color: #98a2b3;
+  color: #020914;
 }
 
 .form-group input.error,

@@ -6,7 +6,7 @@ import './Auth.css';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -19,9 +19,14 @@ const Login = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      // Check if user has completed onboarding
+      if (user && !user.onboarding?.completed) {
+        navigate('/onboarding/interests');
+      } else {
+        navigate('/dashboard');
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -79,7 +84,7 @@ const Login = () => {
     setIsLoading(false);
 
     if (result.success) {
-      navigate('/dashboard');
+      // Navigation will be handled by useEffect based on onboarding status
     } else {
       setErrors({ general: result.error });
     }
