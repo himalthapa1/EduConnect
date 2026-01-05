@@ -12,7 +12,21 @@ export const API_BASE_URL =
 
 /**
  * ======================================================
- * AXIOS INSTANCE
+ * USERS API
+ * ======================================================
+ */
+export const usersAPI = {
+  /**
+   * Change user password
+   * POST /api/users/change-password
+   */
+  changePassword: (data) =>
+    api.post('/users/change-password', data),
+};
+
+/**
+ * ======================================================
+ * LEGACY EXPORTS (for backward compatibility)
  * ======================================================
  */
 const api = axios.create({

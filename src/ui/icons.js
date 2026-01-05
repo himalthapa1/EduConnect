@@ -38,4 +38,5 @@ export const Icons = {
   chevronRight: Lu.LuChevronRight,
   more: Lu.LuMoreHorizontal,
   trendingUp: Lu.LuTrendingUp,
+  lock: Lu.LuLock,
 };
