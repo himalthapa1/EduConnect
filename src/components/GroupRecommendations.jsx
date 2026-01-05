@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { recommendationsAPI, groupsAPI } from '../utils/api';
 import './GroupRecommendations.css';
 
 const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [joiningGroupId, setJoiningGroupId] = useState(null);
+  const [joinError, setJoinError] = useState(null);
+  const [joinSuccess, setJoinSuccess] = useState(null);
 
   useEffect(() => {
     loadRecommendations();
@@ -31,14 +36,31 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
 
   const handleJoinGroup = async (groupId, event) => {
     event.stopPropagation();
+
+    if (!user) {
+      setJoinError('Please log in to join groups');
+      return;
+    }
+
+    setJoiningGroupId(groupId);
+    setJoinError(null);
+    setJoinSuccess(null);
+
     try {
       await groupsAPI.joinGroup(groupId);
+      setJoinSuccess('Successfully joined the group!');
       // Refresh recommendations after joining
       loadRecommendations();
-      // Optionally navigate to the group
-      navigate(`/groups`);
+      // Navigate to groups page after successful join
+      setTimeout(() => navigate('/groups'), 1000);
     } catch (error) {
       console.error('Error joining group:', error);
+      const errorMessage = error.response?.data?.error?.message ||
+                          error.response?.data?.message ||
+                          'Failed to join group. Please try again.';
+      setJoinError(errorMessage);
+    } finally {
+      setJoiningGroupId(null);
     }
   };
 
@@ -123,6 +145,18 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
         </div>
       )}
 
+      {/* Join feedback messages */}
+      {joinError && (
+        <div className="alert alert-error" style={{ marginBottom: '1rem' }}>
+          {joinError}
+        </div>
+      )}
+      {joinSuccess && (
+        <div className="alert alert-success" style={{ marginBottom: '1rem' }}>
+          {joinSuccess}
+        </div>
+      )}
+
       <div className="recommendations-list">
         {recommendations.map((rec, index) => (
           <div
@@ -156,8 +190,9 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
               <button
                 onClick={(e) => handleJoinGroup(rec.group_id, e)}
                 className="join-btn"
+                disabled={joiningGroupId === rec.group_id}
               >
-                Join Group
+                {joiningGroupId === rec.group_id ? 'Joining...' : 'Join Group'}
               </button>
             </div>
           </div>
