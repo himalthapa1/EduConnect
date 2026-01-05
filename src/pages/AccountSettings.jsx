@@ -362,24 +362,34 @@ const AccountSettings = () => {
 
               {/* Form Footer */}
               <div className="form-footer">
-                <button className="btn-secondary" onClick={() => {
-                  setEditing(false);
-                  setForm({
-                    username: user?.username || '',
-                    email: user?.email || '',
-                    name: user?.name || ''
-                  });
-                  setPasswordForm({
-                    currentPassword: '',
-                    newPassword: '',
-                    confirmPassword: ''
-                  });
-                }}>
-                  Cancel
-                </button>
-                <button className="btn-primary" onClick={editing ? handleSave : () => setEditing(true)} disabled={saving}>
-                  {editing ? (saving ? 'Saving...' : 'Save Changes') : 'Edit Profile'}
-                </button>
+                {!editing && (
+                  <button className="btn-primary btn-primary-wide" onClick={() => setEditing(true)}>
+                    Edit Profile
+                  </button>
+                )}
+
+                {editing && (
+                  <>
+                    <button className="btn-secondary" onClick={() => {
+                      setEditing(false);
+                      setForm({
+                        username: user?.username || '',
+                        email: user?.email || '',
+                        name: user?.name || ''
+                      });
+                      setPasswordForm({
+                        currentPassword: '',
+                        newPassword: '',
+                        confirmPassword: ''
+                      });
+                    }}>
+                      Cancel
+                    </button>
+                    <button className="btn-primary" onClick={handleSave} disabled={saving}>
+                      {saving ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </>
+                )}
               </div>
 
               {/* Danger Zone */}
