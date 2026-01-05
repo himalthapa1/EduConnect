@@ -163,6 +163,10 @@ const StudyWithMe = () => {
   };
 
   const handleStartSession = async () => {
+    console.log('=== START SESSION DEBUG ===');
+    console.log('formData:', formData);
+    console.log('subject trimmed:', formData.subject.trim());
+
     if (!formData.subject.trim()) {
       alert('Please enter a subject');
       return;
@@ -177,6 +181,8 @@ const StudyWithMe = () => {
       ? Number(formData.customBreakDuration) || 0
       : Number(formData.breakDuration) || 0;
 
+    console.log('studyMinutes:', studyMinutes, 'breakMinutes:', breakMinutes);
+
     // Validation
     if (!studyMinutes || studyMinutes < 5 || studyMinutes > 480) {
       alert('Please enter a valid study duration between 5-480 minutes');
@@ -190,7 +196,7 @@ const StudyWithMe = () => {
 
     try {
       const sessionPayload = {
-        subject: formData.subject,
+        subject: formData.subject.trim(),
         studyMinutes: studyMinutes,
         breakMinutes: breakMinutes,
         resources: formData.resources.map(r => ({
@@ -200,6 +206,15 @@ const StudyWithMe = () => {
           file: r.file
         }))
       };
+
+      console.log('=== AUTH DEBUG ===');
+      console.log('Token in localStorage:', localStorage.getItem('token'));
+      console.log('Payload:', sessionPayload);
+
+      // Test if the API instance has the interceptor working
+      const token = localStorage.getItem('token');
+      console.log('Token exists:', !!token);
+      console.log('Token length:', token?.length);
 
       const response = await studyWithMeAPI.startSession(sessionPayload);
 
@@ -252,6 +267,67 @@ const StudyWithMe = () => {
       setStep('studying');
     } catch (error) {
       console.error('Failed to start session:', error);
+
+      // Check if it's because of an active session
+      if (error.response?.data?.error?.message?.includes('active study session')) {
+        const resumeSession = window.confirm(
+          'You already have an active study session. Would you like to resume it instead of starting a new one?\n\n' +
+          'Click OK to resume your existing session, or Cancel to go to Dashboard and manage your sessions.'
+        );
+
+        if (resumeSession) {
+          // Try to fetch and resume the active session
+          try {
+            const activeResponse = await studyWithMeAPI.getActiveSession();
+            if (activeResponse.data.data.session) {
+              const session = activeResponse.data.data.session;
+
+              // Calculate remaining time more accurately
+              const startTime = new Date(session.startTime);
+              const now = new Date();
+              const elapsedSeconds = Math.floor((now - startTime) / 1000);
+              const totalStudySeconds = session.studyMinutes * 60;
+              const remainingSeconds = Math.max(0, totalStudySeconds - elapsedSeconds);
+
+              // For now, assume studying mode and create basic session data
+              // In a more advanced implementation, you'd track the exact state
+              setFormData(prev => ({
+                ...prev,
+                subject: session.subject,
+                timerMode: 'normal', // Default assumption
+                duration: session.studyMinutes,
+                breakDuration: session.breakMinutes,
+                resources: session.resources || []
+              }));
+
+              setSessionData({
+                sessionId: session._id,
+                startTime: startTime,
+                notes: session.notes || '',
+                mode: 'studying',
+                studySecondsLeft: remainingSeconds,
+                breakSecondsLeft: session.breakMinutes * 60,
+                totalSecondsLeft: remainingSeconds,
+                breaksTaken: 0, // This info not available in current API
+                currentCycle: 0,
+                cyclePhase: 'work',
+                pomodoroWorkMinutes: 0,
+                pomodoroBreakMinutes: 0
+              });
+              setStep('studying');
+              return;
+            }
+          } catch (resumeError) {
+            console.error('Failed to resume session:', resumeError);
+            alert('Could not resume your session. Please try ending your current session first.');
+          }
+        }
+
+        // If user doesn't want to resume or resume failed, go to dashboard
+        navigate('/dashboard');
+        return;
+      }
+
       alert('Failed to start study session. Please try again.');
     }
   };
@@ -320,25 +396,21 @@ const StudyWithMe = () => {
           <div className="setup-form">
             <div className="form-group">
               <label>Timer Mode</label>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <label>
-                  <input
-                    type="radio"
-                    value="normal"
-                    checked={formData.timerMode === 'normal'}
-                    onChange={(e) => setFormData(prev => ({ ...prev, timerMode: e.target.value }))}
-                  />
+              <div className="segmented-control">
+                <button
+                  type="button"
+                  className={formData.timerMode === 'normal' ? 'active' : ''}
+                  onClick={() => setFormData(prev => ({ ...prev, timerMode: 'normal' }))}
+                >
                   Normal Timer
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    value="pomodoro"
-                    checked={formData.timerMode === 'pomodoro'}
-                    onChange={(e) => setFormData(prev => ({ ...prev, timerMode: e.target.value }))}
-                  />
-                  Pomodoro Timer
-                </label>
+                </button>
+                <button
+                  type="button"
+                  className={formData.timerMode === 'pomodoro' ? 'active' : ''}
+                  onClick={() => setFormData(prev => ({ ...prev, timerMode: 'pomodoro' }))}
+                >
+                  Pomodoro
+                </button>
               </div>
             </div>
 
@@ -446,6 +518,7 @@ const StudyWithMe = () => {
                 value={formData.subject}
                 onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
               />
+              <small>Used to personalize your study history</small>
             </div>
 
             <div className="form-group">
