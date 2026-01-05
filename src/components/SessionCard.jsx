@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Icons } from '../ui/icons';
 import './SessionCard.css';
 
 function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false, showJoinButton = false, showLeaveButton = false, showCompleteButton = false }) {
@@ -33,9 +34,13 @@ function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false
   const isUserJoined = session.participants?.some(p => p.user._id === user?.id);
   const isFull = session.participants?.length >= session.maxParticipants;
   const isUserOrganizer = session.organizer._id === user?.id;
+  const sessionStatus = session.status;
+
+  // Business logic for button visibility
   const canShowJoin = (showJoinButton ?? true) && !isUserOrganizer && !isUserJoined && !isFull;
-  const canShowLeave = !isUserOrganizer && isUserJoined;
-  const canShowComplete = showCompleteButton && isUserOrganizer && session.status === 'scheduled';
+  const canShowJoined = isUserJoined;
+  const canShowLeave = isUserJoined;
+  const canShowComplete = showCompleteButton && (isUserOrganizer || sessionStatus === 'ongoing') && sessionStatus !== 'completed';
 
   return (
     <div className="session-card">
@@ -49,10 +54,10 @@ function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false
           {/* Status Badge */}
           <div className="session-status">
             <span className={`status-badge status-${session.status}`}>
-              {session.status === 'completed' ? '✓ Completed' :
-               session.status === 'ongoing' ? '🔴 Ongoing' :
-               session.status === 'cancelled' ? '❌ Cancelled' :
-               '📅 Scheduled'}
+              {session.status === 'completed' ? <><Icons.check size={14} /> Completed</> :
+               session.status === 'ongoing' ? <><Icons.play size={14} /> Ongoing</> :
+               session.status === 'cancelled' ? <><Icons.close size={14} /> Cancelled</> :
+               <><Icons.calendar size={14} /> Scheduled</>}
             </span>
             {session.status === 'completed' && session.completedAt && (
               <span className="completed-date">
@@ -65,27 +70,27 @@ function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false
 
           <div className="session-details">
             <div className="session-detail">
-              <span className="detail-label">📅 Date:</span>
+              <span className="detail-label"><Icons.calendar size={14} /> Date:</span>
               <span className="detail-value">{formatDate(session.date)}</span>
             </div>
 
             <div className="session-detail">
-              <span className="detail-label">⏰ Time:</span>
+              <span className="detail-label"><Icons.clock size={14} /> Time:</span>
               <span className="detail-value time-value">{formatTime(session.startTime)} - {formatTime(session.endTime)}</span>
             </div>
 
             <div className="session-detail">
-              <span className="detail-label">📍 Location:</span>
+              <span className="detail-label"><Icons.file size={14} /> Location:</span>
               <span className="detail-value">{session.location}</span>
             </div>
 
             <div className="session-detail">
-              <span className="detail-label">👥 Participants:</span>
+              <span className="detail-label"><Icons.users size={14} /> Participants:</span>
               <span className="detail-value">{session.participants?.length || 0} / {session.maxParticipants}</span>
             </div>
 
             <div className="session-detail">
-              <span className="detail-label">👨‍🏫 Organizer:</span>
+              <span className="detail-label"><Icons.user size={14} /> Organizer:</span>
               <span className="detail-value">{session.organizer?.username}</span>
             </div>
           </div>
@@ -103,22 +108,31 @@ function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false
             </div>
           )}
 
+          {/* Session Actions - State-driven button group */}
           <div className="session-actions">
             {canShowJoin && (
-              <button className="join-btn" onClick={() => onJoin?.(session._id)} disabled={loading}>{loading ? 'Joining...' : 'Join Session'}</button>
-            )}
-
-            {canShowLeave && (
-              <button className="leave-btn" onClick={() => onLeave?.(session._id)} disabled={loading}>{loading ? 'Leaving...' : 'Leave Session'}</button>
-            )}
-
-            {canShowComplete && (
-              <button className="complete-btn" onClick={() => onComplete?.(session)} disabled={loading}>
-                {loading ? 'Completing...' : 'Complete Session'}
+              <button className="btn join-btn" onClick={() => onJoin?.(session._id)} disabled={loading}>
+                {loading ? 'Joining...' : 'Join'}
               </button>
             )}
 
-            {isUserJoined && !isUserOrganizer && <span className="joined-badge">✓ Joined</span>}
+            {canShowJoined && (
+              <button className="btn joined-btn" disabled>
+                Joined
+              </button>
+            )}
+
+            {canShowLeave && (
+              <button className="btn leave-btn" onClick={() => onLeave?.(session._id)} disabled={loading}>
+                {loading ? 'Leaving...' : 'Leave'}
+              </button>
+            )}
+
+            {canShowComplete && (
+              <button className="btn complete-btn" onClick={() => onComplete?.(session)} disabled={loading}>
+                {loading ? 'Completing...' : 'Complete'}
+              </button>
+            )}
           </div>
         </div>
       </div>

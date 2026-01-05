@@ -19,10 +19,58 @@ const studyGroupSchema = new mongoose.Schema({
     required: [true, 'Subject is required'],
     default: 'Other'
   },
+  // Semantic tag system for recommendations
+  tags: {
+    topics: {
+      type: [String],
+      validate: {
+        validator: function(v) {
+          return v.length <= 3; // Max 3 topics
+        },
+        message: 'Maximum 3 topic tags allowed'
+      }
+    },
+    level: {
+      type: String,
+      enum: ['beginner', 'intermediate', 'advanced'],
+      required: [true, 'Skill level is required']
+    },
+    styles: {
+      type: [String],
+      enum: [
+        'discussion-based',
+        'problem-solving',
+        'project-based',
+        'daily-practice',
+        'lecture-review',
+        'peer-teaching',
+        'exam-prep',
+        'interview-prep'
+      ]
+    },
+    commitment: {
+      type: [String],
+      enum: [
+        'short-term',
+        'long-term',
+        'weekly-sessions',
+        'daily-study',
+        'sprint-based'
+      ]
+    }
+  },
+  // Legacy fields for backward compatibility
+  subjectTags: {
+    type: [String],
+    default: []
+  },
+  difficulty: {
+    type: String,
+    enum: ['beginner', 'intermediate', 'advanced'],
+    default: 'beginner'
+  },
   tag: {
     type: String,
-    // Removed required: [true, 'Group tag is required'] - tag is now optional
-    // Removed enum restriction - any tag value is allowed
     default: 'Other'
   },
   creator: {
@@ -43,6 +91,10 @@ const studyGroupSchema = new mongoose.Schema({
   isPublic: {
     type: Boolean,
     default: true
+  },
+  activityScore: {
+    type: Number,
+    default: 0
   },
   createdAt: {
     type: Date,
@@ -128,6 +180,18 @@ studyGroupSchema.methods.removeMember = async function(userId) {
 // Method to check if user is member
 studyGroupSchema.methods.isMember = function(userId) {
   return this.members.some(id => id.equals(userId));
+};
+
+// Virtual for members count
+studyGroupSchema.virtual('membersCount').get(function() {
+  return this.members.length;
+});
+
+// Activity score (can be updated based on sessions, resources, etc.)
+studyGroupSchema.methods.updateActivityScore = function() {
+  // Simple scoring: members + resources + sessions (would be calculated properly)
+  this.activityScore = this.members.length + (this.resources?.length || 0);
+  return this.save();
 };
 
 const StudyGroup = mongoose.model('StudyGroup', studyGroupSchema);

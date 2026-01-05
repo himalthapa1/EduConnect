@@ -6,6 +6,7 @@ import {
   listGroups,
   getMyGroups,
   getGroupById,
+  getTagOptions,
   addResource,
   getResources,
   deleteResource,
@@ -19,6 +20,7 @@ const router = express.Router();
    PUBLIC ROUTES
 ========================= */
 router.get("/list", listGroups);
+router.get("/tag-options", getTagOptions);
 
 /* =========================
    PROTECTED ROUTES

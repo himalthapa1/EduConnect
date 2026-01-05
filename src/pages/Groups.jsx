@@ -4,98 +4,17 @@ import { groupsAPI, sessionsAPI } from '../utils/api';
 import ResourcesList from '../components/ResourcesList';
 import CompleteSessionModal from '../components/CompleteSessionModal';
 import ChatWindow from '../components/chat/ChatWindow';
+import GroupRecommendations from '../components/GroupRecommendations';
+import { Icons } from '../ui/icons';
+import { FiMessageCircle, FiCalendar, FiUsers, FiMoreHorizontal } from 'react-icons/fi';
 import './Groups.css';
 
 /* =========================
-   Resources Toggle (Accordion Style)
+   Group Detail Modal (Replaces Toggles)
 ========================= */
-const ResourcesToggle = ({ group, isOpen, onToggle }) => {
-  return (
-    <div className="resources-toggle" style={{ marginTop: '12px' }}>
-      <button
-        className="resources-button"
-        onClick={onToggle}
-        style={{
-          padding: '8px 16px',
-          background: isOpen ? '#2563eb' : '#3b82f6',
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          width: '100%',
-          textAlign: 'center'
-        }}
-      >
-        {isOpen ? '↑ Hide Resources' : '↓ Show Resources'}
-      </button>
+const GroupDetailModal = ({ group, isOpen, onClose, onLeaveGroup, sessions, onJoinSession, onLeaveSession, onCompleteSession, currentUserId }) => {
+  if (!isOpen) return null;
 
-      {isOpen && (
-        <div
-          style={{
-            marginTop: '12px',
-            padding: '16px',
-            background: '#f9fafb',
-            borderRadius: '8px',
-            border: '1px solid #e5e7eb'
-          }}
-        >
-          <ResourcesList group={group} />
-        </div>
-      )}
-    </div>
-  );
-};
-
-/* =========================
-   Chat Toggle (Accordion Style)
-========================= */
-const ChatToggle = ({ group, isOpen, onToggle, currentUserId }) => {
-  const isMember = currentUserId && group.members?.some(m => m._id === currentUserId);
-
-  if (!isMember) return null;
-
-  return (
-    <div className="chat-toggle" style={{ marginTop: '12px' }}>
-      <button
-        className="chat-button"
-        onClick={onToggle}
-        style={{
-          padding: '8px 16px',
-          background: isOpen ? '#7c3aed' : '#8b5cf6',
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          width: '100%',
-          textAlign: 'center'
-        }}
-      >
-        {isOpen ? '↑ Hide Chat' : '💬 Show Group Chat'}
-      </button>
-
-      {isOpen && (
-        <div
-          style={{
-            marginTop: '12px',
-            background: '#faf5ff',
-            borderRadius: '8px',
-            border: '1px solid #d8b4fe',
-            overflow: 'hidden'
-          }}
-        >
-          <ChatWindow type="group" groupId={group._id} />
-        </div>
-      )}
-    </div>
-  );
-};
-
-/* =========================
-   Sessions Toggle (Accordion Style)
-========================= */
-const SessionsToggle = ({ group, sessions, isOpen, onToggle, onJoinSession, onLeaveSession, onCompleteSession, currentUserId }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -114,116 +33,97 @@ const SessionsToggle = ({ group, sessions, isOpen, onToggle, onJoinSession, onLe
   };
 
   return (
-    <div className="sessions-toggle" style={{ marginTop: '12px' }}>
-      <button
-        className="sessions-button"
-        onClick={onToggle}
-        style={{
-          padding: '8px 16px',
-          background: isOpen ? '#059669' : '#10b981',
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          width: '100%',
-          textAlign: 'center'
-        }}
-      >
-        {isOpen ? `↑ Hide Sessions (${sessions.length})` : `↓ Show Sessions (${sessions.length})`}
-      </button>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>{group.name}</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
 
-      {isOpen && (
-        <div
-          style={{
-            marginTop: '12px',
-            padding: '16px',
-            background: '#f0fdf4',
-            borderRadius: '8px',
-            border: '1px solid #bbf7d0'
-          }}
-        >
-          {sessions.length === 0 ? (
-            <p style={{ textAlign: 'center', color: '#666', margin: 0 }}>
-              No sessions scheduled yet
-            </p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {sessions.map(session => (
-                <div key={session._id} style={{
-                  padding: '12px',
-                  background: 'white',
-                  borderRadius: '6px',
-                  border: '1px solid #e5e7eb',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <div>
-                    <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{session.title}</h4>
-                    <div style={{ fontSize: '14px', color: '#666' }}>
-                      📅 {formatDate(session.date)} • 🕐 {formatTime(session.startTime)} - {formatTime(session.endTime)}
-                      <br />
-                      📍 {session.location} • 👥 {session.participants.length}/{session.maxParticipants} joined
+        <div className="modal-body">
+          <p className="group-description-full">{group.description}</p>
+
+          <div className="group-stats">
+            <span className="members-count">{group.members?.length || 0} / {group.maxMembers} members</span>
+            <span className="subject-badge">{group.subject}</span>
+          </div>
+
+          {/* Resources Section */}
+          <div className="modal-section">
+            <h3>Resources</h3>
+            <ResourcesList group={group} />
+          </div>
+
+          {/* Chat Section */}
+          <div className="modal-section">
+            <h3>Group Chat</h3>
+            <ChatWindow type="group" groupId={group._id} />
+          </div>
+
+          {/* Sessions Section */}
+          <div className="modal-section">
+            <h3>Sessions ({sessions.length})</h3>
+            {sessions.length === 0 ? (
+              <p className="no-sessions">No sessions scheduled yet</p>
+            ) : (
+              <div className="sessions-list">
+                {sessions.map(session => (
+                  <div key={session._id} className="session-item">
+                    <div className="session-info">
+                      <h4>{session.title}</h4>
+                      <div className="session-details">
+                        📅 {formatDate(session.date)} • 🕐 {formatTime(session.startTime)} - {formatTime(session.endTime)}
+                        <br />
+                        📍 {session.location} • 👥 {session.participants.length}/{session.maxParticipants} joined
+                      </div>
+                    </div>
+                    <div className="session-actions">
+                      {session.organizer._id === currentUserId && session.status === 'scheduled' && onCompleteSession && (
+                        <button
+                          onClick={() => onCompleteSession(session)}
+                          className="btn-complete-session"
+                        >
+                          Complete Session
+                        </button>
+                      )}
+                      {session.participants.some(p => p.user._id === currentUserId) ? (
+                        <button
+                          onClick={() => onLeaveSession(session._id)}
+                          className="btn-leave-session"
+                        >
+                          Leave
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => onJoinSession(session._id)}
+                          className="btn-join-session"
+                          disabled={session.participants.length >= session.maxParticipants}
+                        >
+                          {session.participants.length >= session.maxParticipants ? 'Full' : 'Join'}
+                        </button>
+                      )}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', alignItems: 'flex-end' }}>
-                    {session.organizer._id === currentUserId && session.status === 'scheduled' && onCompleteSession && (
-                      <button
-                        onClick={() => onCompleteSession(session)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#3b82f6',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px',
-                          marginBottom: '4px'
-                        }}
-                      >
-                        Complete Session
-                      </button>
-                    )}
-                    {session.participants.some(p => p.user._id === currentUserId) ? (
-                      <button
-                        onClick={() => onLeaveSession(session._id)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#ef4444',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Leave
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => onJoinSession(session._id)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#10b981',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                        disabled={session.participants.length >= session.maxParticipants}
-                      >
-                        {session.participants.length >= session.maxParticipants ? 'Full' : 'Join'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Leave Group */}
+          <div className="modal-footer">
+            <button
+              className="btn-leave-group"
+              onClick={() => {
+                if (confirm('Are you sure you want to leave this group?')) {
+                  onLeaveGroup(group._id);
+                }
+              }}
+            >
+              Leave Group
+            </button>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -242,12 +142,8 @@ const Groups = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  const [expandedBrowseGroupId, setExpandedBrowseGroupId] = useState(null);
-  const [expandedMyGroupId, setExpandedMyGroupId] = useState(null);
-  const [expandedBrowseSessionsId, setExpandedBrowseSessionsId] = useState(null);
-  const [expandedMySessionsId, setExpandedMySessionsId] = useState(null);
-  const [expandedBrowseChatId, setExpandedBrowseChatId] = useState(null);
-  const [expandedMyChatId, setExpandedMyChatId] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [showGroupModal, setShowGroupModal] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
 
@@ -257,8 +153,15 @@ const Groups = () => {
     subject: 'Other',
     maxMembers: 50,
     isPublic: true,
-    tag: '#ff3b30', // UI-only (NOT sent to backend)
+    tags: {
+      topics: [],
+      level: '',
+      styles: [],
+      commitment: []
+    }
   });
+  const [tagOptions, setTagOptions] = useState(null);
+  const [tagStep, setTagStep] = useState(1); // Progressive disclosure
 
   const subjects = [
     'Mathematics',
@@ -274,10 +177,8 @@ const Groups = () => {
   useEffect(() => {
     setError(null);
     setSuccess(null);
-    setExpandedBrowseGroupId(null);
-    setExpandedMyGroupId(null);
-    setExpandedBrowseSessionsId(null);
-    setExpandedMySessionsId(null);
+    setSelectedGroup(null);
+    setShowGroupModal(false);
 
     if (activeTab === 'browse') {
       fetchGroups();
@@ -287,7 +188,19 @@ const Groups = () => {
       fetchMyGroups();
       fetchSessions();
     }
+    if (activeTab === 'create') {
+      loadTagOptions();
+    }
   }, [activeTab, user]);
+
+  const loadTagOptions = async () => {
+    try {
+      const response = await groupsAPI.getTagOptions();
+      setTagOptions(response.data.data.tagOptions);
+    } catch (error) {
+      console.error('Failed to load tag options:', error);
+    }
+  };
 
   /* =========================
      API Calls
@@ -361,16 +274,21 @@ const Groups = () => {
   };
 
   const handleLeaveGroup = async (groupId) => {
-    if (!confirm('Leave this group?')) return;
     try {
       await groupsAPI.leaveGroup(groupId);
       setSuccess('Left the group');
-      setExpandedMyGroupId(null);
+      setSelectedGroup(null);
+      setShowGroupModal(false);
       fetchMyGroups();
       fetchGroups();
     } catch {
       setError('Failed to leave');
     }
+  };
+
+  const handleViewGroup = (group) => {
+    setSelectedGroup(group);
+    setShowGroupModal(true);
   };
 
   const handleInputChange = (e) => {
@@ -403,12 +321,11 @@ const Groups = () => {
     setError(null);
 
     try {
-      //  Include tag field in the payload
       const payload = {
         name: formData.name,
         description: formData.description,
         subject: formData.subject,
-        tag: formData.tag, // Added tag field
+        tags: formData.tags,
         maxMembers: formData.maxMembers,
         isPublic: formData.isPublic,
       };
@@ -422,16 +339,35 @@ const Groups = () => {
         subject: 'Other',
         maxMembers: 50,
         isPublic: true,
-        tag: '#ff3b30',
+        tags: {
+          topics: [],
+          level: '',
+          styles: [],
+          commitment: []
+        }
       });
+      setTagStep(1);
       setActiveTab('my-groups');
     } catch (err) {
       console.error('Create group error:', err.response?.data || err);
-      setError('Failed to create group');
+      setError(err.response?.data?.message || 'Failed to create group');
     } finally {
       setLoading(false);
     }
   };
+
+  const handleTagChange = (category, value) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: {
+        ...prev.tags,
+        [category]: value
+      }
+    }));
+  };
+
+  const nextStep = () => setTagStep(prev => Math.min(prev + 1, 4));
+  const prevStep = () => setTagStep(prev => Math.max(prev - 1, 1));
 
   return (
     <div className="groups-container">
@@ -454,101 +390,116 @@ const Groups = () => {
 
       {/* BROWSE TAB */}
       {activeTab === 'browse' && (
-        <div className="groups-grid">
+        <>
+          <GroupRecommendations limit={6} compact={true} />
+          <div className="groups-grid">
           {groups.map(group => {
             const isMember = user && group.members?.some(m => m._id === user.id);
-            const isOpen = expandedBrowseGroupId === group._id;
-            const groupSessions = sessions.filter(session => session.group && session.group._id === group._id);
-            const sessionsOpen = expandedBrowseSessionsId === group._id;
 
             return (
               <div key={group._id} className="group-card">
-                <h3>{group.name}</h3>
-                <p>{group.description}</p>
-                <p><strong>{group.members?.length || 0}/{group.maxMembers}</strong> members</p>
+                <div className="group-header">
+                  <h3 className="group-name">{group.name}</h3>
+                  <span className="members-badge">{group.members?.length || 0} / {group.maxMembers}</span>
+                </div>
 
-                {!isMember ? (
-                  <button onClick={() => handleJoinGroup(group._id)} disabled={loading}>
-                    Join Group
+                <p className="group-description">
+                  {group.description.length > 120 ? `${group.description.substring(0, 120)}...` : group.description}
+                </p>
+
+                <div className="group-actions">
+                  <button
+                    className="btn-primary"
+                    onClick={() => handleViewGroup(group)}
+                  >
+                    View Group
                   </button>
-                ) : (
-                  <span style={{ color: 'green', fontWeight: 'bold' }}>✓ You're a member</span>
-                )}
 
-                <ResourcesToggle
-                  group={group}
-                  isOpen={isOpen}
-                  onToggle={() => setExpandedBrowseGroupId(isOpen ? null : group._id)}
-                />
-
-                {isMember && (
-                  <>
-                    <ChatToggle
-                      group={group}
-                      isOpen={expandedBrowseChatId === group._id}
-                      onToggle={() => setExpandedBrowseChatId(expandedBrowseChatId === group._id ? null : group._id)}
-                      currentUserId={user?.id}
-                    />
-
-                    <SessionsToggle
-                      group={group}
-                      sessions={groupSessions}
-                      isOpen={sessionsOpen}
-                      onToggle={() => setExpandedBrowseSessionsId(sessionsOpen ? null : group._id)}
-                      onJoinSession={handleJoinSession}
-                      onLeaveSession={handleLeaveSession}
-                      onCompleteSession={handleCompleteSession}
-                      currentUserId={user?.id}
-                    />
-                  </>
-                )}
+                  {isMember ? (
+                    <div className="secondary-actions">
+                      <button
+                        className="icon-btn"
+                        title="Group Chat"
+                        onClick={() => handleViewGroup(group)}
+                        aria-label="Group Chat"
+                      >
+                        <Icons.chat size={16} />
+                      </button>
+                      <button
+                        className="icon-btn"
+                        title="Resources"
+                        onClick={() => handleViewGroup(group)}
+                        aria-label="Resources"
+                      >
+                        <Icons.file size={16} />
+                      </button>
+                      <button
+                        className="icon-btn"
+                        title="Sessions"
+                        onClick={() => handleViewGroup(group)}
+                        aria-label="Sessions"
+                      >
+                        <Icons.calendar size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      className="btn-secondary"
+                      onClick={() => handleJoinGroup(group._id)}
+                      disabled={loading}
+                    >
+                      Join Group
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
-        </div>
+          </div>
+        </>
       )}
 
       {/* MY GROUPS TAB */}
       {activeTab === 'my-groups' && (
         <div className="groups-grid">
           {myGroups.map(group => {
-            const isOpen = expandedMyGroupId === group._id;
-            const groupSessions = sessions.filter(session => session.group && session.group._id === group._id);
-            const sessionsOpen = expandedMySessionsId === group._id;
-
             return (
-              <div key={group._id} className="group-card">
-                <h3>{group.name}</h3>
-                <p>{group.description}</p>
-                <p><strong>{group.members?.length || 0}/{group.maxMembers}</strong> members</p>
+              <div key={group._id} className="group-card-clean">
+                {/* Card Header */}
+                <div className="card-header-clean">
+                  <h3 className="group-name-clean">{group.name}</h3>
+                  <span className="members-clean">
+                    <FiUsers /> {group.members?.length || 0} / {group.maxMembers}
+                  </span>
+                </div>
 
-                <button className="leave-button" onClick={() => handleLeaveGroup(group._id)}>
-                  Leave Group
+                {/* Description */}
+                <p className="description-clean">
+                  {group.description.length > 120 ? `${group.description.substring(0, 120)}...` : group.description}
+                </p>
+
+                {/* Primary Action */}
+                <button
+                  className="primary-btn-clean"
+                  onClick={() => handleViewGroup(group)}
+                >
+                  Open Group →
                 </button>
 
-                <ResourcesToggle
-                  group={group}
-                  isOpen={isOpen}
-                  onToggle={() => setExpandedMyGroupId(isOpen ? null : group._id)}
-                />
-
-                <ChatToggle
-                  group={group}
-                  isOpen={expandedMyChatId === group._id}
-                  onToggle={() => setExpandedMyChatId(expandedMyChatId === group._id ? null : group._id)}
-                  currentUserId={user?.id}
-                />
-
-                <SessionsToggle
-                  group={group}
-                  sessions={groupSessions}
-                  isOpen={sessionsOpen}
-                  onToggle={() => setExpandedMySessionsId(sessionsOpen ? null : group._id)}
-                  onJoinSession={handleJoinSession}
-                  onLeaveSession={handleLeaveSession}
-                  onCompleteSession={handleCompleteSession}
-                  currentUserId={user?.id}
-                />
+                {/* Footer Actions */}
+                <div className="footer-clean">
+                  <button onClick={() => handleViewGroup(group)}>
+                    <FiMessageCircle />
+                    Chat
+                  </button>
+                  <button onClick={() => handleViewGroup(group)}>
+                    <FiCalendar />
+                    Sessions
+                  </button>
+                  <button className="menu-clean">
+                    <FiMoreHorizontal />
+                  </button>
+                </div>
               </div>
             );
           })}
@@ -557,44 +508,209 @@ const Groups = () => {
 
       {/* CREATE TAB */}
       {activeTab === 'create' && (
-        <form onSubmit={handleCreateGroup} className="create-group-form-fancy">
-          <div className="form-group-fancy">
-            <label>Group Name *</label>
-            <input name="name" value={formData.name} onChange={handleInputChange} required />
+        <div className="create-group-container">
+          <h2>What best describes your group?</h2>
+
+          {/* Progress Indicator */}
+          <div className="tag-progress">
+            <div className={`step ${tagStep >= 1 ? 'active' : ''}`}>1</div>
+            <div className={`step ${tagStep >= 2 ? 'active' : ''}`}>2</div>
+            <div className={`step ${tagStep >= 3 ? 'active' : ''}`}>3</div>
+            <div className={`step ${tagStep >= 4 ? 'active' : ''}`}>4</div>
           </div>
 
-          <div className="form-group-fancy">
-            <label>Description</label>
-            <textarea name="description" value={formData.description} onChange={handleInputChange} rows={5} />
-          </div>
+          <form onSubmit={handleCreateGroup} className="create-group-form-semantic">
+            {/* Step 1: Basic Info */}
+            {tagStep === 1 && (
+              <div className="tag-step">
+                <h3>Basic Information</h3>
+                <div className="form-group-semantic">
+                  <label>Group Name *</label>
+                  <input
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="e.g., LeetCode Interview Prep"
+                    required
+                  />
+                </div>
+                <div className="form-group-semantic">
+                  <label>Description</label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder="Describe what your group will focus on..."
+                    rows={4}
+                  />
+                </div>
+              </div>
+            )}
 
-          <div className="form-group-fancy">
-            <label>Subject *</label>
-            <input name="subject" value={formData.subject} onChange={handleInputChange} required />
-          </div>
+            {/* Step 2: Topics (Required) */}
+            {tagStep === 2 && (
+              <div className="tag-step">
+                <h3>What topics will your group cover?</h3>
+                <p className="step-description">Select 1-3 topics (required)</p>
+                <div className="tag-options">
+                  {tagOptions?.topics?.map(topic => (
+                    <label key={topic} className="tag-option">
+                      <input
+                        type="checkbox"
+                        checked={formData.tags.topics.includes(topic)}
+                        onChange={(e) => {
+                          const newTopics = e.target.checked
+                            ? [...formData.tags.topics, topic]
+                            : formData.tags.topics.filter(t => t !== topic);
+                          handleTagChange('topics', newTopics.slice(0, 3)); // Max 3
+                        }}
+                      />
+                      <span className="tag-label">{topic}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="selection-count">
+                  Selected: {formData.tags.topics.length}/3
+                </div>
+              </div>
+            )}
 
-          <div className="form-group-fancy">
-            <label>Group Tags</label>
-            <div className="group-tags-fancy">
-              {['#ff3b30','#34c759','#32ade6','#ffd60a','#ff9500'].map(color => (
-                <span
-                  key={color}
-                  className="tag-circle"
-                  style={{
-                    background: color,
-                    border: formData.tag === color ? '2px solid #222' : '2px solid #fff',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => handleTagSelect(color)}
-                />
-              ))}
+            {/* Step 3: Skill Level (Required) */}
+            {tagStep === 3 && (
+              <div className="tag-step">
+                <h3>What's the skill level?</h3>
+                <p className="step-description">Choose one level (required)</p>
+                <div className="tag-options-radio">
+                  {tagOptions?.level?.map(level => (
+                    <label key={level} className="tag-option-radio">
+                      <input
+                        type="radio"
+                        name="level"
+                        value={level}
+                        checked={formData.tags.level === level}
+                        onChange={(e) => handleTagChange('level', e.target.value)}
+                      />
+                      <span className="tag-label-radio">{level.charAt(0).toUpperCase() + level.slice(1)}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Optional Tags */}
+            {tagStep === 4 && (
+              <div className="tag-step">
+                <h3>Additional Details (Optional)</h3>
+                <div className="optional-tags">
+                  <div className="tag-section">
+                    <h4>Study Style</h4>
+                    <div className="tag-options-small">
+                      {tagOptions?.styles?.map(style => (
+                        <label key={style} className="tag-option-small">
+                          <input
+                            type="checkbox"
+                            checked={formData.tags.styles.includes(style)}
+                            onChange={(e) => {
+                              const newStyles = e.target.checked
+                                ? [...formData.tags.styles, style]
+                                : formData.tags.styles.filter(s => s !== style);
+                              handleTagChange('styles', newStyles);
+                            }}
+                          />
+                          <span className="tag-label-small">{style.replace('-', ' ')}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="tag-section">
+                    <h4>Commitment Level</h4>
+                    <div className="tag-options-small">
+                      {tagOptions?.commitment?.map(commitment => (
+                        <label key={commitment} className="tag-option-small">
+                          <input
+                            type="checkbox"
+                            checked={formData.tags.commitment.includes(commitment)}
+                            onChange={(e) => {
+                              const newCommitment = e.target.checked
+                                ? [...formData.tags.commitment, commitment]
+                                : formData.tags.commitment.filter(c => c !== commitment);
+                              handleTagChange('commitment', newCommitment);
+                            }}
+                          />
+                          <span className="tag-label-small">{commitment.replace('-', ' ')}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-group-semantic">
+                  <label>Max Members</label>
+                  <input
+                    type="number"
+                    name="maxMembers"
+                    value={formData.maxMembers}
+                    onChange={handleInputChange}
+                    min="2"
+                    max="500"
+                  />
+                </div>
+
+                <label className="checkbox-group">
+                  <input
+                    type="checkbox"
+                    checked={formData.isPublic}
+                    onChange={(e) => setFormData(prev => ({ ...prev, isPublic: e.target.checked }))}
+                  />
+                  <span>Make group public (visible to all users)</span>
+                </label>
+              </div>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="form-navigation">
+              {tagStep > 1 && (
+                <button type="button" onClick={prevStep} className="btn-secondary">
+                  Back
+                </button>
+              )}
+              {tagStep < 4 && (
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="btn-primary"
+                  disabled={tagStep === 1 && (!formData.name.trim() || !formData.description.trim())}
+                >
+                  Next
+                </button>
+              )}
+              {tagStep === 4 && (
+                <button type="submit" className="btn-primary" disabled={loading}>
+                  {loading ? 'Creating...' : 'Create Group'}
+                </button>
+              )}
             </div>
-          </div>
+          </form>
+        </div>
+      )}
 
-          <button type="submit" className="create-btn-fancy" disabled={loading}>
-            {loading ? 'Creating...' : 'Create'}
-          </button>
-        </form>
+      {/* Group Detail Modal */}
+      {showGroupModal && selectedGroup && (
+        <GroupDetailModal
+          group={selectedGroup}
+          isOpen={showGroupModal}
+          onClose={() => {
+            setShowGroupModal(false);
+            setSelectedGroup(null);
+          }}
+          onLeaveGroup={handleLeaveGroup}
+          sessions={sessions.filter(session => session.group && session.group._id === selectedGroup._id)}
+          onJoinSession={handleJoinSession}
+          onLeaveSession={handleLeaveSession}
+          onCompleteSession={handleCompleteSession}
+          currentUserId={user?.id}
+        />
       )}
 
       {showCompleteModal && selectedSession && (

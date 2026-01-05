@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Icons } from '../ui/icons';
 import './Sidebar.css';
 
 const Sidebar = () => {
@@ -13,37 +14,37 @@ const Sidebar = () => {
     {
       id: 'dashboard',
       label: 'Dashboard',
-      icon: '📊',
+      icon: <Icons.trendingUp size={18} />,
       path: '/dashboard'
     },
     {
       id: 'study-with-me',
       label: 'Study With Me',
-      icon: '📚',
+      icon: <Icons.book size={18} />,
       path: '/study-with-me'
     },
     {
       id: 'sessions',
       label: 'Study Sessions',
-      icon: '📅',
+      icon: <Icons.calendar size={18} />,
       path: '/sessions'
     },
     {
       id: 'groups',
       label: 'Study Groups',
-      icon: '👥',
+      icon: <Icons.users size={18} />,
       path: '/groups'
     },
     {
       id: 'resources',
       label: 'Resources',
-      icon: '📚',
+      icon: <Icons.file size={18} />,
       path: '/resources'
     },
     {
       id: 'profile',
       label: 'Profile',
-      icon: '👤',
+      icon: <Icons.user size={18} />,
       path: '/profile'
     }
   ];
@@ -61,7 +62,7 @@ const Sidebar = () => {
     <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
         <div className="logo">
-          <span className="logo-icon">🎓</span>
+          <span className="logo-icon"><Icons.book size={20} /></span>
           {!isCollapsed && <span className="logo-text">EduConnect</span>}
         </div>
         <button
@@ -107,7 +108,7 @@ const Sidebar = () => {
           onClick={handleLogout}
           title={isCollapsed ? 'Logout' : ''}
         >
-          <span className="logout-icon">🚪</span>
+          <span className="logout-icon"><Icons.logout size={16} /></span>
           {!isCollapsed && <span className="logout-text">Logout</span>}
         </button>
       </div>

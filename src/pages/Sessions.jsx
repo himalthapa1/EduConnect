@@ -216,7 +216,9 @@ const Sessions = () => {
                   key={session._id}
                   session={session}
                   onLeave={handleLeaveSession}
+                  onComplete={handleCompleteSession}
                   showLeaveButton={true}
+                  showCompleteButton={true}
                 />
               ))
             )}

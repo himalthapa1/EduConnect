@@ -67,6 +67,13 @@ export const groupsAPI = {
     api.get('/groups/list', { params }),
 
   /**
+   * Get tag options for group creation
+   * GET /api/groups/tag-options
+   */
+  getTagOptions: () =>
+    api.get('/groups/tag-options'),
+
+  /**
    * Create a new group
    * POST /api/groups/create
    */
@@ -256,6 +263,34 @@ export const studyWithMeAPI = {
    */
   resumeSession: (sessionId) =>
     api.put(`/study-with-me/${sessionId}/resume`),
+};
+
+/**
+ * ======================================================
+ * RECOMMENDATIONS API
+ * ======================================================
+ */
+export const recommendationsAPI = {
+  /**
+   * Get personalized group recommendations
+   * GET /api/recommendations/groups
+   */
+  getGroupRecommendations: (params = {}) =>
+    api.get('/recommendations/groups', { params }),
+
+  /**
+   * Get personalized session recommendations
+   * GET /api/recommendations/sessions
+   */
+  getSessionRecommendations: (params = {}) =>
+    api.get('/recommendations/sessions', { params }),
+
+  /**
+   * Check recommendation service health
+   * GET /api/recommendations/health
+   */
+  checkHealth: () =>
+    api.get('/recommendations/health'),
 };
 
 export default api;

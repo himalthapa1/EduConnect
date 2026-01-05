@@ -1,10 +1,63 @@
 import mongoose from "mongoose";
 import StudyGroup from "../models/StudyGroup.js";
 import GroupResource from "../models/GroupResource.js";
+import User from "../models/User.js";
 import { upload } from "../middleware/upload.js";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+
+// Predefined tag options for semantic tagging
+export const TAG_OPTIONS = {
+  topics: [
+    'Mathematics',
+    'Physics',
+    'Chemistry',
+    'Biology',
+    'Computer Science',
+    'Web Development',
+    'Mobile Development',
+    'Data Science',
+    'Machine Learning',
+    'Artificial Intelligence',
+    'English',
+    'History',
+    'Economics',
+    'Psychology',
+    'Business',
+    'Finance',
+    'Law',
+    'Medicine',
+    'Engineering',
+    'Design',
+    'Photography',
+    'Music',
+    'Languages',
+    'Other'
+  ],
+  level: [
+    'beginner',
+    'intermediate',
+    'advanced'
+  ],
+  styles: [
+    'discussion-based',
+    'problem-solving',
+    'project-based',
+    'daily-practice',
+    'lecture-review',
+    'peer-teaching',
+    'exam-prep',
+    'interview-prep'
+  ],
+  commitment: [
+    'short-term',
+    'long-term',
+    'weekly-sessions',
+    'daily-study',
+    'sprint-based'
+  ]
+};
 
 /* =========================
    PATH SETUP
@@ -40,7 +93,7 @@ export const createGroup = async (req, res) => {
     const userId = new mongoose.Types.ObjectId(rawUserId);
 
     // Validate required fields
-    const { name, description, subject, tag, maxMembers, isPublic } = req.body;
+    const { name, description, subject, tags, maxMembers, isPublic } = req.body;
     if (
       typeof name !== "string" ||
       typeof description !== "string" ||
@@ -52,11 +105,66 @@ export const createGroup = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields: name, description, and subject are required" });
     }
 
+    // Validate semantic tags
+    if (!tags || typeof tags !== 'object') {
+      return res.status(400).json({ message: "Tags object is required" });
+    }
+
+    if (!tags.level || typeof tags.level !== 'string') {
+      return res.status(400).json({ message: "Skill level is required" });
+    }
+
+    if (!TAG_OPTIONS.level.includes(tags.level)) {
+      return res.status(400).json({ message: "Invalid skill level" });
+    }
+
+    if (tags.topics && !Array.isArray(tags.topics)) {
+      return res.status(400).json({ message: "Topics must be an array" });
+    }
+
+    if (tags.topics && tags.topics.length > 3) {
+      return res.status(400).json({ message: "Maximum 3 topics allowed" });
+    }
+
+    // Validate tag options exist in predefined lists
+    if (tags.topics) {
+      for (const topic of tags.topics) {
+        if (!TAG_OPTIONS.topics.includes(topic)) {
+          return res.status(400).json({ message: `Invalid topic: ${topic}` });
+        }
+      }
+    }
+
+    if (tags.styles) {
+      for (const style of tags.styles) {
+        if (!TAG_OPTIONS.styles.includes(style)) {
+          return res.status(400).json({ message: `Invalid style: ${style}` });
+        }
+      }
+    }
+
+    if (tags.commitment) {
+      for (const commitment of tags.commitment) {
+        if (!TAG_OPTIONS.commitment.includes(commitment)) {
+          return res.status(400).json({ message: `Invalid commitment: ${commitment}` });
+        }
+      }
+    }
+
     const groupData = {
       name: name.trim(),
       description: description.trim(),
       subject: subject.trim(),
-      tag: typeof tag === "string" ? tag : "Other",
+      tags: {
+        topics: tags.topics || [],
+        level: tags.level,
+        styles: tags.styles || [],
+        commitment: tags.commitment || []
+      },
+      // Legacy compatibility
+      difficulty: tags.level,
+      subjectTags: tags.topics || [],
+      tag: tags.level, // Use level as fallback color tag
       creator: userId,
       maxMembers: typeof maxMembers === "number" ? maxMembers : 50,
       isPublic: typeof isPublic === "boolean" ? isPublic : true,
@@ -116,6 +224,19 @@ export const getGroupById = async (req, res) => {
   }
 };
 
+export const getTagOptions = async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      data: {
+        tagOptions: TAG_OPTIONS
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch tag options" });
+  }
+};
+
 /* =========================
    MEMBERSHIP
 ========================= */
@@ -129,10 +250,20 @@ export const joinGroup = async (req, res) => {
     if (!group.members.some((m) => m.equals(userId))) {
       group.members.push(userId);
       await group.save();
+
+      // Update user tracking for recommendations
+      await User.findByIdAndUpdate(userId, {
+        $addToSet: { joinedGroups: group._id },
+        $inc: { activityScore: 10 } // Joining group increases activity
+      });
+
+      // Update group activity score
+      await group.updateActivityScore();
     }
 
     res.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error('Join group error:', error);
     res.status(500).json({ message: "Join failed" });
   }
 };
@@ -145,8 +276,19 @@ export const leaveGroup = async (req, res) => {
 
     group.members = group.members.filter((m) => !m.equals(userId));
     await group.save();
+
+    // Update user tracking for recommendations
+    await User.findByIdAndUpdate(userId, {
+      $pull: { joinedGroups: group._id },
+      $inc: { activityScore: -5 } // Leaving group decreases activity (less than joining)
+    });
+
+    // Update group activity score
+    await group.updateActivityScore();
+
     res.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error('Leave group error:', error);
     res.status(500).json({ message: "Leave failed" });
   }
 };
@@ -205,6 +347,14 @@ export const addResource = [
       }
 
       const resource = await GroupResource.create(resourceData);
+
+      // Update user activity score for uploading resource
+      await User.findByIdAndUpdate(userId, {
+        $inc: { activityScore: 5 } // Uploading resource increases activity
+      });
+
+      // Update group activity score
+      await group.updateActivityScore();
 
       res.status(201).json({ success: true, data: { resource } });
     } catch (err) {

@@ -53,6 +53,9 @@ export const AuthProvider = ({ children }) => {
           username: res.data.data.user.username,
           preferences: res.data.data.user.preferences || { interests: [] },
           onboarding: res.data.data.user.onboarding || { completed: false },
+          joinedGroups: res.data.data.user.joinedGroups || [],
+          attendedSessions: res.data.data.user.attendedSessions || [],
+          activityScore: res.data.data.user.activityScore || 0,
         };
 
         setUser(verifiedUser);
@@ -88,6 +91,9 @@ export const AuthProvider = ({ children }) => {
           username: userData.username,
           preferences: userData.preferences || { interests: [] },
           onboarding: userData.onboarding || { completed: false },
+          joinedGroups: userData.joinedGroups || [],
+          attendedSessions: userData.attendedSessions || [],
+          activityScore: userData.activityScore || 0,
         };
 
         localStorage.setItem('token', newToken);
@@ -169,6 +175,9 @@ export const AuthProvider = ({ children }) => {
           username: res.data.data.user.username,
           preferences: res.data.data.user.preferences || user?.preferences || { interests: [] },
           onboarding: res.data.data.user.onboarding || user?.onboarding || { completed: false },
+          joinedGroups: res.data.data.user.joinedGroups || user?.joinedGroups || [],
+          attendedSessions: res.data.data.user.attendedSessions || user?.attendedSessions || [],
+          activityScore: res.data.data.user.activityScore || user?.activityScore || 0,
         };
         setUser(normalizedUser);
         return { success: true };

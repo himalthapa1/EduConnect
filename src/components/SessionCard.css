@@ -44,7 +44,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   margin: -26px 0 6px 0;
 }
 
@@ -82,7 +82,7 @@
 }
 
 .card-content {
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .session-description {
@@ -140,7 +140,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px 14px;
   margin-bottom: 12px;
-  padding-right: 8px; /* ensure details have breathing room on the right */
+  padding-right: 10%; /* ensure details have breathing room on the right */
 }
 
 .session-detail {
@@ -203,78 +203,79 @@
   display: inline;
 }
 
+/* Professional Button Group - State-driven layout */
 .session-actions {
   display: flex;
-  gap: 12px;
+  justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
-  margin-top: 8px;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: nowrap !important; /* Force horizontal alignment */
+  flex-direction: row !important; /* Ensure horizontal direction */
+  white-space: nowrap; /* Prevent any text wrapping issues */
 }
 
+/* Base button styles */
+.session-actions .btn {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+/* Join button - Primary action */
 .join-btn {
-  padding: 6px 12px;
   background: #10b981;
   color: white;
-  border: none;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
 }
 
 .join-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.18);
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
-.join-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+/* Joined status - Non-clickable indicator */
+.joined-btn {
+  background: #22c55e;
+  color: white;
+  cursor: default;
 }
 
+/* Leave button - Danger action */
 .leave-btn {
-  padding: 6px 12px;
   background: #ef4444;
   color: white;
-  border: none;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
 }
 
 .leave-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.18);
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
-.leave-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
+/* Complete button - Primary CTA */
 .complete-btn {
-  padding: 6px 12px;
   background: #3b82f6;
   color: white;
-  border: none;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
 }
 
 .complete-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.18);
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.complete-btn:disabled {
+/* Disabled states */
+.session-actions .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .organizer-badge {
@@ -289,10 +290,11 @@
 .joined-badge {
   background: #10b981;
   color: white;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 11px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .organizer-actions {
@@ -317,5 +319,15 @@
 
   .detail-label {
     min-width: 100px;
+  }
+
+  /* Mobile button layout */
+  .session-actions {
+    gap: 8px;
+  }
+
+  .session-actions .btn {
+    font-size: 12px;
+    padding: 6px 10px;
   }
 }
