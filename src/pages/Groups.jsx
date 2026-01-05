@@ -5,6 +5,7 @@ import ResourcesList from '../components/ResourcesList';
 import CompleteSessionModal from '../components/CompleteSessionModal';
 import ChatWindow from '../components/chat/ChatWindow';
 import GroupRecommendations from '../components/GroupRecommendations';
+import { FiMessageCircle, FiCalendar, FiUsers, FiMoreHorizontal } from 'react-icons/fi';
 import './Groups.css';
 
 /* =========================
@@ -422,58 +423,41 @@ const Groups = () => {
         <div className="groups-grid">
           {myGroups.map(group => {
             return (
-              <div key={group._id} className="group-card">
-                <div className="group-header">
-                  <h3 className="group-name">{group.name}</h3>
-                  <span className="members-badge">{group.members?.length || 0} / {group.maxMembers}</span>
+              <div key={group._id} className="group-card-clean">
+                {/* Card Header */}
+                <div className="card-header-clean">
+                  <h3 className="group-name-clean">{group.name}</h3>
+                  <span className="members-clean">
+                    <FiUsers /> {group.members?.length || 0} / {group.maxMembers}
+                  </span>
                 </div>
 
-                <p className="group-description">
+                {/* Description */}
+                <p className="description-clean">
                   {group.description.length > 120 ? `${group.description.substring(0, 120)}...` : group.description}
                 </p>
 
-                <div className="group-actions">
-                  <button
-                    className="btn-primary"
-                    onClick={() => handleViewGroup(group)}
-                  >
-                    View Group
-                  </button>
+                {/* Primary Action */}
+                <button
+                  className="primary-btn-clean"
+                  onClick={() => handleViewGroup(group)}
+                >
+                  Open Group →
+                </button>
 
-                  <div className="secondary-actions">
-                    <button
-                      className="icon-btn"
-                      title="Group Chat"
-                      onClick={() => handleViewGroup(group)}
-                    >
-                      💬
-                    </button>
-                    <button
-                      className="icon-btn"
-                      title="Resources"
-                      onClick={() => handleViewGroup(group)}
-                    >
-                      📁
-                    </button>
-                    <button
-                      className="icon-btn"
-                      title="Sessions"
-                      onClick={() => handleViewGroup(group)}
-                    >
-                      📅
-                    </button>
-                    <button
-                      className="icon-btn danger"
-                      title="Leave Group"
-                      onClick={() => {
-                        if (confirm('Are you sure you want to leave this group?')) {
-                          handleLeaveGroup(group._id);
-                        }
-                      }}
-                    >
-                      🚪
-                    </button>
-                  </div>
+                {/* Footer Actions */}
+                <div className="footer-clean">
+                  <button onClick={() => handleViewGroup(group)}>
+                    <FiMessageCircle />
+                    Chat
+                  </button>
+                  <button onClick={() => handleViewGroup(group)}>
+                    <FiCalendar />
+                    Sessions
+                  </button>
+                  <button className="menu-clean">
+                    <FiMoreHorizontal />
+                  </button>
                 </div>
               </div>
             );
