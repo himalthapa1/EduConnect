@@ -1,12 +1,37 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 import './AccountSettings.css';
 
-export default function AccountSettings() {
-  const { user, updateProfile } = useAuth();
+const INTERESTS = [
+  'Mathematics',
+  'Artificial Intelligence',
+  'Data Structures',
+  'Web Development',
+  'Machine Learning',
+  'Cyber Security',
+  'Cloud Computing',
+  'UI/UX Design',
+  'Mobile App Development',
+  'Competitive Programming',
+  'English Communication',
+  'Finance & Investing',
+  'Data Science',
+  'DevOps',
+  'Blockchain',
+  'Game Development',
+  'Database Management',
+  'Networking',
+  'Software Testing',
+  'Project Management'
+];
+
+const AccountSettings = () => {
+  const { user, updateProfile, token, verifyToken } = useAuth();
 
   const sections = [
      { id: 'my-profile', label: 'My Profile' },
+     { id: 'preferences', label: 'Preferences' },
      { id: 'teams', label: 'Teams' },
      { id: 'team-member', label: 'Team Member' },
      { id: 'notifications', label: 'Notifications' }
@@ -14,12 +39,15 @@ export default function AccountSettings() {
 
     const [active, setActive] = useState('my-profile');
   const [editing, setEditing] = useState(false);
+  const [editingPreferences, setEditingPreferences] = useState(false);
+  const [selectedInterests, setSelectedInterests] = useState(user?.preferences?.interests || []);
   const [form, setForm] = useState({
     username: user?.username || '',
     email: user?.email || '',
     name: user?.name || ''
   });
   const [saving, setSaving] = useState(false);
+  const [savingPreferences, setSavingPreferences] = useState(false);
   const [message, setMessage] = useState(null);
 
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -43,6 +71,50 @@ export default function AccountSettings() {
       setMessage('Update failed');
     }
     setTimeout(() => setMessage(null), 3000);
+  };
+
+  const toggleInterest = (interest) => {
+    setSelectedInterests(prev => {
+      if (prev.includes(interest)) {
+        return prev.filter(i => i !== interest);
+      } else {
+        return [...prev, interest];
+      }
+    });
+  };
+
+  const handleSavePreferences = async () => {
+    setSavingPreferences(true);
+    setMessage(null);
+
+    try {
+      const res = await axios.post(
+        'http://localhost:3001/api/users/preferences',
+        { interests: selectedInterests },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.data?.success) {
+        setMessage('Preferences updated successfully');
+        setEditingPreferences(false);
+      } else {
+        setMessage('Failed to update preferences');
+      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.error?.message ||
+                          err.response?.data?.error ||
+                          err.message ||
+                          'Failed to update preferences';
+      setMessage(typeof errorMessage === 'string' ? errorMessage : 'Failed to update preferences');
+    } finally {
+      setSavingPreferences(false);
+      setTimeout(() => setMessage(null), 3000);
+    }
+  };
+
+  const handleCancelPreferences = () => {
+    setSelectedInterests(user?.preferences?.interests || []);
+    setEditingPreferences(false);
   };
 
   if (!user) {
@@ -156,6 +228,90 @@ export default function AccountSettings() {
                 </div>
               )}
             </>
+          ) : active === 'preferences' ? (
+            <>
+              {/* Preferences Header */}
+              <div className="profile-header">
+                <div className="avatar">⚙️</div>
+                <div>
+                  <h2>Study Preferences</h2>
+                  <p className="muted">Customize your learning interests to get better recommendations</p>
+                </div>
+              </div>
+
+              {/* Current Preferences Display */}
+              {!editingPreferences && (
+                <div className="card">
+                  <h3>Your Interests</h3>
+                  {selectedInterests.length > 0 ? (
+                    <div className="interests-display">
+                      {selectedInterests.map(interest => (
+                        <span key={interest} className="interest-tag">
+                          {interest}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="muted">No interests selected yet.</p>
+                  )}
+                </div>
+              )}
+
+              {/* Edit Preferences */}
+              {editingPreferences && (
+                <div className="card">
+                  <h3>Select Your Interests</h3>
+                  <p className="muted">Choose topics you're interested in studying (3-10 selections)</p>
+
+                  <div className="interests-grid">
+                    {INTERESTS.map(interest => (
+                      <button
+                        key={interest}
+                        className={`interest-button ${selectedInterests.includes(interest) ? 'selected' : ''}`}
+                        onClick={() => toggleInterest(interest)}
+                      >
+                        {interest}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="selection-info">
+                    <p>
+                      Selected: {selectedInterests.length}/10
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Bar */}
+              <div className="action-bar">
+                {!editingPreferences ? (
+                  <button className="btn-primary" onClick={() => setEditingPreferences(true)}>
+                    Edit Preferences
+                  </button>
+                ) : (
+                  <>
+                    <button className="btn-secondary" onClick={handleCancelPreferences}>
+                      Cancel
+                    </button>
+                    <button
+                      className="btn-primary"
+                      onClick={handleSavePreferences}
+                      disabled={savingPreferences}
+                    >
+                      {savingPreferences ? 'Saving...' : 'Save Preferences'}
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Success/Error Messages */}
+              {message && (
+                <div className={`alert ${message.includes('failed') || message.includes('error') ? 'alert-error' : 'alert-success'}`}>
+                  {message}
+                </div>
+              )}
+            </>
           ) : (
             /* Placeholder content for other sections */
             <div className="section-placeholder">
@@ -169,4 +325,6 @@ export default function AccountSettings() {
       </div>
     </div>
   );
-}
+};
+
+export default AccountSettings;
