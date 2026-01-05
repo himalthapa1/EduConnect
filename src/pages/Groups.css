@@ -1256,3 +1256,294 @@
   flex: none;
   padding: 10px;
 }
+
+/* =========================
+   SEMANTIC TAG FORM
+========================= */
+.create-group-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.create-group-container h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.tag-progress {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.tag-progress .step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.tag-progress .step.active {
+  background: #6366f1;
+  color: white;
+}
+
+.create-group-form-semantic {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.tag-step {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.tag-step h3 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.step-description {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+.form-group-semantic {
+  margin-bottom: 20px;
+}
+
+.form-group-semantic label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.form-group-semantic input,
+.form-group-semantic textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.form-group-semantic input:focus,
+.form-group-semantic textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+}
+
+.form-group-semantic textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.tag-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.tag-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.tag-option:hover {
+  border-color: #6366f1;
+  background: #f8fafc;
+}
+
+.tag-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #6366f1;
+}
+
+.tag-label {
+  font-size: 0.9rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.selection-count {
+  text-align: right;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.tag-options-radio {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tag-option-radio {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.tag-option-radio:hover {
+  border-color: #6366f1;
+  background: #f8fafc;
+}
+
+.tag-option-radio input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #6366f1;
+}
+
+.tag-label-radio {
+  font-size: 0.95rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.optional-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.tag-section h4 {
+  margin: 0 0 12px 0;
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.tag-options-small {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.tag-option-small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  font-size: 0.85rem;
+}
+
+.tag-option-small:hover {
+  border-color: #6366f1;
+  background: #f8fafc;
+}
+
+.tag-option-small input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #6366f1;
+}
+
+.tag-label-small {
+  color: #374151;
+  font-weight: 500;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #6366f1;
+}
+
+.checkbox-group span {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.form-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.form-navigation .btn-secondary,
+.form-navigation .btn-primary {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.form-navigation .btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.form-navigation .btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.form-navigation .btn-primary {
+  background: #6366f1;
+  color: white;
+}
+
+.form-navigation .btn-primary:hover:not(:disabled) {
+  background: #5855eb;
+  transform: translateY(-1px);
+}
+
+.form-navigation .btn-primary:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  transform: none;
+}

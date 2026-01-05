@@ -152,8 +152,15 @@ const Groups = () => {
     subject: 'Other',
     maxMembers: 50,
     isPublic: true,
-    tag: '#ff3b30', // UI-only (NOT sent to backend)
+    tags: {
+      topics: [],
+      level: '',
+      styles: [],
+      commitment: []
+    }
   });
+  const [tagOptions, setTagOptions] = useState(null);
+  const [tagStep, setTagStep] = useState(1); // Progressive disclosure
 
   const subjects = [
     'Mathematics',
@@ -180,7 +187,19 @@ const Groups = () => {
       fetchMyGroups();
       fetchSessions();
     }
+    if (activeTab === 'create') {
+      loadTagOptions();
+    }
   }, [activeTab, user]);
+
+  const loadTagOptions = async () => {
+    try {
+      const response = await groupsAPI.getTagOptions();
+      setTagOptions(response.data.data.tagOptions);
+    } catch (error) {
+      console.error('Failed to load tag options:', error);
+    }
+  };
 
   /* =========================
      API Calls
@@ -301,12 +320,11 @@ const Groups = () => {
     setError(null);
 
     try {
-      //  Include tag field in the payload
       const payload = {
         name: formData.name,
         description: formData.description,
         subject: formData.subject,
-        tag: formData.tag, // Added tag field
+        tags: formData.tags,
         maxMembers: formData.maxMembers,
         isPublic: formData.isPublic,
       };
@@ -320,16 +338,35 @@ const Groups = () => {
         subject: 'Other',
         maxMembers: 50,
         isPublic: true,
-        tag: '#ff3b30',
+        tags: {
+          topics: [],
+          level: '',
+          styles: [],
+          commitment: []
+        }
       });
+      setTagStep(1);
       setActiveTab('my-groups');
     } catch (err) {
       console.error('Create group error:', err.response?.data || err);
-      setError('Failed to create group');
+      setError(err.response?.data?.message || 'Failed to create group');
     } finally {
       setLoading(false);
     }
   };
+
+  const handleTagChange = (category, value) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: {
+        ...prev.tags,
+        [category]: value
+      }
+    }));
+  };
+
+  const nextStep = () => setTagStep(prev => Math.min(prev + 1, 4));
+  const prevStep = () => setTagStep(prev => Math.max(prev - 1, 1));
 
   return (
     <div className="groups-container">
@@ -467,44 +504,191 @@ const Groups = () => {
 
       {/* CREATE TAB */}
       {activeTab === 'create' && (
-        <form onSubmit={handleCreateGroup} className="create-group-form-fancy">
-          <div className="form-group-fancy">
-            <label>Group Name *</label>
-            <input name="name" value={formData.name} onChange={handleInputChange} required />
+        <div className="create-group-container">
+          <h2>What best describes your group?</h2>
+
+          {/* Progress Indicator */}
+          <div className="tag-progress">
+            <div className={`step ${tagStep >= 1 ? 'active' : ''}`}>1</div>
+            <div className={`step ${tagStep >= 2 ? 'active' : ''}`}>2</div>
+            <div className={`step ${tagStep >= 3 ? 'active' : ''}`}>3</div>
+            <div className={`step ${tagStep >= 4 ? 'active' : ''}`}>4</div>
           </div>
 
-          <div className="form-group-fancy">
-            <label>Description</label>
-            <textarea name="description" value={formData.description} onChange={handleInputChange} rows={5} />
-          </div>
+          <form onSubmit={handleCreateGroup} className="create-group-form-semantic">
+            {/* Step 1: Basic Info */}
+            {tagStep === 1 && (
+              <div className="tag-step">
+                <h3>Basic Information</h3>
+                <div className="form-group-semantic">
+                  <label>Group Name *</label>
+                  <input
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="e.g., LeetCode Interview Prep"
+                    required
+                  />
+                </div>
+                <div className="form-group-semantic">
+                  <label>Description</label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder="Describe what your group will focus on..."
+                    rows={4}
+                  />
+                </div>
+              </div>
+            )}
 
-          <div className="form-group-fancy">
-            <label>Subject *</label>
-            <input name="subject" value={formData.subject} onChange={handleInputChange} required />
-          </div>
+            {/* Step 2: Topics (Required) */}
+            {tagStep === 2 && (
+              <div className="tag-step">
+                <h3>What topics will your group cover?</h3>
+                <p className="step-description">Select 1-3 topics (required)</p>
+                <div className="tag-options">
+                  {tagOptions?.topics?.map(topic => (
+                    <label key={topic} className="tag-option">
+                      <input
+                        type="checkbox"
+                        checked={formData.tags.topics.includes(topic)}
+                        onChange={(e) => {
+                          const newTopics = e.target.checked
+                            ? [...formData.tags.topics, topic]
+                            : formData.tags.topics.filter(t => t !== topic);
+                          handleTagChange('topics', newTopics.slice(0, 3)); // Max 3
+                        }}
+                      />
+                      <span className="tag-label">{topic}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="selection-count">
+                  Selected: {formData.tags.topics.length}/3
+                </div>
+              </div>
+            )}
 
-          <div className="form-group-fancy">
-            <label>Group Tags</label>
-            <div className="group-tags-fancy">
-              {['#ff3b30','#34c759','#32ade6','#ffd60a','#ff9500'].map(color => (
-                <span
-                  key={color}
-                  className="tag-circle"
-                  style={{
-                    background: color,
-                    border: formData.tag === color ? '2px solid #222' : '2px solid #fff',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => handleTagSelect(color)}
-                />
-              ))}
+            {/* Step 3: Skill Level (Required) */}
+            {tagStep === 3 && (
+              <div className="tag-step">
+                <h3>What's the skill level?</h3>
+                <p className="step-description">Choose one level (required)</p>
+                <div className="tag-options-radio">
+                  {tagOptions?.level?.map(level => (
+                    <label key={level} className="tag-option-radio">
+                      <input
+                        type="radio"
+                        name="level"
+                        value={level}
+                        checked={formData.tags.level === level}
+                        onChange={(e) => handleTagChange('level', e.target.value)}
+                      />
+                      <span className="tag-label-radio">{level.charAt(0).toUpperCase() + level.slice(1)}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Optional Tags */}
+            {tagStep === 4 && (
+              <div className="tag-step">
+                <h3>Additional Details (Optional)</h3>
+                <div className="optional-tags">
+                  <div className="tag-section">
+                    <h4>Study Style</h4>
+                    <div className="tag-options-small">
+                      {tagOptions?.styles?.map(style => (
+                        <label key={style} className="tag-option-small">
+                          <input
+                            type="checkbox"
+                            checked={formData.tags.styles.includes(style)}
+                            onChange={(e) => {
+                              const newStyles = e.target.checked
+                                ? [...formData.tags.styles, style]
+                                : formData.tags.styles.filter(s => s !== style);
+                              handleTagChange('styles', newStyles);
+                            }}
+                          />
+                          <span className="tag-label-small">{style.replace('-', ' ')}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="tag-section">
+                    <h4>Commitment Level</h4>
+                    <div className="tag-options-small">
+                      {tagOptions?.commitment?.map(commitment => (
+                        <label key={commitment} className="tag-option-small">
+                          <input
+                            type="checkbox"
+                            checked={formData.tags.commitment.includes(commitment)}
+                            onChange={(e) => {
+                              const newCommitment = e.target.checked
+                                ? [...formData.tags.commitment, commitment]
+                                : formData.tags.commitment.filter(c => c !== commitment);
+                              handleTagChange('commitment', newCommitment);
+                            }}
+                          />
+                          <span className="tag-label-small">{commitment.replace('-', ' ')}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-group-semantic">
+                  <label>Max Members</label>
+                  <input
+                    type="number"
+                    name="maxMembers"
+                    value={formData.maxMembers}
+                    onChange={handleInputChange}
+                    min="2"
+                    max="500"
+                  />
+                </div>
+
+                <label className="checkbox-group">
+                  <input
+                    type="checkbox"
+                    checked={formData.isPublic}
+                    onChange={(e) => setFormData(prev => ({ ...prev, isPublic: e.target.checked }))}
+                  />
+                  <span>Make group public (visible to all users)</span>
+                </label>
+              </div>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="form-navigation">
+              {tagStep > 1 && (
+                <button type="button" onClick={prevStep} className="btn-secondary">
+                  Back
+                </button>
+              )}
+              {tagStep < 4 && (
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="btn-primary"
+                  disabled={tagStep === 1 && (!formData.name.trim() || !formData.description.trim())}
+                >
+                  Next
+                </button>
+              )}
+              {tagStep === 4 && (
+                <button type="submit" className="btn-primary" disabled={loading}>
+                  {loading ? 'Creating...' : 'Create Group'}
+                </button>
+              )}
             </div>
-          </div>
-
-          <button type="submit" className="create-btn-fancy" disabled={loading}>
-            {loading ? 'Creating...' : 'Create'}
-          </button>
-        </form>
+          </form>
+        </div>
       )}
 
       {/* Group Detail Modal */}

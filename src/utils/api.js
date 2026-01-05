@@ -67,6 +67,13 @@ export const groupsAPI = {
     api.get('/groups/list', { params }),
 
   /**
+   * Get tag options for group creation
+   * GET /api/groups/tag-options
+   */
+  getTagOptions: () =>
+    api.get('/groups/tag-options'),
+
+  /**
    * Create a new group
    * POST /api/groups/create
    */

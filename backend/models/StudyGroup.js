@@ -19,6 +19,47 @@ const studyGroupSchema = new mongoose.Schema({
     required: [true, 'Subject is required'],
     default: 'Other'
   },
+  // Semantic tag system for recommendations
+  tags: {
+    topics: {
+      type: [String],
+      validate: {
+        validator: function(v) {
+          return v.length <= 3; // Max 3 topics
+        },
+        message: 'Maximum 3 topic tags allowed'
+      }
+    },
+    level: {
+      type: String,
+      enum: ['beginner', 'intermediate', 'advanced'],
+      required: [true, 'Skill level is required']
+    },
+    styles: {
+      type: [String],
+      enum: [
+        'discussion-based',
+        'problem-solving',
+        'project-based',
+        'daily-practice',
+        'lecture-review',
+        'peer-teaching',
+        'exam-prep',
+        'interview-prep'
+      ]
+    },
+    commitment: {
+      type: [String],
+      enum: [
+        'short-term',
+        'long-term',
+        'weekly-sessions',
+        'daily-study',
+        'sprint-based'
+      ]
+    }
+  },
+  // Legacy fields for backward compatibility
   subjectTags: {
     type: [String],
     default: []
@@ -30,8 +71,6 @@ const studyGroupSchema = new mongoose.Schema({
   },
   tag: {
     type: String,
-    // Removed required: [true, 'Group tag is required'] - tag is now optional
-    // Removed enum restriction - any tag value is allowed
     default: 'Other'
   },
   creator: {
