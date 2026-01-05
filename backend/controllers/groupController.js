@@ -243,61 +243,28 @@ export const getTagOptions = async (req, res) => {
 
 export const joinGroup = async (req, res) => {
   try {
-    console.log('Join group request:', {
-      groupId: req.params.groupId,
-      userId: req.user?.userId,
-      body: req.body
-    });
-
     const userId = getUserObjectId(req);
-    console.log('Converted userId:', userId);
-
-    if (!userId) {
-      console.error('No userId found');
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(req.params.groupId)) {
-      console.error('Invalid group ID:', req.params.groupId);
-      return res.status(400).json({ message: "Invalid group ID" });
-    }
-
     const group = await StudyGroup.findById(req.params.groupId);
-    console.log('Found group:', group ? 'yes' : 'no');
-
-    if (!group) {
-      console.error('Group not found:', req.params.groupId);
-      return res.status(404).json({ message: "Group not found" });
-    }
-
-    console.log('Current members:', group.members);
-    console.log('Is already member:', group.members.some((m) => m.equals(userId)));
+    if (!userId || !group) return res.status(404).json({ message: "Not found" });
 
     if (!group.members.some((m) => m.equals(userId))) {
-      // Add member directly to avoid any validation issues
       group.members.push(userId);
-
-      // Save with validation disabled for legacy compatibility
-      await group.save({ validateBeforeSave: false });
-      console.log('Added user to group');
+      await group.save();
 
       // Update user tracking for recommendations
       await User.findByIdAndUpdate(userId, {
         $addToSet: { joinedGroups: group._id },
         $inc: { activityScore: 10 } // Joining group increases activity
       });
-      console.log('Updated user tracking');
 
-      // Skip group activity score update for now to avoid validation issues
-      // await group.updateActivityScore();
-      console.log('Skipped group activity score update');
+      // Update group activity score
+      await group.updateActivityScore();
     }
 
     res.json({ success: true });
   } catch (error) {
     console.error('Join group error:', error);
-    console.error('Error stack:', error.stack);
-    res.status(500).json({ message: "Join failed", error: error.message });
+    res.status(500).json({ message: "Join failed" });
   }
 };
 

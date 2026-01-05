@@ -20,11 +20,7 @@ function App() {
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/onboarding/interests" element={
-            <ProtectedRoute>
-              <Onboarding />
-            </ProtectedRoute>
-          } />
+          <Route path="/onboarding/interests" element={<Onboarding />} />
           <Route
             path="/"
             element={

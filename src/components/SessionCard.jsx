@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Icons } from '../ui/icons';
 import './SessionCard.css';
 
 function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false, showJoinButton = false, showLeaveButton = false, showCompleteButton = false }) {
@@ -53,10 +54,10 @@ function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false
           {/* Status Badge */}
           <div className="session-status">
             <span className={`status-badge status-${session.status}`}>
-              {session.status === 'completed' ? '✓ Completed' :
-               session.status === 'ongoing' ? '🔴 Ongoing' :
-               session.status === 'cancelled' ? '❌ Cancelled' :
-               '📅 Scheduled'}
+              {session.status === 'completed' ? <><Icons.check size={14} /> Completed</> :
+               session.status === 'ongoing' ? <><Icons.play size={14} /> Ongoing</> :
+               session.status === 'cancelled' ? <><Icons.close size={14} /> Cancelled</> :
+               <><Icons.calendar size={14} /> Scheduled</>}
             </span>
             {session.status === 'completed' && session.completedAt && (
               <span className="completed-date">
@@ -69,27 +70,27 @@ function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false
 
           <div className="session-details">
             <div className="session-detail">
-              <span className="detail-label">📅 Date:</span>
+              <span className="detail-label"><Icons.calendar size={14} /> Date:</span>
               <span className="detail-value">{formatDate(session.date)}</span>
             </div>
 
             <div className="session-detail">
-              <span className="detail-label">⏰ Time:</span>
+              <span className="detail-label"><Icons.clock size={14} /> Time:</span>
               <span className="detail-value time-value">{formatTime(session.startTime)} - {formatTime(session.endTime)}</span>
             </div>
 
             <div className="session-detail">
-              <span className="detail-label">📍 Location:</span>
+              <span className="detail-label"><Icons.file size={14} /> Location:</span>
               <span className="detail-value">{session.location}</span>
             </div>
 
             <div className="session-detail">
-              <span className="detail-label">👥 Participants:</span>
+              <span className="detail-label"><Icons.users size={14} /> Participants:</span>
               <span className="detail-value">{session.participants?.length || 0} / {session.maxParticipants}</span>
             </div>
 
             <div className="session-detail">
-              <span className="detail-label">👨‍🏫 Organizer:</span>
+              <span className="detail-label"><Icons.user size={14} /> Organizer:</span>
               <span className="detail-value">{session.organizer?.username}</span>
             </div>
           </div>

@@ -5,6 +5,7 @@ import ResourcesList from '../components/ResourcesList';
 import CompleteSessionModal from '../components/CompleteSessionModal';
 import ChatWindow from '../components/chat/ChatWindow';
 import GroupRecommendations from '../components/GroupRecommendations';
+import { Icons } from '../ui/icons';
 import { FiMessageCircle, FiCalendar, FiUsers, FiMoreHorizontal } from 'react-icons/fi';
 import './Groups.css';
 
@@ -312,73 +313,26 @@ const Groups = () => {
   };
 
   /* =========================
-     VALIDATION & CREATE GROUP
+     FIXED CREATE GROUP
   ========================= */
-  const validateFormData = () => {
-    const errors = [];
-
-    // Basic info validation (Step 1)
-    if (!formData.name.trim()) {
-      errors.push('Group name is required');
-    } else if (formData.name.trim().length < 3) {
-      errors.push('Group name must be at least 3 characters');
-    } else if (formData.name.trim().length > 100) {
-      errors.push('Group name must not exceed 100 characters');
-    }
-
-    if (!formData.description.trim()) {
-      errors.push('Description is required');
-    } else if (formData.description.trim().length < 10) {
-      errors.push('Description must be at least 10 characters');
-    } else if (formData.description.trim().length > 500) {
-      errors.push('Description must not exceed 500 characters');
-    }
-
-    // Tags validation (Step 2-4)
-    if (formData.tags.topics.length === 0) {
-      errors.push('Please select at least 1 topic');
-    } else if (formData.tags.topics.length > 3) {
-      errors.push('Maximum 3 topics allowed');
-    }
-
-    if (!formData.tags.level) {
-      errors.push('Please select a skill level');
-    }
-
-    // Max members validation
-    if (formData.maxMembers < 2 || formData.maxMembers > 500) {
-      errors.push('Max members must be between 2 and 500');
-    }
-
-    return errors;
-  };
-
   const handleCreateGroup = async (e) => {
     e.preventDefault();
-
-    // Validate form data
-    const validationErrors = validateFormData();
-    if (validationErrors.length > 0) {
-      setError(validationErrors.join('. '));
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
       const payload = {
-        name: formData.name.trim(),
-        description: formData.description.trim(),
+        name: formData.name,
+        description: formData.description,
         subject: formData.subject,
         tags: formData.tags,
-        maxMembers: parseInt(formData.maxMembers),
+        maxMembers: formData.maxMembers,
         isPublic: formData.isPublic,
       };
 
       await groupsAPI.createGroup(payload);
 
-      setSuccess('Group created successfully!');
+      setSuccess('Group created!');
       setFormData({
         name: '',
         description: '',
@@ -396,8 +350,7 @@ const Groups = () => {
       setActiveTab('my-groups');
     } catch (err) {
       console.error('Create group error:', err.response?.data || err);
-      const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Failed to create group';
-      setError(errorMessage);
+      setError(err.response?.data?.message || 'Failed to create group');
     } finally {
       setLoading(false);
     }
@@ -468,22 +421,25 @@ const Groups = () => {
                         className="icon-btn"
                         title="Group Chat"
                         onClick={() => handleViewGroup(group)}
+                        aria-label="Group Chat"
                       >
-                        💬
+                        <Icons.chat size={16} />
                       </button>
                       <button
                         className="icon-btn"
                         title="Resources"
                         onClick={() => handleViewGroup(group)}
+                        aria-label="Resources"
                       >
-                        📁
+                        <Icons.file size={16} />
                       </button>
                       <button
                         className="icon-btn"
                         title="Sessions"
                         onClick={() => handleViewGroup(group)}
+                        aria-label="Sessions"
                       >
-                        📅
+                        <Icons.calendar size={16} />
                       </button>
                     </div>
                   ) : (
@@ -724,14 +680,7 @@ const Groups = () => {
                   type="button"
                   onClick={nextStep}
                   className="btn-primary"
-                  disabled={
-                    tagStep === 1 && (
-                      !formData.name.trim() ||
-                      formData.name.trim().length < 3 ||
-                      !formData.description.trim() ||
-                      formData.description.trim().length < 10
-                    )
-                  }
+                  disabled={tagStep === 1 && (!formData.name.trim() || !formData.description.trim())}
                 >
                   Next
                 </button>

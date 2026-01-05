@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { sessionsAPI, groupsAPI } from '../utils/api';
+import { Icons } from '../ui/icons';
 import GroupRecommendations from '../components/GroupRecommendations';
 import './Dashboard.css';
 
@@ -101,7 +102,7 @@ const Dashboard = () => {
       {/* Header */}
       <header className="dashboard-header">
         <div className="header-content">
-          <h1 className="header-title">📊 Dashboard</h1>
+          <h1 className="header-title"><Icons.trendingUp size={24} /> Dashboard</h1>
           <p className="header-subtitle">Welcome back, {user?.username}!</p>
         </div>
         <div className="header-actions">
@@ -119,28 +120,28 @@ const Dashboard = () => {
         <section className="stats-section">
           <div className="stats-grid">
             <div className="stat-card">
-              <div className="stat-icon">📅</div>
+              <div className="stat-icon"><Icons.calendar size={20} /></div>
               <div className="stat-content">
                 <h3>{stats.totalSessions}</h3>
                 <p>Total Sessions</p>
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon">⏰</div>
+              <div className="stat-icon"><Icons.clock size={20} /></div>
               <div className="stat-content">
                 <h3>{stats.upcomingSessions}</h3>
                 <p>Upcoming Sessions</p>
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon">👥</div>
+              <div className="stat-icon"><Icons.users size={20} /></div>
               <div className="stat-content">
                 <h3>{stats.joinedGroups}</h3>
                 <p>Study Groups</p>
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon">🎯</div>
+              <div className="stat-icon"><Icons.checkCircle size={20} /></div>
               <div className="stat-content">
                 <h3>{stats.organizedSessions}</h3>
                 <p>My Sessions</p>
@@ -171,9 +172,9 @@ const Dashboard = () => {
                         </span>}
                       </p>
                       <div className="session-details">
-                        <span>📅 {formatDate(session.date)}</span>
-                        <span>🕐 {formatTime(session.startTime)} - {formatTime(session.endTime)}</span>
-                        <span>📍 {session.location}</span>
+                        <span><Icons.calendar size={14} /> {formatDate(session.date)}</span>
+                        <span><Icons.clock size={14} /> {formatTime(session.startTime)} - {formatTime(session.endTime)}</span>
+                        <span><Icons.file size={14} /> {session.location}</span>
                       </div>
                     </div>
                     <div className="session-participants">
@@ -202,7 +203,7 @@ const Dashboard = () => {
                 recentActivity.map(session => (
                   <div key={session._id} className="activity-item">
                     <div className="activity-icon">
-                      {session.organizer._id === user?.id ? '📝' : '✅'}
+                      {session.organizer._id === user?.id ? <Icons.edit size={16} /> : <Icons.check size={16} />}
                     </div>
                     <div className="activity-content">
                       <p>
@@ -234,23 +235,23 @@ const Dashboard = () => {
           <h2>Quick Actions</h2>
           <div className="actions-grid">
             <button onClick={handleCreateSession} className="action-btn primary">
-              <span className="action-icon">📅</span>
+              <span className="action-icon"><Icons.calendar size={18} /></span>
               <span>Schedule Session</span>
             </button>
             <button onClick={() => navigate('/study-with-me')} className="action-btn primary">
-              <span className="action-icon">📚</span>
+              <span className="action-icon"><Icons.book size={18} /></span>
               <span>Study With Me</span>
             </button>
             <button onClick={() => navigate('/groups')} className="action-btn secondary">
-              <span className="action-icon">👥</span>
+              <span className="action-icon"><Icons.users size={18} /></span>
               <span>Browse Groups</span>
             </button>
             <button onClick={() => navigate('/profile')} className="action-btn secondary">
-              <span className="action-icon">⚙️</span>
+              <span className="action-icon"><Icons.settings size={18} /></span>
               <span>Edit Profile</span>
             </button>
             <button onClick={() => navigate('/resources')} className="action-btn secondary">
-              <span className="action-icon">📚</span>
+              <span className="action-icon"><Icons.file size={18} /></span>
               <span>Study Resources</span>
             </button>
           </div>

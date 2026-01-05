@@ -44,7 +44,6 @@ export const AuthProvider = ({ children }) => {
         headers: {
           Authorization: `Bearer ${storedToken}`,
         },
-        timeout: 10000, // 10 second timeout
       });
 
       if (res.data?.success && res.data?.data?.user) {
@@ -66,7 +65,6 @@ export const AuthProvider = ({ children }) => {
         logout();
       }
     } catch (error) {
-      console.warn('Token verification failed:', error.message);
       // 🔥 Invalid / expired token → logout
       logout();
     } finally {

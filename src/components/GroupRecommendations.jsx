@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { recommendationsAPI, groupsAPI } from '../utils/api';
+import { Icons } from '../ui/icons';
 import './GroupRecommendations.css';
 
 const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false }) => {
@@ -79,10 +80,10 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
 
   const getDifficultyIcon = (difficulty) => {
     switch (difficulty) {
-      case 'beginner': return '🌱';
-      case 'intermediate': return '⚡';
-      case 'advanced': return '🚀';
-      default: return '📚';
+      case 'beginner': return <Icons.book size={14} />;
+      case 'intermediate': return <Icons.timer size={14} />;
+      case 'advanced': return <Icons.trendingUp size={14} />;
+      default: return <Icons.book size={14} />;
     }
   };
 
@@ -140,7 +141,7 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
     <div className={`group-recommendations ${compact ? 'compact' : ''}`}>
       {showHeader && (
         <div className="recommendations-header">
-          <h3>🎯 Recommended for You</h3>
+          <h3><Icons.checkCircle size={20} /> Recommended for You</h3>
           <p>Groups based on your interests and activity</p>
         </div>
       )}
@@ -173,7 +174,7 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
                     {getDifficultyIcon(rec.difficulty)} {rec.difficulty}
                   </span>
                   <span className="members-count">
-                    👥 {rec.members_count} members
+                    <Icons.users size={14} /> {rec.members_count} members
                   </span>
                 </div>
               </div>

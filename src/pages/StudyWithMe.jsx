@@ -147,8 +147,11 @@ const StudyWithMe = () => {
       for (const group of groups) {
         try {
           const resResponse = await groupsAPI.getResources(group._id);
-          const resources = resResponse.data.data || [];
-          allResources.push(...resources.map(r => ({ ...r, groupName: group.name })));
+          const resourceData = resResponse.data.data || {};
+          const sharedResources = resourceData.shared || [];
+          const privateResources = resourceData.private || [];
+          const allGroupResources = [...sharedResources, ...privateResources];
+          allResources.push(...allGroupResources.map(r => ({ ...r, groupName: group.name })));
         } catch (err) {
           console.error(`Failed to load resources for group ${group._id}`, err);
         }

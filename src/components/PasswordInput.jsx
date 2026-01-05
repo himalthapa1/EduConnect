@@ -42,10 +42,10 @@ const PasswordInput = ({
     setShowPassword(prev => !prev);
   };
 
-  const handleFocus = (e) => {
+  const handleFocus = () => {
     setIsFocused(true);
     // Check caps lock on focus
-    setCapsLockOn(e.getModifierState('CapsLock'));
+    setCapsLockOn(event.getModifierState('CapsLock'));
   };
 
   const handleBlur = () => {

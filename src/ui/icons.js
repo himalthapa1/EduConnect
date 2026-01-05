@@ -35,12 +35,7 @@ export const Icons = {
   search: Lu.LuSearch,
   filter: Lu.LuFilter,
   chevronDown: Lu.LuChevronDown,
-  chevronLeft: Lu.LuChevronLeft,
   chevronRight: Lu.LuChevronRight,
   more: Lu.LuMoreHorizontal,
   trendingUp: Lu.LuTrendingUp,
-
-  // Additional UI
-  mapPin: Lu.LuMapPin,
-  x: Lu.LuX,
 };
