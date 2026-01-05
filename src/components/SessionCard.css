@@ -44,7 +44,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   margin: -26px 0 6px 0;
 }
 
@@ -82,7 +82,7 @@
 }
 
 .card-content {
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .session-description {
@@ -140,7 +140,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px 14px;
   margin-bottom: 12px;
-  padding-right: 8px; /* ensure details have breathing room on the right */
+  padding-right: 10%; /* ensure details have breathing room on the right */
 }
 
 .session-detail {
@@ -205,76 +205,51 @@
 
 .session-actions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-top: 8px;
+  justify-content: flex-start;
 }
 
-.join-btn {
-  padding: 6px 12px;
+.join-btn, .leave-btn, .complete-btn {
+  padding: 4px 8px;
   background: #10b981;
   color: white;
   border: none;
-  border-radius: 20px;
-  font-size: 12px;
+  border-radius: 16px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+  white-space: nowrap;
+  min-width: fit-content;
 }
 
-.join-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.18);
+.join-btn:hover:not(:disabled), .leave-btn:hover:not(:disabled), .complete-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.18);
 }
 
-.join-btn:disabled {
+.join-btn:disabled, .leave-btn:disabled, .complete-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
 .leave-btn {
-  padding: 6px 12px;
   background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
 }
 
 .leave-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.18);
-}
-
-.leave-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.18);
 }
 
 .complete-btn {
-  padding: 6px 12px;
   background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
 }
 
 .complete-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.18);
-}
-
-.complete-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.18);
 }
 
 .organizer-badge {
@@ -289,10 +264,11 @@
 .joined-badge {
   background: #10b981;
   color: white;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 11px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .organizer-actions {

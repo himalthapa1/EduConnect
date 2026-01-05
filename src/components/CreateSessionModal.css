@@ -1,33 +1,58 @@
+/* Modal Overlay - Locks background and centers modal */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 1000;
-  padding: 20px;
 }
 
-.modal-content {
-  background: white;
-  border-radius: 12px;
+/* Modal Container - Fixed height, flex column layout */
+.modal {
+  background: #ffffff;
   width: 100%;
-  max-width: 600px;
+  max-width: 720px;
   max-height: 90vh;
-  overflow-y: auto;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
+/* Sticky Modal Header */
 .modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 18px;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 2;
+  flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+/* Scrollable Modal Body */
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1; /* Takes remaining space and scrolls */
+}
+
+/* Sticky Modal Footer */
+.modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e5e7eb;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px 24px 0 24px;
-  margin-bottom: 20px;
+  justify-content: flex-end;
+  gap: 12px;
+  background: white;
+  position: sticky;
+  bottom: 0;
+  flex-shrink: 0; /* Prevent footer from shrinking */
 }
 
 .modal-header h2 {
@@ -195,24 +220,21 @@
     padding: 16px;
   }
 
-  .modal-content {
-    max-height: 95vh;
+  .modal {
+    max-width: 95vw;
+    max-height: 95vh; /* Use more of the viewport on tablets */
   }
 
   .modal-header {
-    padding: 20px 20px 0 20px;
+    padding: 16px;
   }
 
-  .session-form {
-    padding: 0 20px 20px 20px;
+  .modal-body {
+    padding: 16px;
   }
 
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .form-actions {
+  .modal-footer {
+    padding: 16px;
     flex-direction: column;
   }
 
@@ -227,15 +249,24 @@
     padding: 12px;
   }
 
+  .modal {
+    max-width: 100vw;
+    max-height: 98vh; /* Maximize height on small screens */
+  }
+
   .modal-header {
-    padding: 16px 16px 0 16px;
+    padding: 12px;
   }
 
   .modal-header h2 {
     font-size: 18px;
   }
 
-  .session-form {
-    padding: 0 16px 16px 16px;
+  .modal-body {
+    padding: 12px;
+  }
+
+  .modal-footer {
+    padding: 12px;
   }
 }

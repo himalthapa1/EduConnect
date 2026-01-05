@@ -105,20 +105,20 @@ function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false
 
           <div className="session-actions">
             {canShowJoin && (
-              <button className="join-btn" onClick={() => onJoin?.(session._id)} disabled={loading}>{loading ? 'Joining...' : 'Join Session'}</button>
+              <button className="join-btn" onClick={() => onJoin?.(session._id)} disabled={loading}>{loading ? 'Joining...' : 'Join'}</button>
             )}
 
             {canShowLeave && (
-              <button className="leave-btn" onClick={() => onLeave?.(session._id)} disabled={loading}>{loading ? 'Leaving...' : 'Leave Session'}</button>
+              <button className="leave-btn" onClick={() => onLeave?.(session._id)} disabled={loading}>{loading ? 'Leaving...' : 'Leave'}</button>
             )}
 
             {canShowComplete && (
               <button className="complete-btn" onClick={() => onComplete?.(session)} disabled={loading}>
-                {loading ? 'Completing...' : 'Complete Session'}
+                {loading ? 'Completing...' : 'Complete'}
               </button>
             )}
 
-            {isUserJoined && !isUserOrganizer && <span className="joined-badge">✓ Joined</span>}
+            {isUserJoined && !isUserOrganizer && <span className="joined-badge">Joined</span>}
           </div>
         </div>
       </div>

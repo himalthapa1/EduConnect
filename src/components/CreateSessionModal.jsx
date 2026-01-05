@@ -39,6 +39,14 @@ const CreateSessionModal = ({ onClose, onSuccess }) => {
     }
   }, [token]);
 
+  // Lock background scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -146,17 +154,18 @@ const CreateSessionModal = ({ onClose, onSuccess }) => {
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className="modal-content">
+      <div className="modal">
         <div className="modal-header">
           <h2>Schedule New Study Session</h2>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
 
-        {errors.general && (
-          <div className="error-message">{errors.general}</div>
-        )}
+        <div className="modal-body">
+          {errors.general && (
+            <div className="error-message">{errors.general}</div>
+          )}
 
-        <form onSubmit={handleSubmit} className="session-form">
+          <form onSubmit={handleSubmit} className="session-form">
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="title">Session Title *</label>
@@ -305,16 +314,17 @@ const CreateSessionModal = ({ onClose, onSuccess }) => {
               Make this session public (visible to all users)
             </label>
           </div>
-
-          <div className="form-actions">
-            <button type="button" onClick={onClose} className="cancel-btn" disabled={loading}>
-              Cancel
-            </button>
-            <button type="submit" className="submit-btn" disabled={loading || groupsLoading || (!formData.isPublic && !formData.group)}>
-              {loading ? 'Creating...' : groupsLoading ? 'Loading groups...' : (!formData.isPublic && !formData.group) ? 'Select a group' : 'Create Session'}
-            </button>
-          </div>
         </form>
+        </div>
+
+        <div className="modal-footer">
+          <button type="button" onClick={onClose} className="cancel-btn" disabled={loading}>
+            Cancel
+          </button>
+          <button type="submit" className="submit-btn" disabled={loading || groupsLoading || (!formData.isPublic && !formData.group)} onClick={handleSubmit}>
+            {loading ? 'Creating...' : groupsLoading ? 'Loading groups...' : (!formData.isPublic && !formData.group) ? 'Select a group' : 'Create Session'}
+          </button>
+        </div>
       </div>
     </div>
   );

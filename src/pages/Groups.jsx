@@ -8,95 +8,11 @@ import GroupRecommendations from '../components/GroupRecommendations';
 import './Groups.css';
 
 /* =========================
-   Resources Toggle (Accordion Style)
+   Group Detail Modal (Replaces Toggles)
 ========================= */
-const ResourcesToggle = ({ group, isOpen, onToggle }) => {
-  return (
-    <div className="resources-toggle" style={{ marginTop: '12px' }}>
-      <button
-        className="resources-button"
-        onClick={onToggle}
-        style={{
-          padding: '8px 16px',
-          background: isOpen ? '#2563eb' : '#3b82f6',
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          width: '100%',
-          textAlign: 'center'
-        }}
-      >
-        {isOpen ? '↑ Hide Resources' : '↓ Show Resources'}
-      </button>
+const GroupDetailModal = ({ group, isOpen, onClose, sessions, onJoinSession, onLeaveSession, onCompleteSession, currentUserId }) => {
+  if (!isOpen) return null;
 
-      {isOpen && (
-        <div
-          style={{
-            marginTop: '12px',
-            padding: '16px',
-            background: '#f9fafb',
-            borderRadius: '8px',
-            border: '1px solid #e5e7eb'
-          }}
-        >
-          <ResourcesList group={group} />
-        </div>
-      )}
-    </div>
-  );
-};
-
-/* =========================
-   Chat Toggle (Accordion Style)
-========================= */
-const ChatToggle = ({ group, isOpen, onToggle, currentUserId }) => {
-  const isMember = currentUserId && group.members?.some(m => m._id === currentUserId);
-
-  if (!isMember) return null;
-
-  return (
-    <div className="chat-toggle" style={{ marginTop: '12px' }}>
-      <button
-        className="chat-button"
-        onClick={onToggle}
-        style={{
-          padding: '8px 16px',
-          background: isOpen ? '#7c3aed' : '#8b5cf6',
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          width: '100%',
-          textAlign: 'center'
-        }}
-      >
-        {isOpen ? '↑ Hide Chat' : '💬 Show Group Chat'}
-      </button>
-
-      {isOpen && (
-        <div
-          style={{
-            marginTop: '12px',
-            background: '#faf5ff',
-            borderRadius: '8px',
-            border: '1px solid #d8b4fe',
-            overflow: 'hidden'
-          }}
-        >
-          <ChatWindow type="group" groupId={group._id} />
-        </div>
-      )}
-    </div>
-  );
-};
-
-/* =========================
-   Sessions Toggle (Accordion Style)
-========================= */
-const SessionsToggle = ({ group, sessions, isOpen, onToggle, onJoinSession, onLeaveSession, onCompleteSession, currentUserId }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -115,116 +31,98 @@ const SessionsToggle = ({ group, sessions, isOpen, onToggle, onJoinSession, onLe
   };
 
   return (
-    <div className="sessions-toggle" style={{ marginTop: '12px' }}>
-      <button
-        className="sessions-button"
-        onClick={onToggle}
-        style={{
-          padding: '8px 16px',
-          background: isOpen ? '#059669' : '#10b981',
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          width: '100%',
-          textAlign: 'center'
-        }}
-      >
-        {isOpen ? `↑ Hide Sessions (${sessions.length})` : `↓ Show Sessions (${sessions.length})`}
-      </button>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>{group.name}</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
 
-      {isOpen && (
-        <div
-          style={{
-            marginTop: '12px',
-            padding: '16px',
-            background: '#f0fdf4',
-            borderRadius: '8px',
-            border: '1px solid #bbf7d0'
-          }}
-        >
-          {sessions.length === 0 ? (
-            <p style={{ textAlign: 'center', color: '#666', margin: 0 }}>
-              No sessions scheduled yet
-            </p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {sessions.map(session => (
-                <div key={session._id} style={{
-                  padding: '12px',
-                  background: 'white',
-                  borderRadius: '6px',
-                  border: '1px solid #e5e7eb',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <div>
-                    <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{session.title}</h4>
-                    <div style={{ fontSize: '14px', color: '#666' }}>
-                      📅 {formatDate(session.date)} • 🕐 {formatTime(session.startTime)} - {formatTime(session.endTime)}
-                      <br />
-                      📍 {session.location} • 👥 {session.participants.length}/{session.maxParticipants} joined
+        <div className="modal-body">
+          <p className="group-description-full">{group.description}</p>
+
+          <div className="group-stats">
+            <span className="members-count">{group.members?.length || 0} / {group.maxMembers} members</span>
+            <span className="subject-badge">{group.subject}</span>
+          </div>
+
+          {/* Resources Section */}
+          <div className="modal-section">
+            <h3>Resources</h3>
+            <ResourcesList group={group} />
+          </div>
+
+          {/* Chat Section */}
+          <div className="modal-section">
+            <h3>Group Chat</h3>
+            <ChatWindow type="group" groupId={group._id} />
+          </div>
+
+          {/* Sessions Section */}
+          <div className="modal-section">
+            <h3>Sessions ({sessions.length})</h3>
+            {sessions.length === 0 ? (
+              <p className="no-sessions">No sessions scheduled yet</p>
+            ) : (
+              <div className="sessions-list">
+                {sessions.map(session => (
+                  <div key={session._id} className="session-item">
+                    <div className="session-info">
+                      <h4>{session.title}</h4>
+                      <div className="session-details">
+                        📅 {formatDate(session.date)} • 🕐 {formatTime(session.startTime)} - {formatTime(session.endTime)}
+                        <br />
+                        📍 {session.location} • 👥 {session.participants.length}/{session.maxParticipants} joined
+                      </div>
+                    </div>
+                    <div className="session-actions">
+                      {session.organizer._id === currentUserId && session.status === 'scheduled' && onCompleteSession && (
+                        <button
+                          onClick={() => onCompleteSession(session)}
+                          className="btn-complete-session"
+                        >
+                          Complete Session
+                        </button>
+                      )}
+                      {session.participants.some(p => p.user._id === currentUserId) ? (
+                        <button
+                          onClick={() => onLeaveSession(session._id)}
+                          className="btn-leave-session"
+                        >
+                          Leave
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => onJoinSession(session._id)}
+                          className="btn-join-session"
+                          disabled={session.participants.length >= session.maxParticipants}
+                        >
+                          {session.participants.length >= session.maxParticipants ? 'Full' : 'Join'}
+                        </button>
+                      )}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', alignItems: 'flex-end' }}>
-                    {session.organizer._id === currentUserId && session.status === 'scheduled' && onCompleteSession && (
-                      <button
-                        onClick={() => onCompleteSession(session)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#3b82f6',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px',
-                          marginBottom: '4px'
-                        }}
-                      >
-                        Complete Session
-                      </button>
-                    )}
-                    {session.participants.some(p => p.user._id === currentUserId) ? (
-                      <button
-                        onClick={() => onLeaveSession(session._id)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#ef4444',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Leave
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => onJoinSession(session._id)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#10b981',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                        disabled={session.participants.length >= session.maxParticipants}
-                      >
-                        {session.participants.length >= session.maxParticipants ? 'Full' : 'Join'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Leave Group */}
+          <div className="modal-footer">
+            <button
+              className="btn-leave-group"
+              onClick={() => {
+                if (confirm('Leave this group?')) {
+                  // This will be handled by parent component
+                  onClose();
+                }
+              }}
+            >
+              Leave Group
+            </button>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -243,12 +141,8 @@ const Groups = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  const [expandedBrowseGroupId, setExpandedBrowseGroupId] = useState(null);
-  const [expandedMyGroupId, setExpandedMyGroupId] = useState(null);
-  const [expandedBrowseSessionsId, setExpandedBrowseSessionsId] = useState(null);
-  const [expandedMySessionsId, setExpandedMySessionsId] = useState(null);
-  const [expandedBrowseChatId, setExpandedBrowseChatId] = useState(null);
-  const [expandedMyChatId, setExpandedMyChatId] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [showGroupModal, setShowGroupModal] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
 
@@ -275,10 +169,8 @@ const Groups = () => {
   useEffect(() => {
     setError(null);
     setSuccess(null);
-    setExpandedBrowseGroupId(null);
-    setExpandedMyGroupId(null);
-    setExpandedBrowseSessionsId(null);
-    setExpandedMySessionsId(null);
+    setSelectedGroup(null);
+    setShowGroupModal(false);
 
     if (activeTab === 'browse') {
       fetchGroups();
@@ -366,12 +258,18 @@ const Groups = () => {
     try {
       await groupsAPI.leaveGroup(groupId);
       setSuccess('Left the group');
-      setExpandedMyGroupId(null);
+      setSelectedGroup(null);
+      setShowGroupModal(false);
       fetchMyGroups();
       fetchGroups();
     } catch {
       setError('Failed to leave');
     }
+  };
+
+  const handleViewGroup = (group) => {
+    setSelectedGroup(group);
+    setShowGroupModal(true);
   };
 
   const handleInputChange = (e) => {
@@ -460,51 +358,60 @@ const Groups = () => {
           <div className="groups-grid">
           {groups.map(group => {
             const isMember = user && group.members?.some(m => m._id === user.id);
-            const isOpen = expandedBrowseGroupId === group._id;
-            const groupSessions = sessions.filter(session => session.group && session.group._id === group._id);
-            const sessionsOpen = expandedBrowseSessionsId === group._id;
 
             return (
               <div key={group._id} className="group-card">
-                <h3>{group.name}</h3>
-                <p>{group.description}</p>
-                <p><strong>{group.members?.length || 0}/{group.maxMembers}</strong> members</p>
+                <div className="group-header">
+                  <h3 className="group-name">{group.name}</h3>
+                  <span className="members-badge">{group.members?.length || 0} / {group.maxMembers}</span>
+                </div>
 
-                {!isMember ? (
-                  <button onClick={() => handleJoinGroup(group._id)} disabled={loading}>
-                    Join Group
+                <p className="group-description">
+                  {group.description.length > 120 ? `${group.description.substring(0, 120)}...` : group.description}
+                </p>
+
+                <div className="group-actions">
+                  <button
+                    className="btn-primary"
+                    onClick={() => handleViewGroup(group)}
+                  >
+                    View Group
                   </button>
-                ) : (
-                  <span style={{ color: 'green', fontWeight: 'bold' }}>✓ You're a member</span>
-                )}
 
-                <ResourcesToggle
-                  group={group}
-                  isOpen={isOpen}
-                  onToggle={() => setExpandedBrowseGroupId(isOpen ? null : group._id)}
-                />
-
-                {isMember && (
-                  <>
-                    <ChatToggle
-                      group={group}
-                      isOpen={expandedBrowseChatId === group._id}
-                      onToggle={() => setExpandedBrowseChatId(expandedBrowseChatId === group._id ? null : group._id)}
-                      currentUserId={user?.id}
-                    />
-
-                    <SessionsToggle
-                      group={group}
-                      sessions={groupSessions}
-                      isOpen={sessionsOpen}
-                      onToggle={() => setExpandedBrowseSessionsId(sessionsOpen ? null : group._id)}
-                      onJoinSession={handleJoinSession}
-                      onLeaveSession={handleLeaveSession}
-                      onCompleteSession={handleCompleteSession}
-                      currentUserId={user?.id}
-                    />
-                  </>
-                )}
+                  {isMember ? (
+                    <div className="secondary-actions">
+                      <button
+                        className="icon-btn"
+                        title="Group Chat"
+                        onClick={() => handleViewGroup(group)}
+                      >
+                        💬
+                      </button>
+                      <button
+                        className="icon-btn"
+                        title="Resources"
+                        onClick={() => handleViewGroup(group)}
+                      >
+                        📁
+                      </button>
+                      <button
+                        className="icon-btn"
+                        title="Sessions"
+                        onClick={() => handleViewGroup(group)}
+                      >
+                        📅
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      className="btn-secondary"
+                      onClick={() => handleJoinGroup(group._id)}
+                      disabled={loading}
+                    >
+                      Join Group
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -516,43 +423,56 @@ const Groups = () => {
       {activeTab === 'my-groups' && (
         <div className="groups-grid">
           {myGroups.map(group => {
-            const isOpen = expandedMyGroupId === group._id;
-            const groupSessions = sessions.filter(session => session.group && session.group._id === group._id);
-            const sessionsOpen = expandedMySessionsId === group._id;
-
             return (
               <div key={group._id} className="group-card">
-                <h3>{group.name}</h3>
-                <p>{group.description}</p>
-                <p><strong>{group.members?.length || 0}/{group.maxMembers}</strong> members</p>
+                <div className="group-header">
+                  <h3 className="group-name">{group.name}</h3>
+                  <span className="members-badge">{group.members?.length || 0} / {group.maxMembers}</span>
+                </div>
 
-                <button className="leave-button" onClick={() => handleLeaveGroup(group._id)}>
-                  Leave Group
-                </button>
+                <p className="group-description">
+                  {group.description.length > 120 ? `${group.description.substring(0, 120)}...` : group.description}
+                </p>
 
-                <ResourcesToggle
-                  group={group}
-                  isOpen={isOpen}
-                  onToggle={() => setExpandedMyGroupId(isOpen ? null : group._id)}
-                />
+                <div className="group-actions">
+                  <button
+                    className="btn-primary"
+                    onClick={() => handleViewGroup(group)}
+                  >
+                    View Group
+                  </button>
 
-                <ChatToggle
-                  group={group}
-                  isOpen={expandedMyChatId === group._id}
-                  onToggle={() => setExpandedMyChatId(expandedMyChatId === group._id ? null : group._id)}
-                  currentUserId={user?.id}
-                />
-
-                <SessionsToggle
-                  group={group}
-                  sessions={groupSessions}
-                  isOpen={sessionsOpen}
-                  onToggle={() => setExpandedMySessionsId(sessionsOpen ? null : group._id)}
-                  onJoinSession={handleJoinSession}
-                  onLeaveSession={handleLeaveSession}
-                  onCompleteSession={handleCompleteSession}
-                  currentUserId={user?.id}
-                />
+                  <div className="secondary-actions">
+                    <button
+                      className="icon-btn"
+                      title="Group Chat"
+                      onClick={() => handleViewGroup(group)}
+                    >
+                      💬
+                    </button>
+                    <button
+                      className="icon-btn"
+                      title="Resources"
+                      onClick={() => handleViewGroup(group)}
+                    >
+                      📁
+                    </button>
+                    <button
+                      className="icon-btn"
+                      title="Sessions"
+                      onClick={() => handleViewGroup(group)}
+                    >
+                      📅
+                    </button>
+                    <button
+                      className="icon-btn danger"
+                      title="Leave Group"
+                      onClick={() => handleLeaveGroup(group._id)}
+                    >
+                      🚪
+                    </button>
+                  </div>
+                </div>
               </div>
             );
           })}
@@ -599,6 +519,23 @@ const Groups = () => {
             {loading ? 'Creating...' : 'Create'}
           </button>
         </form>
+      )}
+
+      {/* Group Detail Modal */}
+      {showGroupModal && selectedGroup && (
+        <GroupDetailModal
+          group={selectedGroup}
+          isOpen={showGroupModal}
+          onClose={() => {
+            setShowGroupModal(false);
+            setSelectedGroup(null);
+          }}
+          sessions={sessions.filter(session => session.group && session.group._id === selectedGroup._id)}
+          onJoinSession={handleJoinSession}
+          onLeaveSession={handleLeaveSession}
+          onCompleteSession={handleCompleteSession}
+          currentUserId={user?.id}
+        />
       )}
 
       {showCompleteModal && selectedSession && (
