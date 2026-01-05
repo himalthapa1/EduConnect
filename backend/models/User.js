@@ -29,11 +29,23 @@ const userSchema = new mongoose.Schema(
     collegeName: {
       type: String
     },
-    currentYear: {
-      type: String,
-      enum: ['1st Year', '2nd Year', '3rd Year', '4th Year', 'Other'],
-      default: '1st Year'
+  currentYear: {
+    type: String,
+    enum: ['1st Year', '2nd Year', '3rd Year', '4th Year', 'Other'],
+    default: '1st Year'
+  },
+  preferences: {
+    interests: {
+      type: [String],
+      default: []
     }
+  },
+  onboarding: {
+    completed: {
+      type: Boolean,
+      default: false
+    }
+  }
   },
   { timestamps: true }
 );

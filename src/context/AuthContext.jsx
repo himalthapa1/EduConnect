@@ -51,6 +51,8 @@ export const AuthProvider = ({ children }) => {
           id: res.data.data.user.id || res.data.data.user._id,
           email: res.data.data.user.email,
           username: res.data.data.user.username,
+          preferences: res.data.data.user.preferences || { interests: [] },
+          onboarding: res.data.data.user.onboarding || { completed: false },
         };
 
         setUser(verifiedUser);
@@ -84,6 +86,8 @@ export const AuthProvider = ({ children }) => {
           id: userData.id || userData._id,
           email: userData.email,
           username: userData.username,
+          preferences: userData.preferences || { interests: [] },
+          onboarding: userData.onboarding || { completed: false },
         };
 
         localStorage.setItem('token', newToken);
@@ -163,6 +167,8 @@ export const AuthProvider = ({ children }) => {
           id: res.data.data.user.id || res.data.data.user._id,
           email: res.data.data.user.email,
           username: res.data.data.user.username,
+          preferences: res.data.data.user.preferences || user?.preferences || { interests: [] },
+          onboarding: res.data.data.user.onboarding || user?.onboarding || { completed: false },
         };
         setUser(normalizedUser);
         return { success: true };
@@ -184,6 +190,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateProfile,
+    verifyToken,
   };
 
   return (

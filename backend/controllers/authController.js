@@ -77,7 +77,9 @@ export const register = async (req, res) => {
           username: user.username,
           email: user.email,
           collegeName: user.collegeName,
-          currentYear: user.currentYear
+          currentYear: user.currentYear,
+          preferences: user.preferences,
+          onboarding: user.onboarding
         }
       }
     });
@@ -129,7 +131,9 @@ export const login = async (req, res) => {
         user: {
           id: user._id,
           username: user.username,
-          email: user.email
+          email: user.email,
+          preferences: user.preferences,
+          onboarding: user.onboarding
         }
       }
     });
@@ -163,7 +167,9 @@ export const verifyToken = async (req, res) => {
         user: {
           id: user._id,
           username: user.username,
-          email: user.email
+          email: user.email,
+          preferences: user.preferences,
+          onboarding: user.onboarding
         }
       }
     });

@@ -278,6 +278,67 @@
   border: 1px solid #fecaca;
 }
 
+/* Interests Grid for Preferences */
+.interests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.interest-button {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.interest-button:hover {
+  border-color: #6366f1;
+  background: #f8f9ff;
+}
+
+.interest-button.selected {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: white;
+}
+
+/* Interests Display */
+.interests-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.interest-tag {
+  background: #eef2ff;
+  color: #4f46e5;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #c7d2fe;
+}
+
+/* Selection Info */
+.selection-info {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.selection-info p {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
 /* Section Placeholder */
 .section-placeholder {
   max-width: 640px;
