@@ -10,7 +10,7 @@ import './Groups.css';
 /* =========================
    Group Detail Modal (Replaces Toggles)
 ========================= */
-const GroupDetailModal = ({ group, isOpen, onClose, sessions, onJoinSession, onLeaveSession, onCompleteSession, currentUserId }) => {
+const GroupDetailModal = ({ group, isOpen, onClose, onLeaveGroup, sessions, onJoinSession, onLeaveSession, onCompleteSession, currentUserId }) => {
   if (!isOpen) return null;
 
   const formatDate = (dateString) => {
@@ -112,9 +112,8 @@ const GroupDetailModal = ({ group, isOpen, onClose, sessions, onJoinSession, onL
             <button
               className="btn-leave-group"
               onClick={() => {
-                if (confirm('Leave this group?')) {
-                  // This will be handled by parent component
-                  onClose();
+                if (confirm('Are you sure you want to leave this group?')) {
+                  onLeaveGroup(group._id);
                 }
               }}
             >
@@ -254,7 +253,6 @@ const Groups = () => {
   };
 
   const handleLeaveGroup = async (groupId) => {
-    if (!confirm('Leave this group?')) return;
     try {
       await groupsAPI.leaveGroup(groupId);
       setSuccess('Left the group');
@@ -467,7 +465,11 @@ const Groups = () => {
                     <button
                       className="icon-btn danger"
                       title="Leave Group"
-                      onClick={() => handleLeaveGroup(group._id)}
+                      onClick={() => {
+                        if (confirm('Are you sure you want to leave this group?')) {
+                          handleLeaveGroup(group._id);
+                        }
+                      }}
                     >
                       🚪
                     </button>
@@ -530,6 +532,7 @@ const Groups = () => {
             setShowGroupModal(false);
             setSelectedGroup(null);
           }}
+          onLeaveGroup={handleLeaveGroup}
           sessions={sessions.filter(session => session.group && session.group._id === selectedGroup._id)}
           onJoinSession={handleJoinSession}
           onLeaveSession={handleLeaveSession}

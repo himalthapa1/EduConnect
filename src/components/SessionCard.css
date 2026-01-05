@@ -203,53 +203,79 @@
   display: inline;
 }
 
+/* Professional Button Group - State-driven layout */
 .session-actions {
   display: flex;
-  gap: 8px;
+  justify-content: center;
   align-items: center;
-  flex-wrap: nowrap;
-  margin-top: 8px;
-  justify-content: flex-start;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: nowrap !important; /* Force horizontal alignment */
+  flex-direction: row !important; /* Ensure horizontal direction */
+  white-space: nowrap; /* Prevent any text wrapping issues */
 }
 
-.join-btn, .leave-btn, .complete-btn {
-  padding: 4px 8px;
-  background: #10b981;
-  color: white;
-  border: none;
-  border-radius: 16px;
+/* Base button styles */
+.session-actions .btn {
+  padding: 6px 14px;
   font-size: 13px;
   font-weight: 600;
+  border-radius: 999px;
+  border: none;
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+  transition: all 0.2s ease;
   white-space: nowrap;
-  min-width: fit-content;
 }
 
-.join-btn:hover:not(:disabled), .leave-btn:hover:not(:disabled), .complete-btn:hover:not(:disabled) {
+/* Join button - Primary action */
+.join-btn {
+  background: #10b981;
+  color: white;
+}
+
+.join-btn:hover:not(:disabled) {
+  background: #059669;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.18);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
-.join-btn:disabled, .leave-btn:disabled, .complete-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+/* Joined status - Non-clickable indicator */
+.joined-btn {
+  background: #22c55e;
+  color: white;
+  cursor: default;
 }
 
+/* Leave button - Danger action */
 .leave-btn {
   background: #ef4444;
+  color: white;
 }
 
 .leave-btn:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.18);
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
+/* Complete button - Primary CTA */
 .complete-btn {
   background: #3b82f6;
+  color: white;
 }
 
 .complete-btn:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.18);
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Disabled states */
+.session-actions .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .organizer-badge {
@@ -293,5 +319,15 @@
 
   .detail-label {
     min-width: 100px;
+  }
+
+  /* Mobile button layout */
+  .session-actions {
+    gap: 8px;
+  }
+
+  .session-actions .btn {
+    font-size: 12px;
+    padding: 6px 10px;
   }
 }

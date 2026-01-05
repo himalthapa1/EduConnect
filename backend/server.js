@@ -10,7 +10,6 @@ import rateLimit from "express-rate-limit";
 import mongoose from "mongoose";
 import { Server } from "socket.io";
 import { fileURLToPath } from "url";
-
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import groupRoutes from "./routes/groups.js";

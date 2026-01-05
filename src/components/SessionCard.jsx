@@ -33,9 +33,13 @@ function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false
   const isUserJoined = session.participants?.some(p => p.user._id === user?.id);
   const isFull = session.participants?.length >= session.maxParticipants;
   const isUserOrganizer = session.organizer._id === user?.id;
+  const sessionStatus = session.status;
+
+  // Business logic for button visibility
   const canShowJoin = (showJoinButton ?? true) && !isUserOrganizer && !isUserJoined && !isFull;
-  const canShowLeave = !isUserOrganizer && isUserJoined;
-  const canShowComplete = showCompleteButton && isUserOrganizer && session.status === 'scheduled';
+  const canShowJoined = isUserJoined;
+  const canShowLeave = isUserJoined;
+  const canShowComplete = showCompleteButton && (isUserOrganizer || sessionStatus === 'ongoing') && sessionStatus !== 'completed';
 
   return (
     <div className="session-card">
@@ -103,22 +107,31 @@ function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false
             </div>
           )}
 
+          {/* Session Actions - State-driven button group */}
           <div className="session-actions">
             {canShowJoin && (
-              <button className="join-btn" onClick={() => onJoin?.(session._id)} disabled={loading}>{loading ? 'Joining...' : 'Join'}</button>
-            )}
-
-            {canShowLeave && (
-              <button className="leave-btn" onClick={() => onLeave?.(session._id)} disabled={loading}>{loading ? 'Leaving...' : 'Leave'}</button>
-            )}
-
-            {canShowComplete && (
-              <button className="complete-btn" onClick={() => onComplete?.(session)} disabled={loading}>
-                {loading ? 'Completing...' : 'Complete'}
+              <button className="btn join-btn" onClick={() => onJoin?.(session._id)} disabled={loading}>
+                {loading ? 'Joining...' : 'Join'}
               </button>
             )}
 
-            {isUserJoined && !isUserOrganizer && <span className="joined-badge">Joined</span>}
+            {canShowJoined && (
+              <button className="btn joined-btn" disabled>
+                Joined
+              </button>
+            )}
+
+            {canShowLeave && (
+              <button className="btn leave-btn" onClick={() => onLeave?.(session._id)} disabled={loading}>
+                {loading ? 'Leaving...' : 'Leave'}
+              </button>
+            )}
+
+            {canShowComplete && (
+              <button className="btn complete-btn" onClick={() => onComplete?.(session)} disabled={loading}>
+                {loading ? 'Completing...' : 'Complete'}
+              </button>
+            )}
           </div>
         </div>
       </div>
