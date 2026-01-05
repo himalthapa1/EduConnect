@@ -312,26 +312,73 @@ const Groups = () => {
   };
 
   /* =========================
-     FIXED CREATE GROUP
+     VALIDATION & CREATE GROUP
   ========================= */
+  const validateFormData = () => {
+    const errors = [];
+
+    // Basic info validation (Step 1)
+    if (!formData.name.trim()) {
+      errors.push('Group name is required');
+    } else if (formData.name.trim().length < 3) {
+      errors.push('Group name must be at least 3 characters');
+    } else if (formData.name.trim().length > 100) {
+      errors.push('Group name must not exceed 100 characters');
+    }
+
+    if (!formData.description.trim()) {
+      errors.push('Description is required');
+    } else if (formData.description.trim().length < 10) {
+      errors.push('Description must be at least 10 characters');
+    } else if (formData.description.trim().length > 500) {
+      errors.push('Description must not exceed 500 characters');
+    }
+
+    // Tags validation (Step 2-4)
+    if (formData.tags.topics.length === 0) {
+      errors.push('Please select at least 1 topic');
+    } else if (formData.tags.topics.length > 3) {
+      errors.push('Maximum 3 topics allowed');
+    }
+
+    if (!formData.tags.level) {
+      errors.push('Please select a skill level');
+    }
+
+    // Max members validation
+    if (formData.maxMembers < 2 || formData.maxMembers > 500) {
+      errors.push('Max members must be between 2 and 500');
+    }
+
+    return errors;
+  };
+
   const handleCreateGroup = async (e) => {
     e.preventDefault();
+
+    // Validate form data
+    const validationErrors = validateFormData();
+    if (validationErrors.length > 0) {
+      setError(validationErrors.join('. '));
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
       const payload = {
-        name: formData.name,
-        description: formData.description,
+        name: formData.name.trim(),
+        description: formData.description.trim(),
         subject: formData.subject,
         tags: formData.tags,
-        maxMembers: formData.maxMembers,
+        maxMembers: parseInt(formData.maxMembers),
         isPublic: formData.isPublic,
       };
 
       await groupsAPI.createGroup(payload);
 
-      setSuccess('Group created!');
+      setSuccess('Group created successfully!');
       setFormData({
         name: '',
         description: '',
@@ -349,7 +396,8 @@ const Groups = () => {
       setActiveTab('my-groups');
     } catch (err) {
       console.error('Create group error:', err.response?.data || err);
-      setError(err.response?.data?.message || 'Failed to create group');
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Failed to create group';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -676,7 +724,14 @@ const Groups = () => {
                   type="button"
                   onClick={nextStep}
                   className="btn-primary"
-                  disabled={tagStep === 1 && (!formData.name.trim() || !formData.description.trim())}
+                  disabled={
+                    tagStep === 1 && (
+                      !formData.name.trim() ||
+                      formData.name.trim().length < 3 ||
+                      !formData.description.trim() ||
+                      formData.description.trim().length < 10
+                    )
+                  }
                 >
                   Next
                 </button>

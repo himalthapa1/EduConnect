@@ -34,6 +34,12 @@ const Onboarding = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Safety check - if no token, redirect to login
+  if (!token) {
+    navigate('/login');
+    return null;
+  }
+
   const toggleInterest = (interest) => {
     setSelectedInterests(prev => {
       if (prev.includes(interest)) {
@@ -51,6 +57,11 @@ const Onboarding = () => {
       return;
     }
 
+    if (!token) {
+      setError('Authentication required. Please log in again.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -58,7 +69,10 @@ const Onboarding = () => {
       const res = await axios.post(
         'http://localhost:3001/api/users/preferences',
         { interests: selectedInterests },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 10000 // 10 second timeout
+        }
       );
 
       if (res.data?.success) {
@@ -69,11 +83,23 @@ const Onboarding = () => {
         setError('Failed to save preferences');
       }
     } catch (err) {
-      const errorMessage = err.response?.data?.error?.message ||
-                          err.response?.data?.error ||
-                          err.message ||
-                          'Failed to save preferences';
-      setError(typeof errorMessage === 'string' ? errorMessage : 'Failed to save preferences');
+      console.error('Onboarding submit error:', err);
+
+      let errorMessage = 'Failed to save preferences. Please try again.';
+
+      if (err.code === 'ECONNREFUSED' || err.message?.includes('Network Error')) {
+        errorMessage = 'Connection failed. Please check your internet connection and try again.';
+      } else if (err.response?.status === 401) {
+        errorMessage = 'Authentication expired. Please log in again.';
+      } else if (err.response?.status === 400) {
+        errorMessage = err.response.data?.error || 'Invalid preferences data.';
+      } else if (err.response?.data?.error?.message) {
+        errorMessage = err.response.data.error.message;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
