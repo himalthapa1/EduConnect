@@ -146,6 +146,7 @@ const Groups = () => {
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
+  const [menuOpenGroupId, setMenuOpenGroupId] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -496,9 +497,29 @@ const Groups = () => {
                     <FiCalendar />
                     Sessions
                   </button>
-                  <button className="menu-clean">
-                    <FiMoreHorizontal />
-                  </button>
+                  <div className="menu-container">
+                    <button
+                      className="menu-clean"
+                      onClick={() => setMenuOpenGroupId(menuOpenGroupId === group._id ? null : group._id)}
+                    >
+                      <FiMoreHorizontal />
+                    </button>
+                    {menuOpenGroupId === group._id && (
+                      <div className="group-menu-dropdown">
+                        <button
+                          className="menu-item leave-group"
+                          onClick={() => {
+                            if (confirm('Are you sure you want to leave this group?')) {
+                              handleLeaveGroup(group._id);
+                              setMenuOpenGroupId(null);
+                            }
+                          }}
+                        >
+                          Leave Group
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             );
