@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { groupsAPI, sessionsAPI } from '../utils/api';
 import ResourcesList from '../components/ResourcesList';
@@ -146,7 +146,7 @@ const Groups = () => {
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
-  const [menuOpenGroupId, setMenuOpenGroupId] = useState(null);
+  const [actionsModeGroupId, setActionsModeGroupId] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -193,6 +193,30 @@ const Groups = () => {
       loadTagOptions();
     }
   }, [activeTab, user]);
+
+  // Click outside to exit actions mode
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (actionsModeGroupId && !event.target.closest('.group-card-clean')) {
+        setActionsModeGroupId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [actionsModeGroupId]);
+
+  // Keyboard handler for ESC
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && actionsModeGroupId) {
+        setActionsModeGroupId(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [actionsModeGroupId]);
 
   const loadTagOptions = async () => {
     try {
@@ -277,13 +301,17 @@ const Groups = () => {
   const handleLeaveGroup = async (groupId) => {
     try {
       await groupsAPI.leaveGroup(groupId);
-      setSuccess('Left the group');
+      setSuccess('Left the group successfully');
       setSelectedGroup(null);
       setShowGroupModal(false);
+      setActionsModeGroupId(null); // Exit actions mode after successful leave
       fetchMyGroups();
       fetchGroups();
-    } catch {
-      setError('Failed to leave');
+    } catch (error) {
+      console.error('Leave group error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to leave group';
+      setError(errorMessage);
+      // Don't exit actions mode on error so user can try again
     }
   };
 
@@ -489,37 +517,40 @@ const Groups = () => {
 
                 {/* Footer Actions */}
                 <div className="footer-clean">
-                  <button onClick={() => handleViewGroup(group)}>
+                  <button
+                    className="footer-btn"
+                    onClick={() => handleViewGroup(group)}
+                  >
                     <FiMessageCircle />
                     Chat
                   </button>
-                  <button onClick={() => handleViewGroup(group)}>
+                  <button
+                    className="footer-btn"
+                    onClick={() => handleViewGroup(group)}
+                  >
                     <FiCalendar />
                     Sessions
                   </button>
-                  <div className="menu-container">
+                  {actionsModeGroupId === group._id ? (
+                    <button
+                      className="footer-btn leave-btn"
+                      onClick={() => {
+                        if (confirm('Are you sure you want to leave this group?')) {
+                          handleLeaveGroup(group._id);
+                        }
+                      }}
+                    >
+                      <Icons.logout size={16} />
+                      Leave
+                    </button>
+                  ) : (
                     <button
                       className="menu-clean"
-                      onClick={() => setMenuOpenGroupId(menuOpenGroupId === group._id ? null : group._id)}
+                      onClick={() => setActionsModeGroupId(actionsModeGroupId === group._id ? null : group._id)}
                     >
                       <FiMoreHorizontal />
                     </button>
-                    {menuOpenGroupId === group._id && (
-                      <div className="group-menu-dropdown">
-                        <button
-                          className="menu-item leave-group"
-                          onClick={() => {
-                            if (confirm('Are you sure you want to leave this group?')) {
-                              handleLeaveGroup(group._id);
-                              setMenuOpenGroupId(null);
-                            }
-                          }}
-                        >
-                          Leave Group
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
             );

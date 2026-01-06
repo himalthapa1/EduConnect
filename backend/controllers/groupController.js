@@ -244,52 +244,92 @@ export const getTagOptions = async (req, res) => {
 export const joinGroup = async (req, res) => {
   try {
     const userId = getUserObjectId(req);
-    const group = await StudyGroup.findById(req.params.groupId);
-    if (!userId || !group) return res.status(404).json({ message: "Not found" });
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    if (!group.members.some((m) => m.equals(userId))) {
-      group.members.push(userId);
-      await group.save();
-
-      // Update user tracking for recommendations
-      await User.findByIdAndUpdate(userId, {
-        $addToSet: { joinedGroups: group._id },
-        $inc: { activityScore: 10 } // Joining group increases activity
-      });
-
-      // Update group activity score
-      await group.updateActivityScore();
+    const { groupId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+      return res.status(400).json({ message: "Invalid group ID" });
     }
 
-    res.json({ success: true });
+    // Check if group exists first
+    const group = await StudyGroup.findById(groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    // Check if user is already a member
+    const isMember = group.members.some((m) => m.equals(userId));
+    if (isMember) {
+      return res.status(400).json({ message: "User is already a member of this group" });
+    }
+
+    // Atomic update to add member without triggering full document validation
+    await StudyGroup.findByIdAndUpdate(
+      groupId,
+      { $addToSet: { members: userId } }
+    );
+
+    // Update user tracking for recommendations
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: { joinedGroups: group._id },
+      $inc: { activityScore: 10 } // Joining group increases activity
+    });
+
+    // Update group activity score (find fresh document to avoid validation issues)
+    const updatedGroup = await StudyGroup.findById(groupId);
+    await updatedGroup.updateActivityScore();
+
+    res.json({ success: true, message: "Joined group successfully" });
   } catch (error) {
     console.error('Join group error:', error);
-    res.status(500).json({ message: "Join failed" });
+    res.status(500).json({ message: "Failed to join group", error: error.message });
   }
 };
 
 export const leaveGroup = async (req, res) => {
   try {
+    const { groupId } = req.params;
     const userId = getUserObjectId(req);
-    const group = await StudyGroup.findById(req.params.groupId);
-    if (!userId || !group) return res.status(404).json({ message: "Not found" });
 
-    group.members = group.members.filter((m) => !m.equals(userId));
-    await group.save();
+    // Early validation
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+      return res.status(400).json({ message: "Invalid group ID" });
+    }
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Check if group exists first
+    const group = await StudyGroup.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    // Check if user is actually a member
+    const isMember = group.members.some((m) => m.equals(userId));
+    if (!isMember) {
+      return res.status(400).json({ message: "User is not a member of this group" });
+    }
+
+    // Atomic removal using $pull without triggering full document validation
+    await StudyGroup.findByIdAndUpdate(
+      groupId,
+      { $pull: { members: userId } }
+    );
 
     // Update user tracking for recommendations
     await User.findByIdAndUpdate(userId, {
       $pull: { joinedGroups: group._id },
-      $inc: { activityScore: -5 } // Leaving group decreases activity (less than joining)
+      $inc: { activityScore: -5 } // Leaving group decreases activity
     });
 
-    // Update group activity score
-    await group.updateActivityScore();
+    // Update group activity score (find fresh document to avoid validation issues)
+    const updatedGroup = await StudyGroup.findById(groupId);
+    await updatedGroup.updateActivityScore();
 
-    res.json({ success: true });
+    res.json({ success: true, message: "Left group successfully" });
   } catch (error) {
     console.error('Leave group error:', error);
-    res.status(500).json({ message: "Leave failed" });
+    res.status(500).json({ message: "Failed to leave group", error: error.message });
   }
 };
 
