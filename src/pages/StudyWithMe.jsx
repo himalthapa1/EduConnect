@@ -35,6 +35,9 @@ const StudyWithMe = () => {
   });
   const [userGroups, setUserGroups] = useState([]);
   const [availableResources, setAvailableResources] = useState([]);
+  const [showResourceList, setShowResourceList] = useState(false);
+  const [activePdf, setActivePdf] = useState(null);
+  const [showPdfDrawer, setShowPdfDrawer] = useState(false);
   const studyIntervalRef = useRef(null);
   const breakIntervalRef = useRef(null);
 
@@ -386,6 +389,42 @@ const StudyWithMe = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleResourceClick = (resource) => {
+    // Check if it's a PDF (by file extension or resource type)
+    const isPdf = resource.file?.toLowerCase().endsWith('.pdf') ||
+                  resource.resourceType === 'pdf' ||
+                  resource.title?.toLowerCase().includes('.pdf');
+
+    if (isPdf) {
+      setActivePdf(resource);
+      setShowPdfDrawer(true);
+      setShowResourceList(false);
+    } else {
+      // For non-PDF resources, open in new tab as before
+      if (resource.url) {
+        window.open(resource.url, '_blank', 'noopener,noreferrer');
+      }
+      setShowResourceList(false);
+    }
+  };
+
+  const closePdfDrawer = () => {
+    setShowPdfDrawer(false);
+    setActivePdf(null);
+  };
+
+  // Keyboard shortcut for closing drawer
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && showPdfDrawer) {
+        closePdfDrawer();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showPdfDrawer]);
+
   if (step === 'setup') {
     return (
       <div className="study-with-me-container">
@@ -561,23 +600,57 @@ const StudyWithMe = () => {
       ? sessionData.studySecondsLeft
       : sessionData.breakSecondsLeft;
 
-    const modeLabel = sessionData.pomodoroWorkMinutes > 0
-      ? `Pomodoro #${sessionData.currentCycle} - ${sessionData.cyclePhase === 'work' ? 'Work' : 'Break'}`
-      : (sessionData.mode === 'studying' ? 'Study Time' : 'Break Time');
+
 
     return (
-      <div className={`study-with-me-container studying ${sessionData.mode === 'break' ? 'on-break' : ''}`}>
+      <div className={`study-with-me-container studying ${sessionData.mode === 'break' ? 'on-break' : ''} ${showPdfDrawer ? 'pdf-drawer-open' : ''}`}>
         <div className="study-timer-section">
           <div className="timer-display">
             <div className="timer-circle">
               <span className="timer-text">{formatTime(currentTimeLeft)}</span>
-            </div>
-            <div className="mode-indicator">
-              {modeLabel}
+              <div className="timer-label">Focus</div>
             </div>
           </div>
 
+
+
           <div className="timer-controls">
+            <button
+              className="control-btn resources"
+              onClick={() => setShowResourceList(!showResourceList)}
+              title="Access study resources"
+            >
+              📎 Resources ({formData.resources.length})
+            </button>
+
+            {showResourceList && (
+              <div className="resources-dropdown">
+                <div className="resources-list">
+                  {formData.resources.length > 0 ? (
+                    formData.resources.map(resource => (
+                      <button
+                        key={resource._id}
+                        className="resource-item-btn"
+                        onClick={() => handleResourceClick(resource)}
+                        title={`Open ${resource.title}`}
+                      >
+                        <span className="resource-title">{resource.title}</span>
+                        <span className="resource-type">
+                          {resource.file?.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Link'}
+                        </span>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="no-session-resources">
+                      No resources attached to this session
+                      <br />
+                      <small>Go back to setup to add resources</small>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {sessionData.mode === 'studying' ? (
               <>
                 {sessionData.pomodoroWorkMinutes === 0 && (
@@ -605,35 +678,44 @@ const StudyWithMe = () => {
         </div>
 
         <div className="study-content">
-          <div className="notes-section">
-            <h3>📝 Notes</h3>
-            <textarea
-              className="notes-editor"
-              placeholder="Take notes during your study session..."
-              value={sessionData.notes}
-              onChange={(e) => setSessionData(prev => ({ ...prev, notes: e.target.value }))}
-            />
-          </div>
-
-          {formData.resources.length > 0 && (
-            <div className="resources-section">
-              <h3>📚 Resources</h3>
-              <div className="resources-grid">
-                {formData.resources.map(resource => (
-                  <div key={resource._id} className="resource-card">
-                    <h4>{resource.title}</h4>
-                    <p>{resource.description || 'No description'}</p>
-                    {resource.url && (
-                      <a href={resource.url} target="_blank" rel="noopener noreferrer">
-                        Open Resource →
-                      </a>
-                    )}
-                  </div>
-                ))}
+          <div className={`notes-section ${showPdfDrawer ? 'with-pdf' : ''}`}>
+            {showPdfDrawer && activePdf && (
+              <div className="pdf-in-notes">
+                <div className="pdf-header">
+                  <h4>{activePdf.title}</h4>
+                  <button
+                    className="pdf-close-btn"
+                    onClick={closePdfDrawer}
+                    title="Close PDF (Esc)"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="pdf-viewer-small">
+                  <iframe
+                    src={`/${activePdf.file}`}
+                    title={activePdf.title}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 'none' }}
+                  />
+                </div>
               </div>
+            )}
+
+            <div className="notes-content">
+              <h3>📝 Notes</h3>
+              <textarea
+                className="notes-editor"
+                placeholder="Jot down thoughts, formulas, or ideas while you focus..."
+                value={sessionData.notes}
+                onChange={(e) => setSessionData(prev => ({ ...prev, notes: e.target.value }))}
+              />
             </div>
-          )}
+          </div>
         </div>
+
+
       </div>
     );
   }

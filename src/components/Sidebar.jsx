@@ -1,14 +1,12 @@
-import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Icons } from '../ui/icons';
 import './Sidebar.css';
 
-const Sidebar = () => {
+const Sidebar = ({ collapsed, onToggleCollapse }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menuItems = [
     {
@@ -59,17 +57,17 @@ const Sidebar = () => {
   };
 
   return (
-    <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+    <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
         <div className="logo">
           <span className="logo-icon"><Icons.book size={20} /></span>
-          {!isCollapsed && <span className="logo-text">EduConnect</span>}
+          {!collapsed && <span className="logo-text">EduConnect</span>}
         </div>
         <button
           className="collapse-btn"
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={() => onToggleCollapse(!collapsed)}
         >
-          {isCollapsed ? '→' : '←'}
+          {collapsed ? '→' : '←'}
         </button>
       </div>
 
@@ -79,10 +77,10 @@ const Sidebar = () => {
             key={item.id}
             className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
             onClick={() => handleNavigation(item.path)}
-            title={isCollapsed ? item.label : ''}
+            title={collapsed ? item.label : ''}
           >
             <span className="nav-icon">{item.icon}</span>
-            {!isCollapsed && <span className="nav-label">{item.label}</span>}
+            {!collapsed && <span className="nav-label">{item.label}</span>}
           </button>
         ))}
       </nav>
@@ -94,7 +92,7 @@ const Sidebar = () => {
               <div className="user-avatar">
                 {user.username?.charAt(0).toUpperCase()}
               </div>
-              {!isCollapsed && (
+              {!collapsed && (
                 <div className="user-details">
                   <div className="user-name">{user.username}</div>
                   <div className="user-email">{user.email}</div>
@@ -106,10 +104,10 @@ const Sidebar = () => {
         <button
           className="logout-btn"
           onClick={handleLogout}
-          title={isCollapsed ? 'Logout' : ''}
+          title={collapsed ? 'Logout' : ''}
         >
           <span className="logout-icon"><Icons.logout size={16} /></span>
-          {!isCollapsed && <span className="logout-text">Logout</span>}
+          {!collapsed && <span className="logout-text">Logout</span>}
         </button>
       </div>
     </div>

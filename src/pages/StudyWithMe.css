@@ -7,13 +7,20 @@
 }
 
 .study-with-me-container.studying {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  background: linear-gradient(135deg, #1E293B 0%, #243447 100%);
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 2rem;
   align-items: start;
   padding: 2rem;
   min-height: 100vh;
+  transition: all 0.2s ease;
+}
+
+/* PDF Drawer as Overlay */
+
+.study-with-me-container.studying.session-active {
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
 }
 
 .study-with-me-container.completed {
@@ -212,12 +219,11 @@
 
 /* Studying Phase */
 .study-timer-section {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  background: #334155;
   border-radius: 20px;
-  padding: 3rem;
+  padding: 3.5rem 3rem;
   text-align: center;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 2rem;
 }
@@ -231,25 +237,59 @@
   width: 200px;
   height: 200px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: transparent;
+  border: 4px solid #6366F1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   margin: 0 auto;
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  position: relative;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
   transition: all 0.3s ease;
 }
 
+.timer-circle::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  border-top-color: rgba(99, 102, 241, 0.3);
+  animation: spin 60s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .study-with-me-container.studying.on-break .timer-circle {
-  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-  box-shadow: 0 10px 30px rgba(243, 156, 18, 0.3);
+  border-color: #f39c12;
+  box-shadow: 0 4px 20px rgba(243, 156, 18, 0.3);
+}
+
+.study-with-me-container.studying.on-break .timer-circle::before {
+  border-top-color: rgba(243, 156, 18, 0.3);
 }
 
 .timer-text {
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: 600;
   color: white;
   font-family: 'Courier New', monospace;
+  margin-bottom: 0.25rem;
+}
+
+.timer-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .mode-indicator {
@@ -278,28 +318,46 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   min-width: 140px;
 }
 
 .control-btn.break {
-  background: #f39c12;
-  color: white;
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366F1;
+  border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
 .control-btn.resume {
-  background: #27ae60;
-  color: white;
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366F1;
+  border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
 .control-btn.end {
-  background: #e74c3c;
-  color: white;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .control-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transform: scale(1.02);
+}
+
+.control-btn.break:hover {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.control-btn.resume:hover {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.control-btn.end:hover {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  border-color: rgba(231, 76, 60, 0.5);
 }
 
 /* Study Content */
@@ -309,13 +367,44 @@
   gap: 2rem;
 }
 
-.notes-section,
-.resources-section {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+.notes-section {
+  background: #334155;
   border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.notes-section.with-pdf {
+  flex-direction: column;
+}
+
+.notes-section.with-pdf .pdf-in-notes {
+  flex: 0 0 45%;
+  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+  border: 1px solid #e2e8f0;
+}
+
+.notes-section.with-pdf .notes-content {
+  flex: 1;
+  min-height: 200px;
+}
+
+.notes-section:not(.with-pdf) .notes-content {
+  flex: 1;
+}
+
+.resources-section {
+  background: #334155;
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .notes-section h3,
@@ -327,19 +416,26 @@
 .notes-editor {
   width: 100%;
   min-height: 300px;
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  border-radius: 10px;
-  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
   font-size: 1rem;
-  color: #333;
+  color: #334155;
   resize: vertical;
   font-family: inherit;
+  line-height: 1.6;
 }
 
 .notes-editor:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.notes-editor::placeholder {
+  color: #94a3b8;
+  font-style: italic;
 }
 
 .resources-grid {
@@ -446,11 +542,186 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
+/* Resources Trigger & Dropdown */
+.resources-trigger {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.resources-btn {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366F1;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.resources-btn:hover {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.resources-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #334155;
+  border: 1px solid #475569;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  margin-top: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.resources-dropdown .resources-list {
+  padding: 0.5rem;
+}
+
+.resource-item-btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resource-item-btn:hover {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366F1;
+}
+
+.resource-title {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.resource-type {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.no-session-resources {
+  padding: 1rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.no-session-resources small {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.8rem;
+}
+
+/* PDF Drawer */
+.pdf-drawer {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  width: 35%;
+  min-width: 400px;
+  max-width: 600px;
+  height: calc(100vh - 4rem);
+  background: #334155;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.study-with-me-container.pdf-drawer-open .pdf-drawer {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.pdf-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #475569;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.pdf-drawer-header h4 {
+  margin: 0;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  max-width: 80%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pdf-close-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.pdf-close-btn:hover {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+}
+
+.pdf-viewer {
+  flex: 1;
+  min-height: 600px;
+  background: white;
+  border-radius: 0 0 20px 20px;
+  overflow: hidden;
+}
+
+.pdf-viewer iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .study-with-me-container.studying {
     grid-template-columns: 1fr;
     gap: 1rem;
+  }
+
+  .study-with-me-container.studying.pdf-drawer-open {
+    grid-template-columns: 1fr;
   }
 
   .study-setup {
@@ -480,5 +751,57 @@
   .completion-actions {
     flex-direction: column;
     align-items: center;
+  }
+
+  .pdf-drawer {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    width: auto;
+    min-width: auto;
+    max-width: none;
+    height: calc(100vh - 8rem);
+    z-index: 1000;
+  }
+
+  .pdf-viewer {
+    min-height: 400px;
+  }
+
+  .pdf-in-notes {
+    margin-bottom: 1rem;
+  }
+
+  .pdf-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .pdf-header h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #334155;
+    max-width: 80%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pdf-viewer-small {
+    height: 100%;
+    background: white;
+  }
+
+  .pdf-viewer-small iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
   }
 }
