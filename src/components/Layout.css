@@ -1,27 +1,40 @@
 .layout {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  min-height: 100vh;
-  transition: grid-template-columns 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
 }
 
-.layout.collapsed {
-  grid-template-columns: 70px 1fr;
+.layout.collapsed .sidebar {
+  width: 70px;
 }
 
 .main-content {
-  background-color: #f8f9fa;
-  width: 100%;
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto;
   overflow-x: auto;
+  background-color: #ffffff;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .layout {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 
-  .layout.collapsed {
-    grid-template-columns: 1fr;
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-top: 0;
   }
 }

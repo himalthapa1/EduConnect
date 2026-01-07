@@ -333,6 +333,112 @@ export const leaveGroup = async (req, res) => {
   }
 };
 
+export const removeMember = async (req, res) => {
+  try {
+    const { groupId, memberId } = req.params;
+    const adminId = getUserObjectId(req);
+
+    // Validation
+    if (!mongoose.Types.ObjectId.isValid(groupId) || !mongoose.Types.ObjectId.isValid(memberId)) {
+      return res.status(400).json({ message: "Invalid group or member ID" });
+    }
+
+    if (!adminId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Find group and verify admin permissions
+    const group = await StudyGroup.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    if (!group.isAdmin(adminId)) {
+      return res.status(403).json({ message: "Only group admin can remove members" });
+    }
+
+    // Cannot remove self
+    if (adminId.equals(memberId)) {
+      return res.status(400).json({ message: "Admin cannot remove themselves from the group" });
+    }
+
+    // Check if target user is a member
+    const isMember = group.members.some((m) => m.equals(memberId));
+    if (!isMember) {
+      return res.status(400).json({ message: "User is not a member of this group" });
+    }
+
+    // Atomic removal using $pull
+    await StudyGroup.findByIdAndUpdate(
+      groupId,
+      { $pull: { members: memberId } }
+    );
+
+    // Update user tracking for recommendations
+    await User.findByIdAndUpdate(memberId, {
+      $pull: { joinedGroups: group._id },
+      $inc: { activityScore: -5 }
+    });
+
+    // Update group activity score
+    const updatedGroup = await StudyGroup.findById(groupId);
+    await updatedGroup.updateActivityScore();
+
+    res.json({ success: true, message: "Member removed successfully" });
+  } catch (error) {
+    console.error('Remove member error:', error);
+    res.status(500).json({ message: "Failed to remove member", error: error.message });
+  }
+};
+
+export const deleteGroup = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const adminId = getUserObjectId(req);
+
+    // Validation
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+      return res.status(400).json({ message: "Invalid group ID" });
+    }
+
+    if (!adminId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Find group and verify admin permissions
+    const group = await StudyGroup.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    if (!group.isAdmin(adminId)) {
+      return res.status(403).json({ message: "Only group admin can delete the group" });
+    }
+
+    // Get all members for cleanup
+    const memberIds = group.members.map(m => m);
+
+    // Delete the group
+    await StudyGroup.findByIdAndDelete(groupId);
+
+    // Update all users' joinedGroups arrays
+    if (memberIds.length > 0) {
+      await User.updateMany(
+        { _id: { $in: memberIds } },
+        {
+          $pull: { joinedGroups: groupId },
+          $inc: { activityScore: -5 }
+        }
+      );
+    }
+
+    res.json({ success: true, message: "Group deleted successfully" });
+  } catch (error) {
+    console.error('Delete group error:', error);
+    res.status(500).json({ message: "Failed to delete group", error: error.message });
+  }
+};
+
 /* =========================
    RESOURCE CRUD
 ========================= */

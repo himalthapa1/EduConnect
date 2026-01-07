@@ -44,8 +44,7 @@ const PasswordInput = ({
 
   const handleFocus = () => {
     setIsFocused(true);
-    // Check caps lock on focus
-    setCapsLockOn(event.getModifierState('CapsLock'));
+    // Caps lock detection is handled by global keydown/keyup listeners
   };
 
   const handleBlur = () => {

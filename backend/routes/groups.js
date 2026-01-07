@@ -3,6 +3,8 @@ import {
   createGroup,
   joinGroup,
   leaveGroup,
+  removeMember,
+  deleteGroup,
   listGroups,
   getMyGroups,
   getGroupById,
@@ -32,7 +34,8 @@ router.get("/my-groups", authenticateToken, getMyGroups);
 router.post("/create", authenticateToken, createGroup);
 router.post("/join/:groupId", authenticateToken, joinGroup);
 router.post("/leave/:groupId", authenticateToken, leaveGroup);
-// Note: updateGroup/deleteGroup endpoints not available in controller
+router.delete("/:groupId/members/:memberId", authenticateToken, removeMember);
+router.delete("/:groupId", authenticateToken, deleteGroup);
 
 
 // Resources

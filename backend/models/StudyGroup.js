@@ -182,6 +182,18 @@ studyGroupSchema.methods.isMember = function(userId) {
   return this.members.some(id => id.equals(userId));
 };
 
+// Method to check if user is admin (creator)
+studyGroupSchema.methods.isAdmin = function(userId) {
+  return this.creator.equals(userId);
+};
+
+// Method to get user role
+studyGroupSchema.methods.getUserRole = function(userId) {
+  if (this.creator.equals(userId)) return 'admin';
+  if (this.members.some(id => id.equals(userId))) return 'member';
+  return null;
+};
+
 // Virtual for members count
 studyGroupSchema.virtual('membersCount').get(function() {
   return this.members.length;

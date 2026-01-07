@@ -109,6 +109,20 @@ export const groupsAPI = {
     api.post(`/groups/leave/${groupId}`),
 
   /**
+   * Remove a member from group (admin only)
+   * DELETE /api/groups/:groupId/members/:memberId
+   */
+  removeMember: (groupId, memberId) =>
+    api.delete(`/groups/${groupId}/members/${memberId}`),
+
+  /**
+   * Delete a group (admin only)
+   * DELETE /api/groups/:groupId
+   */
+  deleteGroup: (groupId) =>
+    api.delete(`/groups/${groupId}`),
+
+  /**
    * Get groups joined by logged-in user
    * GET /api/groups/my-groups
    */
