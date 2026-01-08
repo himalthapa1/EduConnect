@@ -5,16 +5,13 @@
   color: white;
   display: flex;
   flex-direction: column;
-  position: fixed;
-  left: 0;
+  position: sticky;
   top: 0;
-  z-index: 1000;
-  transition: width 0.3s ease;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: opacity 200ms ease, width 300ms cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar.collapsed {
-  width: 70px;
+  flex-shrink: 0;
 }
 
 .sidebar-header {
@@ -162,13 +159,9 @@
   white-space: nowrap;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
+/* Collapsed state */
+.sidebar.collapsed {
+  width: 70px;
 }
+
+/* Responsive styles handled in Layout.css */

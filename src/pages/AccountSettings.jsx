@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import { usersAPI } from '../utils/api';
+import { Icons } from '../ui/icons';
+import PasswordInput from '../components/PasswordInput';
 import './AccountSettings.css';
 
 const INTERESTS = [
@@ -48,29 +50,84 @@ const AccountSettings = () => {
   });
   const [saving, setSaving] = useState(false);
   const [savingPreferences, setSavingPreferences] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
   const [message, setMessage] = useState(null);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
 
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
   const handleSave = async () => {
     setSaving(true);
-    const updates = { username: form.username, email: form.email };
-    const res = await updateProfile(updates);
-    setSaving(false);
-    if (res?.success) {
-      if (res.user) {
-        setForm({
-          username: res.user.username || '',
-          email: res.user.email || '',
-          name: res.user.name || ''
-        });
+
+    try {
+      // Save profile information (username, email)
+      const updates = { username: form.username, email: form.email };
+      const profileRes = await updateProfile(updates);
+
+      // If password change is initiated, also change password
+      let passwordRes = null;
+      if (passwordForm.currentPassword && passwordForm.newPassword) {
+        // Validate password change
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+          setMessage('New passwords do not match');
+          setSaving(false);
+          return;
+        }
+
+        if (passwordForm.newPassword.length < 8) {
+          setMessage('New password must be at least 8 characters long');
+          setSaving(false);
+          return;
+        }
+
+        try {
+          passwordRes = await usersAPI.changePassword({
+            currentPassword: passwordForm.currentPassword,
+            newPassword: passwordForm.newPassword
+          });
+        } catch (passwordErr) {
+          const errorMessage = passwordErr.response?.data?.error ||
+                              passwordErr.response?.data?.message ||
+                              passwordErr.message ||
+                              'Failed to change password';
+          setMessage(typeof errorMessage === 'string' ? errorMessage : 'Failed to change password');
+          setSaving(false);
+          return;
+        }
       }
-      setMessage('Profile updated');
-      setEditing(false);
-    } else {
+
+      if (profileRes?.success && (!passwordRes || passwordRes.data?.success)) {
+        if (profileRes.user) {
+          setForm({
+            username: profileRes.user.username || '',
+            email: profileRes.user.email || '',
+            name: profileRes.user.name || ''
+          });
+        }
+
+        // Reset password form
+        setPasswordForm({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+
+        const successMessage = passwordRes ? 'Profile and password updated successfully' : 'Profile updated successfully';
+        setMessage(successMessage);
+        setEditing(false);
+      } else {
+        setMessage('Update failed');
+      }
+    } catch (err) {
       setMessage('Update failed');
+    } finally {
+      setSaving(false);
+      setTimeout(() => setMessage(null), 5000);
     }
-    setTimeout(() => setMessage(null), 3000);
   };
 
   const toggleInterest = (interest) => {
@@ -115,6 +172,81 @@ const AccountSettings = () => {
   const handleCancelPreferences = () => {
     setSelectedInterests(user?.preferences?.interests || []);
     setEditingPreferences(false);
+  };
+
+  const handlePasswordChange = (e) => {
+    setPasswordForm(f => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  const handleSavePassword = async () => {
+    // Validate form
+    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      setMessage('All password fields are required');
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setMessage('New passwords do not match');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 8) {
+      setMessage('New password must be at least 8 characters long');
+      return;
+    }
+
+    setChangingPassword(true);
+    setMessage(null);
+
+    try {
+      const res = await usersAPI.changePassword({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword
+      });
+
+      if (res.data?.success) {
+        setMessage('Password changed successfully');
+        setPasswordForm({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+        setChangingPassword(false);
+      } else {
+        setMessage(res.data?.error || 'Failed to change password');
+      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.error ||
+                          err.response?.data?.message ||
+                          err.message ||
+                          'Failed to change password';
+      setMessage(typeof errorMessage === 'string' ? errorMessage : 'Failed to change password');
+    } finally {
+      setChangingPassword(false);
+      setTimeout(() => setMessage(null), 5000);
+    }
+  };
+
+  const getPasswordStrength = (password) => {
+    if (!password) return { level: 0, text: '' };
+
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/\d/.test(password)) score++;
+    if (/[^A-Za-z\d]/.test(password)) score++;
+
+    const levels = [
+      { level: 0, text: '', color: '#ccc' },
+      { level: 1, text: 'Weak', color: '#ff4444' },
+      { level: 2, text: 'Fair', color: '#ffaa00' },
+      { level: 3, text: 'Good', color: '#00aa44' },
+      { level: 4, text: 'Strong', color: '#00aa44' },
+      { level: 5, text: 'Very Strong', color: '#00aa44' }
+    ];
+
+    return levels[score] || levels[0];
   };
 
   if (!user) {
@@ -177,6 +309,45 @@ const AccountSettings = () => {
                 </div>
 
                 <div className="form-group">
+                  <label>Current Password</label>
+                  <PasswordInput
+                    name="currentPassword"
+                    value={passwordForm.currentPassword}
+                    onChange={handlePasswordChange}
+                    placeholder="Enter your current password"
+                    disabled={!editing}
+                  />
+                </div>
+
+                {editing && (
+                  <>
+                    <div className="form-group">
+                      <label>New Password</label>
+                      <PasswordInput
+                        name="newPassword"
+                        value={passwordForm.newPassword}
+                        onChange={handlePasswordChange}
+                        placeholder="Enter new password"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Confirm New Password</label>
+                      <PasswordInput
+                        name="confirmPassword"
+                        value={passwordForm.confirmPassword}
+                        onChange={handlePasswordChange}
+                        placeholder="Confirm new password"
+                      />
+                      {passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword && (
+                        <small style={{ color: '#ff4444' }}>Passwords do not match</small>
+                      )}
+                      <small>Password must be at least 8 characters with uppercase, lowercase, and numbers</small>
+                    </div>
+                  </>
+                )}
+
+                <div className="form-group">
                   <label>Email</label>
                   <input
                     type="email"
@@ -189,11 +360,15 @@ const AccountSettings = () => {
                 </div>
               </div>
 
-              {/* Action Bar */}
-              <div className="action-bar">
-                {!editing ? (
-                  <button className="btn-primary" onClick={() => setEditing(true)}>Edit Profile</button>
-                ) : (
+              {/* Form Footer */}
+              <div className="form-footer">
+                {!editing && (
+                  <button className="btn-primary btn-primary-wide" onClick={() => setEditing(true)}>
+                    Edit Profile
+                  </button>
+                )}
+
+                {editing && (
                   <>
                     <button className="btn-secondary" onClick={() => {
                       setEditing(false);
@@ -201,6 +376,11 @@ const AccountSettings = () => {
                         username: user?.username || '',
                         email: user?.email || '',
                         name: user?.name || ''
+                      });
+                      setPasswordForm({
+                        currentPassword: '',
+                        newPassword: '',
+                        confirmPassword: ''
                       });
                     }}>
                       Cancel

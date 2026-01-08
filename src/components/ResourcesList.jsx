@@ -170,7 +170,7 @@ const ResourcesList = ({ group }) => {
       <div className="resources-header">
         <h4>Resources & Files</h4>
         <button onClick={() => setOpenForm(o => !o)}>
-          {openForm ? 'Close' : 'Add Resource'}
+          {openForm ? 'Close' : '+ Add Resource'}
         </button>
       </div>
 
@@ -194,17 +194,17 @@ const ResourcesList = ({ group }) => {
       {successMessage && <div className="alert alert-success">{successMessage}</div>}
 
       <div className="resources-tabs">
-        <button 
+        <button
           className={`tab-button ${activeTab === 'my-uploads' ? 'active' : ''}`}
           onClick={() => setActiveTab('my-uploads')}
         >
-          My Upload ({getMyUploads().length})
+          My Uploads ({getMyUploads().length})
         </button>
-        <button 
+        <button
           className={`tab-button ${activeTab === 'shared' ? 'active' : ''}`}
           onClick={() => setActiveTab('shared')}
         >
-          Shared with Group ({getSharedWithGroup().length})
+          Shared Files ({getSharedWithGroup().length})
         </button>
       </div>
 
@@ -212,18 +212,25 @@ const ResourcesList = ({ group }) => {
         {loading ? (
           <div>Loading resources...</div>
         ) : activeTab === 'my-uploads' ? (
-          getMyUploads().length > 0 ? 
-            renderResourceList(getMyUploads(), true) : 
+          getMyUploads().length > 0 ?
+            renderResourceList(getMyUploads(), true) :
             <div className="empty-state">
-              <p>You haven't uploaded any files yet.</p>
-              <p>Upload files here first, then share them with the group when ready.</p>
+              <div className="empty-icon">📁</div>
+              <h3>No uploads yet</h3>
+              <p>Upload resources and files here to organize your study materials.</p>
+              <p>Once uploaded, you can share them with your group members.</p>
+              <button className="empty-cta" onClick={() => setOpenForm(true)}>
+                Upload your first file
+              </button>
             </div>
         ) : (
-          getSharedWithGroup().length > 0 ? 
-            renderResourceList(getSharedWithGroup(), false) : 
+          getSharedWithGroup().length > 0 ?
+            renderResourceList(getSharedWithGroup(), false) :
             <div className="empty-state">
-              <p>No files shared with the group yet.</p>
-              <p>Group members can share their uploaded files here.</p>
+              <div className="empty-icon">📤</div>
+              <h3>No shared files yet</h3>
+              <p>When group members upload files, they'll appear here after being shared.</p>
+              <p>This is where the group collaborates on study materials.</p>
             </div>
         )}
       </div>

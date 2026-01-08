@@ -23,7 +23,7 @@ const connectDB = async () => {
         const conn = await mongoose.connect(memUri);
         console.log(`In-memory MongoDB started at ${memUri}`);
         // Keep reference for potential shutdown in other parts of the app/tests
-        process.__MONGO_SERVER__ = mongod; // eslint-disable-line no-underscore-dangle
+        process.__MONGO_SERVER__ = mongod;  
         console.log(`MongoDB Connected (in-memory): ${conn.connection.host}`);
         return conn;
       } catch (memErr) {

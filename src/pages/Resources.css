@@ -8,12 +8,13 @@
 .resources-main { flex:1; }
 .empty { color: #6b7280; }
 
-/* Resources section styling */
+/* Resources section styling - softened container */
 .resources-section {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f1f3f4;
 }
 
 .resources-header {
@@ -48,31 +49,43 @@
 
 .resources-tabs {
   display: flex;
-  gap: 4px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #e5e7eb;
+  gap: 24px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e1e5e9;
+  padding-bottom: 8px;
 }
 
 .tab-button {
-  padding: 10px 16px;
+  padding: 8px 0;
   border: none;
   background: transparent;
   cursor: pointer;
   border-bottom: 2px solid transparent;
-  color: #6b7280;
+  color: #374151;
   font-weight: 500;
-  transition: all 0.2s;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .tab-button:hover {
   color: #4f46e5;
-  background: #f8fafc;
 }
 
 .tab-button.active {
   color: #4f46e5;
   border-bottom-color: #4f46e5;
-  background: #f8fafc;
+}
+
+.tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #4f46e5;
+  border-radius: 1px;
 }
 
 .resources-list {
@@ -89,7 +102,8 @@
   padding: 16px 18px;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  background-color: #f9fafb;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
   transition: all 0.2s;
   margin-bottom: 12px;
 }
@@ -103,7 +117,7 @@
   margin: 0 0 6px 0;
   font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: #111827;
 }
 
 .resource-meta {
@@ -194,19 +208,20 @@
 }
 
 .btn-delete {
-  background-color: #dc2626; /* red-600 */
-  color: #ffffff;
+  background-color: #fee2e2;
+  color: #b91c1c;
   border: none;
   padding: 8px 14px;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .btn-delete:hover {
-  background-color: #b91c1c; /* red-700 */
+  background-color: #dc2626;
+  color: #ffffff;
 }
 
 /* Download Link Styling */
@@ -222,33 +237,33 @@
 
 .empty-state {
   text-align: center;
-  padding: 40px 20px;
-  color: #6b7280;
+  padding: 48px 24px;
+  color: #64748b;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed #cbd5e1;
+}
+
+.empty-state .empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #334155;
 }
 
 .empty-state p {
-  margin: 8px 0;
+  margin: 6px 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
-.empty-state p:first-child {
-  font-weight: 500;
-  color: #4b5563;
-}
-
-.alert {
-  padding: 12px 16px;
-  border-radius: 6px;
-  margin-bottom: 16px;
-}
-
-.alert-error {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-}
-
-.alert-success {
-  background: #f0fdf4;
+.empty-state .empty-cta {
   color: #16a34a;
   border: 1px solid #bbf7d0;
 }

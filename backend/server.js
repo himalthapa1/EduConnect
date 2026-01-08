@@ -53,8 +53,10 @@ app.use(morgan(IS_PROD ? "combined" : "dev"));
 const allowlist = new Set([
   process.env.FRONTEND_URL, // e.g. https://app.example.com
   "http://localhost:5173",
+  "http://localhost:5174",
   "http://localhost:3000",
   "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
   "http://127.0.0.1:3000",
 ].filter(Boolean));
 
@@ -112,6 +114,11 @@ app.use(
     immutable: true,
     maxAge: IS_PROD ? "30d" : 0,
     redirect: false,
+    setHeaders: (res) => {
+      // Allow PDFs to be displayed in iframes from any origin during development
+      res.set('X-Frame-Options', 'ALLOWALL');
+      res.set('Content-Security-Policy', "frame-ancestors 'self' http://localhost:5173 http://localhost:5174 http://localhost:3000 http://127.0.0.1:5173 http://127.0.0.1:5174 http://127.0.0.1:3000");
+    }
   })
 );
 

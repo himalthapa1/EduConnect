@@ -27,9 +27,12 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
       const response = await recommendationsAPI.getGroupRecommendations({ limit });
       setRecommendations(response.data.data || []);
     } catch (error) {
-      console.error('Error loading group recommendations:', error);
-      setError('Unable to load recommendations');
-      setRecommendations([]);
+      console.error('Error loading recommendations:', error);
+      console.log('Error response:', error.response?.data);
+      const errorMessage = error.response?.data?.error?.message ||
+                          error.response?.data?.message ||
+                          'Failed to load recommendations. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -188,13 +191,22 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
             </div>
 
             <div className="recommendation-actions">
-              <button
-                onClick={(e) => handleJoinGroup(rec.group_id, e)}
-                className="join-btn"
-                disabled={joiningGroupId === rec.group_id}
-              >
-                {joiningGroupId === rec.group_id ? 'Joining...' : 'Join Group'}
-              </button>
+              {user?.joinedGroups?.includes(rec.group_id) ? (
+                <button
+                  className="joined-btn"
+                  disabled
+                >
+                  ✓ Joined
+                </button>
+              ) : (
+                <button
+                  onClick={(e) => handleJoinGroup(rec.group_id, e)}
+                  className="join-btn"
+                  disabled={joiningGroupId === rec.group_id}
+                >
+                  {joiningGroupId === rec.group_id ? 'Joining...' : 'Join Group'}
+                </button>
+              )}
             </div>
           </div>
         ))}

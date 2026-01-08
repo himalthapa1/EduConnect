@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { groupsAPI, sessionsAPI } from '../utils/api';
 import ResourcesList from '../components/ResourcesList';
@@ -6,13 +6,156 @@ import CompleteSessionModal from '../components/CompleteSessionModal';
 import ChatWindow from '../components/chat/ChatWindow';
 import GroupRecommendations from '../components/GroupRecommendations';
 import { Icons } from '../ui/icons';
-import { FiMessageCircle, FiCalendar, FiUsers, FiMoreHorizontal } from 'react-icons/fi';
+import { FiMessageCircle, FiCalendar, FiUsers, FiUser, FiMoreHorizontal, FiUserMinus, FiTrash2, FiShield, FiX } from 'react-icons/fi';
 import './Groups.css';
+
+/* =========================
+   Members Panel Modal
+========================= */
+const MembersPanel = ({ group, isOpen, onClose, currentUserId, onRemoveMember, onDeleteGroup }) => {
+  // Defensive guards - don't render if data isn't ready
+  if (!isOpen || !group || !group.members || !Array.isArray(group.members)) return null;
+
+  // Additional safety checks
+  if (!group._id || !group.name) return null;
+
+  const isAdmin = group.creator && currentUserId && group.creator._id && group.creator._id.toString() === currentUserId.toString();
+  const safeMembers = group.members || [];
+
+  // Debug logging
+  console.log('MembersPanel Debug:', {
+    groupCreator: group.creator,
+    currentUserId,
+    isAdmin,
+    groupId: group._id,
+    membersCount: safeMembers.length
+  });
+
+  const handleRemoveMember = async (memberId, memberName) => {
+    if (!confirm(`Remove ${memberName} from this group?\nThey will lose access to sessions and resources.`)) return;
+
+    try {
+      await onRemoveMember(group._id, memberId);
+      // The parent component will handle refreshing data
+    } catch (error) {
+      console.error('Failed to remove member:', error);
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!confirm(`Delete "${group.name}" group?\nThis action cannot be undone. All members will lose access.`)) return;
+
+    try {
+      await onDeleteGroup(group._id);
+      onClose();
+    } catch (error) {
+      console.error('Failed to delete group:', error);
+    }
+  };
+
+  try {
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="members-panel" onClick={e => e.stopPropagation()}>
+          {/* Header */}
+          <div className="members-header">
+            <div className="members-title">
+              <FiUsers size={20} />
+              <h3>Members ({safeMembers.length})</h3>
+            </div>
+            <button className="members-close" onClick={onClose}>
+              <FiX size={20} />
+            </button>
+          </div>
+
+          {/* Members List */}
+          <div className="members-list">
+            {safeMembers.map(member => {
+              // Safe member property access
+              const memberId = member?._id || member?.id;
+              const memberName = member?.username || member?.name || 'Unknown';
+              const memberEmail = member?.email || '';
+              const isCreator = memberId && group.creator && memberId.toString() === group.creator.toString();
+
+              return (
+                <div key={memberId || `member-${Math.random()}`} className="member-item">
+                  <div className="member-info">
+                    <div className="member-avatar">
+                      <FiUser size={20} />
+                    </div>
+                    <div className="member-details">
+                      <div className="member-name">{memberName}</div>
+                      <div className="member-email">{memberEmail}</div>
+                      {isCreator && (
+                        <span className="role-badge admin">
+                          <FiShield size={12} />
+                          Admin
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Admin Controls */}
+                  {isAdmin && memberId && currentUserId && memberId.toString() !== currentUserId.toString() && (
+                    <div className="member-actions">
+                      <button
+                        className="btn-remove-member"
+                        onClick={() => handleRemoveMember(memberId, memberName)}
+                        title="Remove from group"
+                      >
+                        <FiUserMinus size={16} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Admin Footer Actions */}
+          {isAdmin && (
+            <div className="members-footer">
+              <button
+                className="btn-delete-group"
+                onClick={handleDeleteGroup}
+              >
+                <FiTrash2 size={16} />
+                Delete Group
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  } catch (error) {
+    console.error('MembersPanel render error:', error);
+    // Fallback UI
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="members-panel" onClick={e => e.stopPropagation()}>
+          <div className="members-header">
+            <div className="members-title">
+              <FiUsers size={20} />
+              <h3>Error Loading Members</h3>
+            </div>
+            <button className="members-close" onClick={onClose}>
+              <FiX size={20} />
+            </button>
+          </div>
+          <div style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
+            <p>Unable to load member information.</p>
+            <p>Please try again later.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+};
 
 /* =========================
    Group Detail Modal (Replaces Toggles)
 ========================= */
-const GroupDetailModal = ({ group, isOpen, onClose, onLeaveGroup, sessions, onJoinSession, onLeaveSession, onCompleteSession, currentUserId }) => {
+const GroupDetailModal = ({ group, isOpen, onClose, onLeaveGroup, sessions, onJoinSession, onLeaveSession, onCompleteSession, currentUserId, onShowMembers }) => {
   if (!isOpen) return null;
 
   const formatDate = (dateString) => {
@@ -44,7 +187,13 @@ const GroupDetailModal = ({ group, isOpen, onClose, onLeaveGroup, sessions, onJo
           <p className="group-description-full">{group.description}</p>
 
           <div className="group-stats">
-            <span className="members-count">{group.members?.length || 0} / {group.maxMembers} members</span>
+            <button
+              className="members-count clickable"
+              onClick={() => onShowMembers(group)}
+              title="View group members"
+            >
+              <FiUsers size={14} /> {group.members?.length || 0} / {group.maxMembers} members
+            </button>
             <span className="subject-badge">{group.subject}</span>
           </div>
 
@@ -146,6 +295,9 @@ const Groups = () => {
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
+  const [actionsModeGroupId, setActionsModeGroupId] = useState(null);
+  const [showMembersPanel, setShowMembersPanel] = useState(false);
+  const [membersPanelGroup, setMembersPanelGroup] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -192,6 +344,30 @@ const Groups = () => {
       loadTagOptions();
     }
   }, [activeTab, user]);
+
+  // Click outside to exit actions mode
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (actionsModeGroupId && !event.target.closest('.group-card-clean')) {
+        setActionsModeGroupId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [actionsModeGroupId]);
+
+  // Keyboard handler for ESC
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && actionsModeGroupId) {
+        setActionsModeGroupId(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [actionsModeGroupId]);
 
   const loadTagOptions = async () => {
     try {
@@ -276,13 +452,17 @@ const Groups = () => {
   const handleLeaveGroup = async (groupId) => {
     try {
       await groupsAPI.leaveGroup(groupId);
-      setSuccess('Left the group');
+      setSuccess('Left the group successfully');
       setSelectedGroup(null);
       setShowGroupModal(false);
+      setActionsModeGroupId(null); // Exit actions mode after successful leave
       fetchMyGroups();
       fetchGroups();
-    } catch {
-      setError('Failed to leave');
+    } catch (error) {
+      console.error('Leave group error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to leave group';
+      setError(errorMessage);
+      // Don't exit actions mode on error so user can try again
     }
   };
 
@@ -368,6 +548,34 @@ const Groups = () => {
 
   const nextStep = () => setTagStep(prev => Math.min(prev + 1, 4));
   const prevStep = () => setTagStep(prev => Math.max(prev - 1, 1));
+
+  const handleRemoveMember = async (groupId, memberId) => {
+    try {
+      await groupsAPI.removeMember(groupId, memberId);
+      setSuccess('Member removed successfully');
+      fetchMyGroups(); // Refresh groups data
+      fetchGroups(); // Refresh all groups
+      // Refresh members panel data if it's open
+      if (membersPanelGroup && membersPanelGroup._id === groupId) {
+        // The members panel will be refreshed when reopened
+      }
+    } catch (error) {
+      setError('Failed to remove member');
+    }
+  };
+
+  const handleDeleteGroup = async (groupId) => {
+    try {
+      await groupsAPI.deleteGroup(groupId);
+      setSuccess('Group deleted successfully');
+      setShowMembersPanel(false);
+      setMembersPanelGroup(null);
+      fetchMyGroups(); // Refresh groups data
+      fetchGroups(); // Refresh all groups
+    } catch (error) {
+      setError('Failed to delete group');
+    }
+  };
 
   return (
     <div className="groups-container">
@@ -468,9 +676,17 @@ const Groups = () => {
                 {/* Card Header */}
                 <div className="card-header-clean">
                   <h3 className="group-name-clean">{group.name}</h3>
-                  <span className="members-clean">
+                  <button
+                    className="members-clean clickable"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMembersPanelGroup(group);
+                      setShowMembersPanel(true);
+                    }}
+                    title="View group members"
+                  >
                     <FiUsers /> {group.members?.length || 0} / {group.maxMembers}
-                  </span>
+                  </button>
                 </div>
 
                 {/* Description */}
@@ -488,17 +704,40 @@ const Groups = () => {
 
                 {/* Footer Actions */}
                 <div className="footer-clean">
-                  <button onClick={() => handleViewGroup(group)}>
+                  <button
+                    className="footer-btn"
+                    onClick={() => handleViewGroup(group)}
+                  >
                     <FiMessageCircle />
                     Chat
                   </button>
-                  <button onClick={() => handleViewGroup(group)}>
+                  <button
+                    className="footer-btn"
+                    onClick={() => handleViewGroup(group)}
+                  >
                     <FiCalendar />
                     Sessions
                   </button>
-                  <button className="menu-clean">
-                    <FiMoreHorizontal />
-                  </button>
+                  {actionsModeGroupId === group._id ? (
+                    <button
+                      className="footer-btn leave-btn"
+                      onClick={() => {
+                        if (confirm('Are you sure you want to leave this group?')) {
+                          handleLeaveGroup(group._id);
+                        }
+                      }}
+                    >
+                      <Icons.logout size={16} />
+                      Leave
+                    </button>
+                  ) : (
+                    <button
+                      className="menu-clean"
+                      onClick={() => setActionsModeGroupId(actionsModeGroupId === group._id ? null : group._id)}
+                    >
+                      <FiMoreHorizontal />
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -532,17 +771,28 @@ const Groups = () => {
                     onChange={handleInputChange}
                     placeholder="e.g., LeetCode Interview Prep"
                     required
+                    minLength={3}
+                    maxLength={100}
                   />
+                  <small className="field-help">
+                    {formData.name.length}/100 characters (minimum 3)
+                  </small>
                 </div>
                 <div className="form-group-semantic">
-                  <label>Description</label>
+                  <label>Description *</label>
                   <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
                     placeholder="Describe what your group will focus on..."
                     rows={4}
+                    minLength={10}
+                    maxLength={500}
+                    required
                   />
+                  <small className="field-help">
+                    {formData.description.length}/500 characters (minimum 10)
+                  </small>
                 </div>
               </div>
             )}
@@ -680,7 +930,7 @@ const Groups = () => {
                   type="button"
                   onClick={nextStep}
                   className="btn-primary"
-                  disabled={tagStep === 1 && (!formData.name.trim() || !formData.description.trim())}
+                  disabled={tagStep === 1 && (!formData.name.trim() || formData.name.trim().length < 3 || !formData.description.trim() || formData.description.trim().length < 10)}
                 >
                   Next
                 </button>
@@ -705,6 +955,10 @@ const Groups = () => {
             setSelectedGroup(null);
           }}
           onLeaveGroup={handleLeaveGroup}
+          onShowMembers={(group) => {
+            setMembersPanelGroup(group);
+            setShowMembersPanel(true);
+          }}
           sessions={sessions.filter(session => session.group && session.group._id === selectedGroup._id)}
           onJoinSession={handleJoinSession}
           onLeaveSession={handleLeaveSession}
@@ -723,6 +977,19 @@ const Groups = () => {
           onSuccess={handleCompleteSuccess}
         />
       )}
+
+      {/* Members Panel */}
+      <MembersPanel
+        group={membersPanelGroup}
+        isOpen={showMembersPanel}
+        onClose={() => {
+          setShowMembersPanel(false);
+          setMembersPanelGroup(null);
+        }}
+        currentUserId={user?.id}
+        onRemoveMember={handleRemoveMember}
+        onDeleteGroup={handleDeleteGroup}
+      />
     </div>
   );
 };

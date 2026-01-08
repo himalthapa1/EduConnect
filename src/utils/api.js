@@ -12,7 +12,21 @@ export const API_BASE_URL =
 
 /**
  * ======================================================
- * AXIOS INSTANCE
+ * USERS API
+ * ======================================================
+ */
+export const usersAPI = {
+  /**
+   * Change user password
+   * POST /api/users/change-password
+   */
+  changePassword: (data) =>
+    api.post('/users/change-password', data),
+};
+
+/**
+ * ======================================================
+ * LEGACY EXPORTS (for backward compatibility)
  * ======================================================
  */
 const api = axios.create({
@@ -93,6 +107,20 @@ export const groupsAPI = {
    */
   leaveGroup: (groupId) =>
     api.post(`/groups/leave/${groupId}`),
+
+  /**
+   * Remove a member from group (admin only)
+   * DELETE /api/groups/:groupId/members/:memberId
+   */
+  removeMember: (groupId, memberId) =>
+    api.delete(`/groups/${groupId}/members/${memberId}`),
+
+  /**
+   * Delete a group (admin only)
+   * DELETE /api/groups/:groupId
+   */
+  deleteGroup: (groupId) =>
+    api.delete(`/groups/${groupId}`),
 
   /**
    * Get groups joined by logged-in user

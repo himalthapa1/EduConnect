@@ -182,16 +182,36 @@ studyGroupSchema.methods.isMember = function(userId) {
   return this.members.some(id => id.equals(userId));
 };
 
+// Method to check if user is admin (creator)
+studyGroupSchema.methods.isAdmin = function(userId) {
+  return this.creator.equals(userId);
+};
+
+// Method to get user role
+studyGroupSchema.methods.getUserRole = function(userId) {
+  if (this.creator.equals(userId)) return 'admin';
+  if (this.members.some(id => id.equals(userId))) return 'member';
+  return null;
+};
+
 // Virtual for members count
 studyGroupSchema.virtual('membersCount').get(function() {
   return this.members.length;
 });
 
 // Activity score (can be updated based on sessions, resources, etc.)
-studyGroupSchema.methods.updateActivityScore = function() {
+studyGroupSchema.methods.updateActivityScore = async function() {
   // Simple scoring: members + resources + sessions (would be calculated properly)
-  this.activityScore = this.members.length + (this.resources?.length || 0);
-  return this.save();
+  const newScore = this.members.length + (this.resources?.length || 0);
+
+  // Use atomic update to avoid validation issues with existing documents
+  await this.constructor.findByIdAndUpdate(this._id, {
+    $set: { activityScore: newScore }
+  });
+
+  // Update the current instance
+  this.activityScore = newScore;
+  return this;
 };
 
 const StudyGroup = mongoose.model('StudyGroup', studyGroupSchema);
