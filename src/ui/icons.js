@@ -18,7 +18,6 @@ export const Icons = {
   login: Lu.LuLogIn,
   settings: Lu.LuSettings,
   user: Lu.LuUser,
-  userMinus: Lu.LuUserMinus,
   video: Lu.LuVideo,
   chat: Lu.LuMessageCircle,
   checkCircle: Lu.LuCheck,
@@ -40,4 +39,7 @@ export const Icons = {
   more: Lu.LuMoreHorizontal,
   trendingUp: Lu.LuTrendingUp,
   lock: Lu.LuLock,
+
+  // User Management
+  userRemove: Lu.LuUserMinus,
 };

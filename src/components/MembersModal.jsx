@@ -1,7 +1,6 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Icons } from '../ui/icons';
-import { FiUserMinus } from 'react-icons/fi';
 import './MembersModal.css';
 
 const MembersModal = ({
@@ -138,7 +137,7 @@ const MembersModal = ({
                                                 title="Remove member"
                                                 aria-label={`Remove ${memberName} `}
                                             >
-                                                <FiUserMinus size={18} />
+                                                <Icons.userRemove size={18} />
                                             </button>
                                         )}
                                     </div>
