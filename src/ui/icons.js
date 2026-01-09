@@ -18,6 +18,7 @@ export const Icons = {
   login: Lu.LuLogIn,
   settings: Lu.LuSettings,
   user: Lu.LuUser,
+  userMinus: Lu.LuUserMinus,
   video: Lu.LuVideo,
   chat: Lu.LuMessageCircle,
   checkCircle: Lu.LuCheck,
