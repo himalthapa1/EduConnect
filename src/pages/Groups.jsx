@@ -258,19 +258,6 @@ const GroupDetailModal = ({ group, isOpen, onClose, onLeaveGroup, sessions, onJo
             )}
           </div>
 
-          {/* Leave Group */}
-          <div className="modal-footer">
-            <button
-              className="btn-leave-group"
-              onClick={() => {
-                if (confirm('Are you sure you want to leave this group?')) {
-                  onLeaveGroup(group._id);
-                }
-              }}
-            >
-              Leave Group
-            </button>
-          </div>
         </div>
       </div>
     </div>
