@@ -64,12 +64,6 @@ const GroupDetailModal = ({ group, isOpen, onClose, onLeaveGroup, sessions, onJo
             <ResourcesList group={group} />
           </div>
 
-          {/* Chat Section */}
-          <div className="modal-section">
-            <h3>Group Chat</h3>
-            <ChatWindow type="group" groupId={group._id} />
-          </div>
-
           {/* Sessions Section */}
           <div className="modal-section">
             <h3>Sessions ({sessions.length})</h3>

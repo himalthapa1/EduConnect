@@ -12,7 +12,11 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
   const [newMessage, setNewMessage] = useState('');
   const [showPlusMenu, setShowPlusMenu] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [showPollModal, setShowPollModal] = useState(false);
   const [pollData, setPollData] = useState({ question: '', options: ['', ''] });
+  const [isMobile, setIsMobile] = useState(false);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -32,6 +36,17 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const loadMessages = async () => {
     if (!group) return;
@@ -163,10 +178,10 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
   return (
     <>
       {/* Backdrop */}
-      <div className="chat-panel-backdrop" onClick={onClose} />
+      <div className="chat-panel-backdrop" onClick={!isMobile ? onClose : undefined} />
 
       {/* Panel */}
-      <div className="group-chat-panel">
+      <div className={`group-chat-panel ${isMaximized ? 'maximized' : ''} ${isMinimized ? 'minimized' : ''}`}>
         {/* Header */}
         <div className="chat-panel-header">
           <div className="chat-panel-header-info">
@@ -177,18 +192,11 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
           </div>
           <div className="chat-panel-header-actions">
             <button
-              className="chat-panel-maximize-btn"
-              onClick={onMaximize}
-              title="Maximize chat"
-            >
-              <Icons.maximize size={16} />
-            </button>
-            <button
               className="chat-panel-close-btn"
               onClick={onClose}
-              title="Close chat"
+              title={isMobile ? "Back" : "Close chat"}
             >
-              ×
+              {isMobile ? <Icons.arrowLeft size={20} /> : '×'}
             </button>
           </div>
         </div>
@@ -210,13 +218,8 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
                 key={message._id}
                 className={`chat-message ${message.senderId._id === user?.id ? 'own' : 'other'}`}
               >
-                <div className="message-header">
-                  <span className="message-sender">
-                    {message.senderId.username}
-                  </span>
-                  <span className="message-time">
-                    {formatTime(message.createdAt)}
-                  </span>
+                <div className="message-sender">
+                  {message.senderId.username}
                 </div>
 
                 {message.type === 'text' && (
@@ -264,6 +267,10 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
                     </div>
                   </div>
                 )}
+
+                <div className="message-time">
+                  {formatTime(message.createdAt)}
+                </div>
               </div>
             ))
           )}
@@ -314,19 +321,7 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
                 className="menu-item"
                 onClick={() => {
                   setShowPlusMenu(false);
-                  // Show poll creation modal (simplified for now)
-                  const question = prompt('Poll question:');
-                  if (question) {
-                    const option1 = prompt('Option 1:');
-                    const option2 = prompt('Option 2:');
-                    if (option1 && option2) {
-                      setPollData({
-                        question,
-                        options: [option1, option2]
-                      });
-                      handleCreatePoll();
-                    }
-                  }
+                  setShowPollModal(true);
                 }}
               >
                 <Icons.barChart size={16} />
@@ -336,6 +331,102 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
           )}
         </div>
       </div>
+
+      {/* Poll Creation Modal */}
+      {showPollModal && (
+        <div className="poll-modal-overlay" onClick={() => setShowPollModal(false)}>
+          <div className="poll-modal" onClick={e => e.stopPropagation()}>
+            <div className="poll-modal-header">
+              <h3>Create Poll</h3>
+              <button
+                className="poll-modal-close"
+                onClick={() => setShowPollModal(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="poll-modal-body">
+              <div className="poll-form-group">
+                <label>Question</label>
+                <input
+                  type="text"
+                  value={pollData.question}
+                  onChange={(e) => setPollData(prev => ({ ...prev, question: e.target.value }))}
+                  placeholder="What's your question?"
+                  maxLength={200}
+                />
+              </div>
+
+              <div className="poll-options-section">
+                <label>Options</label>
+                {pollData.options.map((option, index) => (
+                  <div key={index} className="poll-option-input">
+                    <input
+                      type="text"
+                      value={option}
+                      onChange={(e) => {
+                        const newOptions = [...pollData.options];
+                        newOptions[index] = e.target.value;
+                        setPollData(prev => ({ ...prev, options: newOptions }));
+                      }}
+                      placeholder={`Option ${index + 1}`}
+                      maxLength={100}
+                    />
+                    {pollData.options.length > 2 && (
+                      <button
+                        className="remove-option-btn"
+                        onClick={() => {
+                          const newOptions = pollData.options.filter((_, i) => i !== index);
+                          setPollData(prev => ({ ...prev, options: newOptions }));
+                        }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+
+                {pollData.options.length < 10 && (
+                  <button
+                    className="add-option-btn"
+                    onClick={() => {
+                      setPollData(prev => ({ ...prev, options: [...prev.options, ''] }));
+                    }}
+                  >
+                    + Add Option
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="poll-modal-footer">
+              <button
+                className="poll-cancel-btn"
+                onClick={() => {
+                  setShowPollModal(false);
+                  setPollData({ question: '', options: ['', ''] });
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="poll-create-btn"
+                onClick={() => {
+                  if (!pollData.question.trim() || pollData.options.filter(opt => opt.trim()).length < 2) {
+                    alert('Please enter a question and at least 2 options');
+                    return;
+                  }
+                  handleCreatePoll();
+                  setShowPollModal(false);
+                }}
+              >
+                Create Poll
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
