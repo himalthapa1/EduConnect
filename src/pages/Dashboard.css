@@ -23,6 +23,8 @@
   justify-content: space-between;
   align-items: center;
   box-shadow: var(--shadow-sm);
+  animation: none !important;
+  transform: rotate(0deg) !important;
 }
 
 .header-content h1 {
@@ -30,12 +32,14 @@
   font-size: 28px;
   font-weight: 700;
   color: #1a202c;
+  animation: none !important;
 }
 
 .header-content p {
   margin: 4px 0 0 0;
   color: #718096;
   font-size: 14px;
+  animation: none !important;
 }
 
 .header-actions {
