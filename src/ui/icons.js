@@ -39,6 +39,8 @@ export const Icons = {
   more: Lu.LuMoreHorizontal,
   trendingUp: Lu.LuTrendingUp,
   lock: Lu.LuLock,
+  maximize: Lu.LuMaximize,
+  barChart: Lu.LuBarChart3,
 
   // User Management
   userRemove: Lu.LuUserMinus,

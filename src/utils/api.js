@@ -165,6 +165,48 @@ export const groupsAPI = {
    */
   updateResource: (groupId, resourceId, data) =>
     api.put(`/groups/${groupId}/resources/${resourceId}`, data),
+
+  /**
+   * Get messages for a group
+   * GET /api/groups/:groupId/messages
+   */
+  getGroupMessages: (groupId, params = {}) =>
+    api.get(`/groups/${groupId}/messages`, { params }),
+
+  /**
+   * Send text message to group
+   * POST /api/groups/:groupId/messages/text
+   */
+  sendTextMessage: (groupId, data) =>
+    api.post(`/groups/${groupId}/messages/text`, data),
+
+  /**
+   * Send voice message to group
+   * POST /api/groups/:groupId/messages/voice
+   */
+  sendVoiceMessage: (groupId, data) =>
+    api.post(`/groups/${groupId}/messages/voice`, data),
+
+  /**
+   * Create poll in group
+   * POST /api/groups/:groupId/messages/poll
+   */
+  createPoll: (groupId, data) =>
+    api.post(`/groups/${groupId}/messages/poll`, data),
+
+  /**
+   * Vote in poll
+   * POST /api/groups/:groupId/messages/:messageId/vote/:optionIndex
+   */
+  voteInPoll: (groupId, messageId, optionIndex) =>
+    api.post(`/groups/${groupId}/messages/${messageId}/vote/${optionIndex}`),
+
+  /**
+   * Delete message
+   * DELETE /api/groups/:groupId/messages/:messageId
+   */
+  deleteMessage: (groupId, messageId) =>
+    api.delete(`/groups/${groupId}/messages/${messageId}`),
 };
 
 /**

@@ -5,6 +5,7 @@ import ResourcesList from '../components/ResourcesList';
 import CompleteSessionModal from '../components/CompleteSessionModal';
 import ChatWindow from '../components/chat/ChatWindow';
 import GroupRecommendations from '../components/GroupRecommendations';
+import GroupChatPanel from '../components/GroupChatPanel';
 import { Icons } from '../ui/icons';
 import { FiMessageCircle, FiCalendar, FiMoreHorizontal, FiUserMinus, FiTrash2, FiX } from 'react-icons/fi';
 import './Groups.css';
@@ -145,6 +146,8 @@ const Groups = () => {
   const [actionsModeGroupId, setActionsModeGroupId] = useState(null);
   const [showMembersPanel, setShowMembersPanel] = useState(false);
   const [membersPanelGroup, setMembersPanelGroup] = useState(null);
+  const [showChatPanel, setShowChatPanel] = useState(false);
+  const [chatPanelGroup, setChatPanelGroup] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -432,6 +435,22 @@ const Groups = () => {
     }
   };
 
+  const handleOpenChat = (group) => {
+    setChatPanelGroup(group);
+    setShowChatPanel(true);
+  };
+
+  const handleCloseChat = () => {
+    setShowChatPanel(false);
+    setChatPanelGroup(null);
+  };
+
+  const handleMaximizeChat = () => {
+    // For now, just close the panel - in a real implementation,
+    // this would open a full-page chat or larger modal
+    handleCloseChat();
+  };
+
   return (
     <div className="groups-container">
       <h1>Study Groups</h1>
@@ -493,7 +512,7 @@ const Groups = () => {
                         <button
                           className="icon-btn"
                           title="Group Chat"
-                          onClick={() => handleViewGroup(group)}
+                          onClick={() => handleOpenChat(group)}
                           aria-label="Group Chat"
                         >
                           <Icons.chat size={16} />
@@ -571,7 +590,7 @@ const Groups = () => {
                 <div className="footer-clean">
                   <button
                     className="footer-btn"
-                    onClick={() => handleViewGroup(group)}
+                    onClick={() => handleOpenChat(group)}
                   >
                     <Icons.chat size={16} />
                     Chat
@@ -855,6 +874,14 @@ const Groups = () => {
         currentUserId={user?.id}
         groupCreatorId={membersPanelGroup?.creator?._id || membersPanelGroup?.creator}
         onRemoveMember={(memberId) => handleRemoveMember(membersPanelGroup._id, memberId)}
+      />
+
+      {/* Group Chat Panel */}
+      <GroupChatPanel
+        group={chatPanelGroup}
+        isOpen={showChatPanel}
+        onClose={handleCloseChat}
+        onMaximize={handleMaximizeChat}
       />
     </div>
   );
