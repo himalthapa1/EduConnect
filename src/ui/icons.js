@@ -1,4 +1,5 @@
 import * as Lu from "react-icons/lu";
+import { LuMic } from "react-icons/lu";
 
 export const Icons = {
   // Core UI
@@ -41,9 +42,12 @@ export const Icons = {
   lock: Lu.LuLock,
   maximize: Lu.LuMaximize,
   minimize: Lu.LuMinimize,
-  barChart: Lu.LuBarChart3,
+  barChart: Lu.LuVote,
   arrowLeft: Lu.LuArrowLeft,
 
   // User Management
   userRemove: Lu.LuUserMinus,
+
+  // Chat features
+  mic: LuMic,
 };

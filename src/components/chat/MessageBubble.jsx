@@ -20,9 +20,10 @@ const MessageBubble = ({ message, isOwn }) => {
 
       <div className="message-content">
         <p>{message.content}</p>
-        <div className="message-time">
-          {formatTime(message.createdAt)}
-        </div>
+      </div>
+
+      <div className="message-time">
+        {formatTime(message.createdAt)}
       </div>
     </div>
   );

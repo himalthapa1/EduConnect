@@ -868,11 +868,6 @@ const Groups = () => {
 
       {/* Chat Window */}
       {activeChatGroup && (
-        <div style={{ position: 'fixed', top: 0, left: 0, background: 'red', color: 'white', padding: '10px', zIndex: 9999 }}>
-          Chat Window Active: {activeChatGroup.name}
-        </div>
-      )}
-      {activeChatGroup && (
         <ChatWindow
           type="group"
           groupId={activeChatGroup._id}
