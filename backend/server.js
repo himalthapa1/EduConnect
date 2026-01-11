@@ -12,6 +12,7 @@ import { Server } from "socket.io";
 import { fileURLToPath } from "url";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
+import User from "./models/User.js";
 import groupRoutes from "./routes/groups.js";
 import sessionRoutes from "./routes/sessions.js";
 import studyWithMeRoutes from "./routes/studyWithMe.js";
@@ -138,6 +139,28 @@ let server;
     // Connect DB first
     await connectDB();
 
+    // Create test user in development
+    if (!IS_PROD) {
+      try {
+        const existingTestUser = await User.findOne({ email: 'test@example.com' });
+        if (!existingTestUser) {
+          const testUser = new User({
+            username: 'testuser',
+            email: 'test@example.com',
+            password: 'password123',
+            collegeName: 'Test College',
+            currentYear: '3rd Year'
+          });
+          await testUser.save();
+          console.log('✅ Test user created: test@example.com (password: password123)');
+        } else {
+          console.log('✅ Test user already exists: test@example.com');
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to create test user:', error.message);
+      }
+    }
+
     // Mount routes after DB is ready
     app.use("/api/auth", authLimiter, authRoutes);
     // Apply uploadLimiter to resource create endpoints (POST)
@@ -176,7 +199,7 @@ let server;
       });
     });
 
-    const PORT = process.env.PORT || 3001;
+    const PORT = process.env.PORT || 3002;
     server = app.listen(PORT, () => {
       console.log(`✅ Server running on port ${PORT} (${NODE_ENV})`);
     });

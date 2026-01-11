@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import { usersAPI } from '../utils/api';
 import './Onboarding.css';
 
 const INTERESTS = [
@@ -55,11 +55,7 @@ const Onboarding = () => {
     setError(null);
 
     try {
-      const res = await axios.post(
-        'http://localhost:3001/api/users/preferences',
-        { interests: selectedInterests },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await usersAPI.setPreferences({ interests: selectedInterests });
 
       if (res.data?.success) {
         // Refresh user data to update onboarding status

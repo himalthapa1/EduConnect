@@ -61,7 +61,6 @@ const Dashboard = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
   };
 
   const handleViewSessions = () => {

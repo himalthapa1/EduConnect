@@ -53,7 +53,6 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
   };
 
   return (

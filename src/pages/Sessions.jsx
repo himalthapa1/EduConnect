@@ -11,6 +11,7 @@ const Sessions = () => {
   const [sessions, setSessions] = useState([]);
   const [mySessions, setMySessions] = useState({ organized: [], joined: [] });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
@@ -33,8 +34,10 @@ const Sessions = () => {
 
       const response = await sessionsAPI.getSessions(params);
       setSessions(response.data.data.sessions);
+      setError(null);
     } catch (error) {
       console.error('Error fetching sessions:', error);
+      setError('Failed to load sessions. Please try again.');
     }
   };
 
@@ -87,7 +90,7 @@ const Sessions = () => {
 
   const clearFilters = () => {
     setFilters({ subject: '', date: '' });
-    setTimeout(fetchSessions, 100);
+    fetchSessions();
   };
 
   const handleCompleteSession = (session) => {
@@ -142,6 +145,19 @@ const Sessions = () => {
           Joined Sessions ({mySessions.joined.length})
         </button>
       </div>
+
+      {error && (
+        <div className="error-message" style={{
+          background: '#fee2e2',
+          color: '#dc2626',
+          padding: '12px 16px',
+          borderRadius: '8px',
+          marginBottom: '20px',
+          border: '1px solid #fecaca'
+        }}>
+          {error}
+        </div>
+      )}
 
       {activeTab === 'all' && (
         <div className="filters-section">

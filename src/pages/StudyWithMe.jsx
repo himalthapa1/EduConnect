@@ -608,7 +608,9 @@ const StudyWithMe = () => {
           <div className="timer-display">
             <div className="timer-circle">
               <span className="timer-text">{formatTime(currentTimeLeft)}</span>
-              <div className="timer-label">Focus</div>
+              <div className="timer-label">
+                {sessionData.mode === 'break' ? 'Break' : 'Focus'}
+              </div>
             </div>
           </div>
 
@@ -653,22 +655,18 @@ const StudyWithMe = () => {
 
             {sessionData.mode === 'studying' ? (
               <>
-                {sessionData.pomodoroWorkMinutes === 0 && (
-                  <button className="control-btn break" onClick={handleTakeBreak}>
-                    🧘 Take a Break ({formData.breakDuration === 'custom' ? formData.customBreakDuration : formData.breakDuration}m)
-                  </button>
-                )}
+                <button className="control-btn break" onClick={handleTakeBreak}>
+                  🧘 Take a Break ({formData.breakDuration === 'custom' ? formData.customBreakDuration : formData.breakDuration}m)
+                </button>
                 <button className="control-btn end" onClick={handleEndSession}>
                   🏁 End Session
                 </button>
               </>
             ) : (
               <>
-                {sessionData.pomodoroWorkMinutes === 0 && (
-                  <button className="control-btn resume" onClick={handleResumeStudy}>
-                    ▶️ Resume Study
-                  </button>
-                )}
+                <button className="control-btn resume" onClick={handleResumeStudy}>
+                  ▶️ Resume Study
+                </button>
                 <button className="control-btn end" onClick={handleEndSession}>
                   🏁 End Session
                 </button>
@@ -693,7 +691,7 @@ const StudyWithMe = () => {
                 </div>
                 <div className="pdf-viewer-small">
                   <iframe
-                    src={`/${activePdf.file}`}
+                    src={`/uploads/${activePdf.file}`}
                     title={activePdf.title}
                     width="100%"
                     height="100%"

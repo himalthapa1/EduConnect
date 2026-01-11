@@ -81,7 +81,7 @@ messageSchema.statics.getGroupMessages = function (groupId, limit = 50) {
     chatType: 'group',
     groupId: groupId
   })
-    .populate('sender', 'username')
+    .populate('sender', 'username _id')
     .sort({ createdAt: 1 })
     .limit(limit);
 };
@@ -91,7 +91,7 @@ messageSchema.statics.getSessionMessages = function (sessionId, limit = 50) {
     chatType: 'session',
     sessionId: sessionId
   })
-    .populate('sender', 'username')
+    .populate('sender', 'username _id')
     .sort({ createdAt: 1 })
     .limit(limit);
 };

@@ -132,7 +132,7 @@ export const registerChatHandlers = async (io, socket) => {
       }
 
       // Populate sender info
-      await message.populate('sender', 'username');
+      await message.populate('sender', 'username _id');
 
       // Emit to room
       const messageData = {

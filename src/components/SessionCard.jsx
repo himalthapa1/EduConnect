@@ -31,9 +31,15 @@ function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false
     return text.split(' ').map(s => s[0]?.toUpperCase() || '').slice(0,2).join('');
   };
 
-  const isUserJoined = session.participants?.some(p => p.user._id === user?.id);
+  const isUserJoined = session.participants?.some(p => {
+    if (!p.user) return false;
+    const participantId = p.user._id || p.user;
+    const userId = user?.id;
+    const isJoined = participantId === userId || participantId?.toString() === userId?.toString();
+    return isJoined;
+  });
   const isFull = session.participants?.length >= session.maxParticipants;
-  const isUserOrganizer = session.organizer._id === user?.id;
+  const isUserOrganizer = session.organizer?._id === user?.id || session.organizer === user?.id || session.organizer?._id?.toString() === user?.id?.toString();
   const sessionStatus = session.status;
 
   // Business logic for button visibility
@@ -91,7 +97,7 @@ function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false
 
             <div className="session-detail">
               <span className="detail-label"><Icons.user size={14} /> Organizer:</span>
-              <span className="detail-value">{session.organizer?.username}</span>
+              <span className="detail-value">{session.organizer?.username || 'Unknown'}</span>
             </div>
           </div>
 
@@ -99,9 +105,11 @@ function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false
             <div className="participants-list">
               <h4>Participants:</h4>
               <div className="participants">
-                {session.participants.map((participant, index) => (
-                  <span key={participant.user._id} className="participant">
-                    {participant.user.username}{index < session.participants.length - 1 && ', '}
+                {session.participants
+                  .filter(participant => participant.user) // Filter out null users
+                  .map((participant, index, filteredParticipants) => (
+                  <span key={participant.user._id || index} className="participant">
+                    {participant.user.username}{index < filteredParticipants.length - 1 && ', '}
                   </span>
                 ))}
               </div>

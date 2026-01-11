@@ -11,7 +11,7 @@ export const useAuth = () => {
   return context;
 };
 
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -30,7 +30,6 @@ export const AuthProvider = ({ children }) => {
   const verifyToken = async () => {
     const storedToken = localStorage.getItem('token');
 
-    // 🔑 No token → force logged-out state
     if (!storedToken) {
       setUser(null);
       setToken(null);
@@ -65,7 +64,6 @@ export const AuthProvider = ({ children }) => {
         logout();
       }
     } catch (error) {
-      // 🔥 Invalid / expired token → logout
       logout();
     } finally {
       setLoading(false);
@@ -73,21 +71,26 @@ export const AuthProvider = ({ children }) => {
   };
 
   /* =========================
-     LOGIN
+     LOGIN (FIXED)
   ========================= */
   const login = async (email, password) => {
     try {
-      console.log('Frontend login attempt:', { email, password: password.substring(0, 3) + '...' });
+      // 🔥 HARD RESET AUTH STATE BEFORE LOGIN
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
 
-      // Clear any existing headers to ensure clean login
       delete axios.defaults.headers.common['Authorization'];
+      delete axios.defaults.headers.Authorization;
 
-      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
-        email,
-        password,
-      });
-
-      console.log('Frontend login response:', res.data);
+      const res = await axios.post(
+        `${API_BASE_URL}/api/auth/login`,
+        { email, password },
+        {
+          headers: {
+            Authorization: undefined, // 🔒 force NO auth header
+          },
+        }
+      );
 
       if (res.data?.success && res.data?.data?.token) {
         const { token: newToken, user: userData } = res.data.data;
@@ -113,7 +116,6 @@ export const AuthProvider = ({ children }) => {
 
       return { success: false, error: 'Invalid login response' };
     } catch (error) {
-      console.error('Frontend login error:', error.response?.data);
       return {
         success: false,
         error:
@@ -153,17 +155,21 @@ export const AuthProvider = ({ children }) => {
   ========================= */
   const logout = () => {
     localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+
     delete axios.defaults.headers.common['Authorization'];
+
     setUser(null);
     setToken(null);
     setIsAuthenticated(false);
+
+    window.location.href = '/login';
   };
 
   /* =========================
      UPDATE PROFILE
   ========================= */
   const updateProfile = async (updates) => {
-    // optimistic local update
     const newUser = { ...(user || {}), ...updates };
     setUser(newUser);
 
@@ -194,7 +200,6 @@ export const AuthProvider = ({ children }) => {
 
       return { success: false };
     } catch (err) {
-      // ignore backend failure; keep optimistic update
       return { success: false, error: err?.response?.data || err.message };
     }
   };

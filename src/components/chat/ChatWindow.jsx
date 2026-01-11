@@ -5,13 +5,29 @@ import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
 import './ChatWindow.css';
 
-const ChatWindow = ({ type, groupId, sessionId }) => {
+// Get the API base URL for socket connection
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+const ChatWindow = ({ type, groupId, sessionId, groupName, onClose }) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
+
+
+
+  // Check if user is authenticated
+  if (!user) {
+    return (
+      <div className="chat-window">
+        <div className="chat-error">
+          <p>Please log in to use chat</p>
+        </div>
+      </div>
+    );
+  }
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -24,7 +40,7 @@ const ChatWindow = ({ type, groupId, sessionId }) => {
   useEffect(() => {
     // Initialize socket connection
     const initSocket = () => {
-      const socket = io('http://localhost:3001', {
+      const socket = io(API_BASE_URL, {
         auth: {
           token: localStorage.getItem('token')
         }
@@ -66,6 +82,16 @@ const ChatWindow = ({ type, groupId, sessionId }) => {
         : { type: 'session', sessionId };
 
       socket.emit('join-room', roomData);
+
+      // Timeout to prevent infinite loading
+      const timeout = setTimeout(() => {
+        if (isLoading) {
+          console.log('Chat loading timeout - showing chat anyway');
+          setIsLoading(false);
+        }
+      }, 5000);
+
+      return () => clearTimeout(timeout);
     };
 
     initSocket();
@@ -110,13 +136,16 @@ const ChatWindow = ({ type, groupId, sessionId }) => {
     <div className="chat-window">
       <div className="chat-header">
         <h3>
-          {type === 'group' ? 'Group Chat' : 'Session Chat'}
-          {isConnected ? (
-            <span className="connection-status connected">●</span>
-          ) : (
-            <span className="connection-status disconnected">●</span>
-          )}
+          {groupName || (type === 'group' ? 'Group Chat' : 'Session Chat')}
         </h3>
+        <button className="chat-close-btn" onClick={onClose} title="Close chat">
+          ×
+        </button>
+        {isConnected ? (
+          <span className="connection-status connected">●</span>
+        ) : (
+          <span className="connection-status disconnected">●</span>
+        )}
       </div>
 
       <div className="chat-messages">
@@ -129,7 +158,7 @@ const ChatWindow = ({ type, groupId, sessionId }) => {
             <MessageBubble
               key={message._id}
               message={message}
-              isOwn={message.sender._id === user?.id}
+              isOwn={message.sender?._id === user?.id}
             />
           ))
         )}

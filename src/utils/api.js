@@ -3,8 +3,6 @@ import axios from 'axios';
 /**
  * ======================================================
  * API BASE URL
- * - Uses Vite env in production/dev
- * - Falls back safely for local development
  * ======================================================
  */
 export const API_BASE_URL =
@@ -12,21 +10,7 @@ export const API_BASE_URL =
 
 /**
  * ======================================================
- * USERS API
- * ======================================================
- */
-export const usersAPI = {
-  /**
-   * Change user password
-   * POST /api/users/change-password
-   */
-  changePassword: (data) =>
-    api.post('/users/change-password', data),
-};
-
-/**
- * ======================================================
- * LEGACY EXPORTS (for backward compatibility)
+ * AXIOS INSTANCE
  * ======================================================
  */
 const api = axios.create({
@@ -36,16 +20,27 @@ const api = axios.create({
 
 /**
  * ======================================================
- * REQUEST INTERCEPTOR
- * - Automatically attach JWT token if present
+ * REQUEST INTERCEPTOR (FIXED)
  * ======================================================
  */
 api.interceptors.request.use(
   (config) => {
+    const url = config.url || '';
+
+    // 🔒 ABSOLUTE RULE:
+    // NEVER attach Authorization to auth routes
+    if (url.includes('/auth/')) {
+      if (config.headers?.Authorization) {
+        delete config.headers.Authorization;
+      }
+      return config;
+    }
+
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -53,13 +48,12 @@ api.interceptors.request.use(
 
 /**
  * ======================================================
- * RESPONSE INTERCEPTOR (OPTIONAL BUT PRO)
+ * RESPONSE INTERCEPTOR
  * ======================================================
  */
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Centralized error handling (extend later)
     if (error.response?.status === 401) {
       console.warn('Unauthorized – token expired or invalid');
     }
@@ -69,73 +63,48 @@ api.interceptors.response.use(
 
 /**
  * ======================================================
+ * USERS API
+ * ======================================================
+ */
+export const usersAPI = {
+  setPreferences: (data) =>
+    api.post('/users/preferences', data),
+
+  changePassword: (data) =>
+    api.post('/users/change-password', data),
+};
+
+/**
+ * ======================================================
  * GROUPS API
  * ======================================================
  */
 export const groupsAPI = {
-  /**
-   * Browse public groups
-   * GET /api/groups/list
-   */
   listGroups: (params = {}) =>
     api.get('/groups/list', { params }),
 
-  /**
-   * Get tag options for group creation
-   * GET /api/groups/tag-options
-   */
   getTagOptions: () =>
     api.get('/groups/tag-options'),
 
-  /**
-   * Create a new group
-   * POST /api/groups/create
-   */
   createGroup: (data) =>
     api.post('/groups/create', data),
 
-  /**
-   * Join a group
-   * POST /api/groups/join/:groupId
-   */
   joinGroup: (groupId) =>
     api.post(`/groups/join/${groupId}`),
 
-  /**
-   * Leave a group
-   * POST /api/groups/leave/:groupId
-   */
   leaveGroup: (groupId) =>
     api.post(`/groups/leave/${groupId}`),
 
-  /**
-   * Remove a member from group (admin only)
-   * DELETE /api/groups/:groupId/members/:memberId
-   */
   removeMember: (groupId, memberId) =>
     api.delete(`/groups/${groupId}/members/${memberId}`),
 
-  /**
-   * Delete a group (admin only)
-   * DELETE /api/groups/:groupId
-   */
   deleteGroup: (groupId) =>
     api.delete(`/groups/${groupId}`),
 
-  /**
-   * Get groups joined by logged-in user
-   * GET /api/groups/my-groups
-   */
   getMyGroups: () =>
     api.get('/groups/my-groups'),
 
-  /**
-   * Add resource to group
-   * POST /api/groups/:groupId/resources
-   */
   addResource: (groupId, data) => {
-    // Let the browser/axios set the correct multipart boundary header for FormData.
-    // Passing a manual 'Content-Type' without the boundary can break multer parsing.
     if (data instanceof FormData) {
       return api.post(`/groups/${groupId}/resources`, data, {
         maxBodyLength: Infinity,
@@ -145,66 +114,30 @@ export const groupsAPI = {
     return api.post(`/groups/${groupId}/resources`, data);
   },
 
-  /**
-   * Get resources for group
-   * GET /api/groups/:groupId/resources
-   */
   getResources: (groupId) =>
     api.get(`/groups/${groupId}/resources`),
 
-  /**
-   * Delete resource from group
-   * DELETE /api/groups/:groupId/resources/:resourceId
-   */
   deleteResource: (groupId, resourceId) =>
     api.delete(`/groups/${groupId}/resources/${resourceId}`),
 
-  /**
-   * Update resource in group
-   * PUT /api/groups/:groupId/resources/:resourceId
-   */
   updateResource: (groupId, resourceId, data) =>
     api.put(`/groups/${groupId}/resources/${resourceId}`, data),
 
-  /**
-   * Get messages for a group
-   * GET /api/groups/:groupId/messages
-   */
   getGroupMessages: (groupId, params = {}) =>
     api.get(`/groups/${groupId}/messages`, { params }),
 
-  /**
-   * Send text message to group
-   * POST /api/groups/:groupId/messages/text
-   */
   sendTextMessage: (groupId, data) =>
     api.post(`/groups/${groupId}/messages/text`, data),
 
-  /**
-   * Send voice message to group
-   * POST /api/groups/:groupId/messages/voice
-   */
   sendVoiceMessage: (groupId, data) =>
     api.post(`/groups/${groupId}/messages/voice`, data),
 
-  /**
-   * Create poll in group
-   * POST /api/groups/:groupId/messages/poll
-   */
   createPoll: (groupId, data) =>
     api.post(`/groups/${groupId}/messages/poll`, data),
 
-  /**
-   * Vote in poll
-   * POST /api/groups/:groupId/messages/:messageId/vote/:optionIndex
-   */
   voteInPoll: (groupId, messageId, optionIndex) =>
     api.post(`/groups/${groupId}/messages/${messageId}/vote/${optionIndex}`),
 
-  /**
-   * Delete message
-   * DELETE /api/groups/:groupId/messages/:messageId
-   */
   deleteMessage: (groupId, messageId) =>
     api.delete(`/groups/${groupId}/messages/${messageId}`),
 };
@@ -215,73 +148,33 @@ export const groupsAPI = {
  * ======================================================
  */
 export const sessionsAPI = {
-  /**
-   * Get all sessions
-   * GET /api/sessions
-   */
   getSessions: (params = {}) =>
     api.get('/sessions', { params }),
 
-  /**
-   * Create a new session
-   * POST /api/sessions
-   */
   createSession: (data) =>
     api.post('/sessions', data),
 
-  /**
-   * Get my sessions
-   * GET /api/sessions/my
-   */
   getMySessions: () =>
     api.get('/sessions/my'),
 
-  /**
-   * Join a session
-   * POST /api/sessions/:id/join
-   */
   joinSession: (sessionId) =>
     api.post(`/sessions/${sessionId}/join`),
 
-  /**
-   * Leave a session
-   * POST /api/sessions/:id/leave
-   */
   leaveSession: (sessionId) =>
     api.post(`/sessions/${sessionId}/leave`),
 
-  /**
-   * Update a session
-   * PUT /api/sessions/:id
-   */
   updateSession: (sessionId, data) =>
     api.put(`/sessions/${sessionId}`, data),
 
-  /**
-   * Delete a session
-   * DELETE /api/sessions/:id
-   */
   deleteSession: (sessionId) =>
     api.delete(`/sessions/${sessionId}`),
 
-  /**
-   * Complete a session
-   * PUT /api/sessions/:id/complete
-   */
   completeSession: (sessionId, data) =>
     api.put(`/sessions/${sessionId}/complete`, data),
 
-  /**
-   * Add notes to a session
-   * PUT /api/sessions/:id/notes
-   */
   addSessionNotes: (sessionId, data) =>
     api.put(`/sessions/${sessionId}/notes`, data),
 
-  /**
-   * Add resource to a session
-   * POST /api/sessions/:id/resources
-   */
   addSessionResource: (sessionId, data) =>
     api.post(`/sessions/${sessionId}/resources`, data),
 };
@@ -292,45 +185,21 @@ export const sessionsAPI = {
  * ======================================================
  */
 export const studyWithMeAPI = {
-  /**
-   * Start a new study session
-   * POST /api/study-with-me/start
-   */
   startSession: (data) =>
     api.post('/study-with-me/start', data),
 
-  /**
-   * End a study session
-   * PUT /api/study-with-me/:id/end
-   */
   endSession: (sessionId, data = {}) =>
     api.put(`/study-with-me/${sessionId}/end`, data),
 
-  /**
-   * Get study history
-   * GET /api/study-with-me/history
-   */
   getHistory: (params = {}) =>
     api.get('/study-with-me/history', { params }),
 
-  /**
-   * Get active study session
-   * GET /api/study-with-me/active
-   */
   getActiveSession: () =>
     api.get('/study-with-me/active'),
 
-  /**
-   * Pause study session
-   * PUT /api/study-with-me/:id/pause
-   */
   pauseSession: (sessionId) =>
     api.put(`/study-with-me/${sessionId}/pause`),
 
-  /**
-   * Resume study session
-   * PUT /api/study-with-me/:id/resume
-   */
   resumeSession: (sessionId) =>
     api.put(`/study-with-me/${sessionId}/resume`),
 };
@@ -341,24 +210,12 @@ export const studyWithMeAPI = {
  * ======================================================
  */
 export const recommendationsAPI = {
-  /**
-   * Get personalized group recommendations
-   * GET /api/recommendations/groups
-   */
   getGroupRecommendations: (params = {}) =>
     api.get('/recommendations/groups', { params }),
 
-  /**
-   * Get personalized session recommendations
-   * GET /api/recommendations/sessions
-   */
   getSessionRecommendations: (params = {}) =>
     api.get('/recommendations/sessions', { params }),
 
-  /**
-   * Check recommendation service health
-   * GET /api/recommendations/health
-   */
   checkHealth: () =>
     api.get('/recommendations/health'),
 };

@@ -11,28 +11,7 @@ const connectDB = async () => {
     return conn;
   } catch (error) {
     console.error(`Error connecting to MongoDB at ${uri}: ${error.message}`);
-
-    // Development fallback: start an in-memory MongoDB when not in production
-    if (process.env.NODE_ENV !== 'production') {
-      try {
-        console.warn('Falling back to in-memory MongoDB (development only)...');
-        // Dynamically import to avoid requiring devDependency in production
-        const { MongoMemoryServer } = await import('mongodb-memory-server');
-        const mongod = await MongoMemoryServer.create();
-        const memUri = mongod.getUri();
-        const conn = await mongoose.connect(memUri);
-        console.log(`In-memory MongoDB started at ${memUri}`);
-        // Keep reference for potential shutdown in other parts of the app/tests
-        process.__MONGO_SERVER__ = mongod;  
-        console.log(`MongoDB Connected (in-memory): ${conn.connection.host}`);
-        return conn;
-      } catch (memErr) {
-        console.error(`Failed to start in-memory MongoDB: ${memErr.message}`);
-        process.exit(1);
-      }
-    }
-
-    // In production, exit with error
+    console.error('Please ensure MongoDB is running and the URI is correct.');
     process.exit(1);
   }
 };
