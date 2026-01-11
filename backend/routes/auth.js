@@ -2,7 +2,8 @@ import express from 'express';
 import {
   register,
   login,
-  verifyToken
+  verifyToken,
+  createTestUser
 } from '../controllers/authController.js';
 
 import {
@@ -36,5 +37,8 @@ router.get(
   authenticateToken,
   verifyToken
 );
+
+// Create test user (development only)
+router.post('/create-test-user', createTestUser);
 
 export default router;

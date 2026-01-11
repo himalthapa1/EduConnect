@@ -77,10 +77,17 @@ export const AuthProvider = ({ children }) => {
   ========================= */
   const login = async (email, password) => {
     try {
+      console.log('Frontend login attempt:', { email, password: password.substring(0, 3) + '...' });
+
+      // Clear any existing headers to ensure clean login
+      delete axios.defaults.headers.common['Authorization'];
+
       const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         email,
         password,
       });
+
+      console.log('Frontend login response:', res.data);
 
       if (res.data?.success && res.data?.data?.token) {
         const { token: newToken, user: userData } = res.data.data;
@@ -106,6 +113,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: false, error: 'Invalid login response' };
     } catch (error) {
+      console.error('Frontend login error:', error.response?.data);
       return {
         success: false,
         error:
@@ -145,6 +153,7 @@ export const AuthProvider = ({ children }) => {
   ========================= */
   const logout = () => {
     localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization'];
     setUser(null);
     setToken(null);
     setIsAuthenticated(false);

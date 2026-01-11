@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { groupsAPI, API_BASE_URL } from '../utils/api';
-import { Icons } from '../ui/icons';
+import { Mic, BarChart2, Plus, Send } from 'lucide-react';
 import './GroupChatPanel.css';
 
 const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
@@ -10,13 +10,19 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [newMessage, setNewMessage] = useState('');
-  const [showPlusMenu, setShowPlusMenu] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showActionPopover, setShowActionPopover] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const [showPollModal, setShowPollModal] = useState(false);
   const [pollData, setPollData] = useState({ question: '', options: ['', ''] });
-  const [isMobile, setIsMobile] = useState(false);
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentionIndex, setMentionIndex] = useState(0);
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const [groupMembers, setGroupMembers] = useState([]);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -30,6 +36,7 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
   useEffect(() => {
     if (isOpen && group) {
       loadMessages();
+      loadGroupMembers();
     }
   }, [isOpen, group]);
 
@@ -48,6 +55,13 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Auto-focus input when chat opens (Messenger behavior)
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
+
   const loadMessages = async () => {
     if (!group) return;
 
@@ -59,6 +73,17 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
       console.error('Failed to load messages:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadGroupMembers = async () => {
+    if (!group) return;
+
+    try {
+      const response = await groupsAPI.getGroupMembers(group._id);
+      setGroupMembers(response.data.data.members || []);
+    } catch (error) {
+      console.error('Failed to load group members:', error);
     }
   };
 
@@ -85,10 +110,6 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
       e.preventDefault();
       handleSendMessage();
     }
-  };
-
-  const handlePlusClick = () => {
-    setShowPlusMenu(!showPlusMenu);
   };
 
   const handleVoiceNote = async () => {
@@ -131,7 +152,6 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
         alert('Could not access microphone. Please check permissions.');
       }
     }
-    setShowPlusMenu(false);
   };
 
   const handleCreatePoll = async () => {
@@ -148,10 +168,11 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
 
       setMessages(prev => [...prev, response.data.data.message]);
       setPollData({ question: '', options: ['', ''] });
+      setShowPollModal(false);
+      setShowActionPopover(false);
     } catch (error) {
       console.error('Failed to create poll:', error);
     }
-    setShowPlusMenu(false);
   };
 
   const handleVote = async (messageId, optionIndex) => {
@@ -171,6 +192,92 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
       minute: '2-digit',
       hour12: true
     });
+  };
+
+  // Determine expansion state (Messenger-accurate)
+  const hasText = newMessage.trim().length > 0;
+  const isTyping = isInputFocused || hasText;
+
+  console.log('Chat state:', { hasText, isTyping, isInputFocused, newMessage });
+
+  // Handle click outside to close popover
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showActionPopover && !event.target.closest('.action-popover, .plus-btn')) {
+        setShowActionPopover(false);
+      }
+      if (showMentions && !event.target.closest('.mentions-dropdown, input')) {
+        setShowMentions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showActionPopover, showMentions]);
+
+  // Handle mention detection and keyboard navigation
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    const cursorPos = e.target.selectionStart;
+
+    setNewMessage(value);
+    setCursorPosition(cursorPos);
+
+    // Check for @ symbol
+    const textBeforeCursor = value.substring(0, cursorPos);
+    const atIndex = textBeforeCursor.lastIndexOf('@');
+
+    if (atIndex !== -1) {
+      const query = textBeforeCursor.substring(atIndex + 1);
+      if (query.length === 0 || query.match(/^\w*$/)) {
+        setMentionQuery(query);
+        setShowMentions(true);
+        setMentionIndex(0);
+      } else {
+        setShowMentions(false);
+      }
+    } else {
+      setShowMentions(false);
+    }
+  };
+
+  const handleMentionSelect = (member) => {
+    const textBeforeAt = newMessage.substring(0, newMessage.lastIndexOf('@'));
+    const textAfterCursor = newMessage.substring(cursorPosition);
+    const mention = `@${member.username} `;
+
+    const newText = textBeforeAt + mention + textAfterCursor;
+    setNewMessage(newText);
+    setShowMentions(false);
+    setMentionQuery('');
+
+    // Focus back to input and set cursor position
+    setTimeout(() => {
+      inputRef.current.focus();
+      const newCursorPos = textBeforeAt.length + mention.length;
+      inputRef.current.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
+  const handleKeyDown = (e) => {
+    if (!showMentions) return;
+
+    const filteredMembers = groupMembers.filter(member =>
+      member.username.toLowerCase().includes(mentionQuery.toLowerCase())
+    );
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setMentionIndex(prev => (prev + 1) % filteredMembers.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setMentionIndex(prev => prev === 0 ? filteredMembers.length - 1 : prev - 1);
+    } else if (e.key === 'Enter' && filteredMembers.length > 0) {
+      e.preventDefault();
+      handleMentionSelect(filteredMembers[mentionIndex]);
+    } else if (e.key === 'Escape') {
+      setShowMentions(false);
+    }
   };
 
   if (!isOpen || !group) return null;
@@ -196,7 +303,7 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
               onClick={onClose}
               title={isMobile ? "Back" : "Close chat"}
             >
-              {isMobile ? <Icons.arrowLeft size={20} /> : '×'}
+              {isMobile ? '←' : '×'}
             </button>
           </div>
         </div>
@@ -208,7 +315,7 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
               <div className="loading-spinner"></div>
               <p>Loading messages...</p>
             </div>
-          ) : messages.length === 0 ? (
+          ) : !Array.isArray(messages) || messages.length === 0 ? (
             <div className="chat-empty">
               <p>No messages yet. Start the conversation!</p>
             </div>
@@ -277,16 +384,39 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
+        {/* Input - Messenger-Style Progressive Disclosure */}
         <div className="chat-panel-input">
           <div className="input-container">
-            <button
-              className={`plus-btn ${showPlusMenu ? 'active' : ''}`}
-              onClick={handlePlusClick}
-              title="Add attachment"
-            >
-              +
-            </button>
+            {/* LEFT ACTION AREA - Conditional based on typing state */}
+            {!isTyping && (
+              <>
+                <button
+                  className="action-btn"
+                  onClick={handleVoiceNote}
+                  title="Voice"
+                  disabled={isRecording}
+                >
+                  <Mic size={18} />
+                </button>
+                <button
+                  className="action-btn"
+                  onClick={() => setShowPollModal(true)}
+                  title="Poll"
+                >
+                  <BarChart2 size={18} />
+                </button>
+              </>
+            )}
+
+            {isTyping && (
+              <button
+                className="action-btn plus-btn"
+                onClick={() => setShowActionPopover(prev => !prev)}
+                title="More"
+              >
+                <Plus size={18} />
+              </button>
+            )}
 
             <input
               ref={inputRef}
@@ -294,38 +424,67 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => {
+                if (!newMessage.trim()) setIsInputFocused(false);
+              }}
               placeholder="Type a message..."
               disabled={sending}
+              className={`message-input ${isTyping ? 'expanded' : ''}`}
             />
 
+            {/* Send button ALWAYS visible */}
             <button
               className="send-btn"
               onClick={handleSendMessage}
-              disabled={!newMessage.trim() || sending}
+              disabled={!hasText || sending}
             >
-              {sending ? '...' : 'Send'}
+              <Send size={18} />
             </button>
           </div>
 
-          {/* Plus Menu */}
-          {showPlusMenu && (
-            <div className="plus-menu">
+          {/* Mentions Dropdown */}
+          {showMentions && (
+            <div className="mentions-dropdown">
+              {groupMembers
+                .filter(member =>
+                  member.username.toLowerCase().includes(mentionQuery.toLowerCase())
+                )
+                .slice(0, 5)
+                .map((member, index) => (
+                  <button
+                    key={member._id}
+                    className={`mention-item ${index === mentionIndex ? 'selected' : ''}`}
+                    onClick={() => handleMentionSelect(member)}
+                  >
+                    <span className="mention-username">@{member.username}</span>
+                  </button>
+                ))}
+            </div>
+          )}
+
+          {/* Action Popover - only shown in typing state */}
+          {showActionPopover && isExpanded && (
+            <div className="action-popover">
               <button
-                className={`menu-item ${isRecording ? 'recording' : ''}`}
-                onClick={handleVoiceNote}
-              >
-                <Icons.mic size={16} />
-                {isRecording ? 'Stop Recording' : 'Voice Note'}
-              </button>
-              <button
-                className="menu-item"
+                className={`popover-item ${isRecording ? 'recording' : ''}`}
                 onClick={() => {
-                  setShowPlusMenu(false);
-                  setShowPollModal(true);
+                  handleVoiceNote();
+                  setShowActionPopover(false);
                 }}
               >
-                <Icons.barChart size={16} />
-                Create Poll
+                <Mic size={15} />
+                <span>{isRecording ? 'Stop Recording' : 'Voice Note'}</span>
+              </button>
+              <button
+                className="popover-item"
+                onClick={() => {
+                  setShowPollModal(true);
+                  setShowActionPopover(false);
+                }}
+              >
+                <BarChart2 size={16} />
+                <span>Create Poll</span>
               </button>
             </div>
           )}
@@ -418,7 +577,6 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
                     return;
                   }
                   handleCreatePoll();
-                  setShowPollModal(false);
                 }}
               >
                 Create Poll
@@ -432,3 +590,5 @@ const GroupChatPanel = ({ group, isOpen, onClose, onMaximize }) => {
 };
 
 export default GroupChatPanel;
+
+

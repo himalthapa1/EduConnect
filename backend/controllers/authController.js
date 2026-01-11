@@ -33,12 +33,15 @@ export const register = async (req, res) => {
     // Normalize email
     email = email.toLowerCase();
 
+    console.log('Registration attempt for email:', email, 'username:', username);
+
     // Check existing user
     const existingUser = await User.findOne({
       $or: [{ email }, { username }]
     });
 
     if (existingUser) {
+      console.log('User already exists:', existingUser.email === email ? 'email' : 'username');
       return res.status(409).json({
         success: false,
         error: {
@@ -63,6 +66,7 @@ export const register = async (req, res) => {
     });
 
     await user.save();
+    console.log('User created successfully:', user.email);
 
     // Token
     const token = generateToken(user._id, user.email);
@@ -103,9 +107,18 @@ export const login = async (req, res) => {
     const email = req.body.email.toLowerCase();
     const { password } = req.body;
 
+    console.log('Login attempt for email:', email);
+
     const user = await User.findOne({ email }).select('+password');
 
+    console.log('User found:', user ? 'YES' : 'NO');
+    if (user) {
+      console.log('User email:', user.email);
+      console.log('Password provided length:', password.length);
+    }
+
     if (!user) {
+      console.log('No user found with email:', email);
       return res.status(401).json({
         success: false,
         error: { message: 'Invalid credentials' }
@@ -113,8 +126,10 @@ export const login = async (req, res) => {
     }
 
     const isMatch = await user.comparePassword(password);
+    console.log('Password match:', isMatch);
 
     if (!isMatch) {
+      console.log('Password does not match for user:', user.email);
       return res.status(401).json({
         success: false,
         error: { message: 'Invalid credentials' }
@@ -179,6 +194,57 @@ export const verifyToken = async (req, res) => {
     res.status(500).json({
       success: false,
       error: { message: 'Token verification failed' }
+    });
+  }
+};
+
+/* =========================
+   CREATE TEST USER (DEVELOPMENT ONLY)
+========================= */
+export const createTestUser = async (req, res) => {
+  try {
+    // Check if test user already exists
+    const existingUser = await User.findOne({ email: 'test@example.com' });
+
+    if (existingUser) {
+      return res.status(200).json({
+        success: true,
+        message: 'Test user already exists',
+        data: {
+          email: 'test@example.com',
+          password: 'password123'
+        }
+      });
+    }
+
+    // Create test user
+    const testUser = new User({
+      username: 'testuser',
+      email: 'test@example.com',
+      password: 'password123',
+      collegeName: 'Test College',
+      currentYear: '3rd Year'
+    });
+
+    await testUser.save();
+
+    console.log('Test user created:', testUser.email);
+
+    res.status(201).json({
+      success: true,
+      message: 'Test user created successfully',
+      data: {
+        email: 'test@example.com',
+        password: 'password123',
+        username: 'testuser'
+      }
+    });
+  } catch (error) {
+    console.error('CREATE TEST USER ERROR:', error);
+
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to create test user' }
     });
   }
 };

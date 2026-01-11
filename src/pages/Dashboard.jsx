@@ -230,32 +230,7 @@ const Dashboard = () => {
           <GroupRecommendations limit={3} />
         </div>
 
-        {/* Quick Actions */}
-        <section className="quick-actions-section">
-          <h2>Quick Actions</h2>
-          <div className="actions-grid">
-            <button onClick={handleCreateSession} className="action-btn primary">
-              <span className="action-icon"><Icons.calendar size={18} /></span>
-              <span>Schedule Session</span>
-            </button>
-            <button onClick={() => navigate('/study-with-me')} className="action-btn primary">
-              <span className="action-icon"><Icons.book size={18} /></span>
-              <span>Study With Me</span>
-            </button>
-            <button onClick={() => navigate('/groups')} className="action-btn secondary">
-              <span className="action-icon"><Icons.users size={18} /></span>
-              <span>Browse Groups</span>
-            </button>
-            <button onClick={() => navigate('/profile')} className="action-btn secondary">
-              <span className="action-icon"><Icons.settings size={18} /></span>
-              <span>Edit Profile</span>
-            </button>
-            <button onClick={() => navigate('/resources')} className="action-btn secondary">
-              <span className="action-icon"><Icons.file size={18} /></span>
-              <span>Study Resources</span>
-            </button>
-          </div>
-        </section>
+
       </main>
     </div>
   );
