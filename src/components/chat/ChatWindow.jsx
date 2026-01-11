@@ -169,6 +169,9 @@ const ChatWindow = ({ type, groupId, sessionId, groupName, onClose }) => {
         onSendMessage={handleSendMessage}
         disabled={!isConnected}
         placeholder={isConnected ? "Type a message..." : "Connecting..."}
+        groupId={type === 'group' ? groupId : null}
+        sessionId={type === 'session' ? sessionId : null}
+        type={type}
       />
     </div>
   );

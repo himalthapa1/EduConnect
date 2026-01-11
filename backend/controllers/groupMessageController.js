@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import GroupMessage from "../models/GroupMessage.js";
+import Message from "../models/Message.js";
 import StudyGroup from "../models/StudyGroup.js";
 import User from "../models/User.js";
 import { upload } from "../middleware/upload.js";
@@ -48,8 +48,11 @@ export const getGroupMessages = async (req, res) => {
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    const messages = await GroupMessage.find({ groupId })
-      .populate('senderId', 'username email')
+    const messages = await Message.find({
+      chatType: 'group',
+      groupId: groupId
+    })
+      .populate('sender', 'username email')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
@@ -58,7 +61,10 @@ export const getGroupMessages = async (req, res) => {
     // Reverse to show oldest first
     messages.reverse();
 
-    const totalMessages = await GroupMessage.countDocuments({ groupId });
+    const totalMessages = await Message.countDocuments({
+      chatType: 'group',
+      groupId: groupId
+    });
     const hasMore = totalMessages > skip + messages.length;
 
     res.json({
@@ -106,15 +112,15 @@ export const sendTextMessage = async (req, res) => {
       return res.status(403).json({ message: "Access denied: Not a group member" });
     }
 
-    const message = await GroupMessage.create({
-      groupId,
-      senderId: userId,
+    const message = await Message.create({
       content: content.trim(),
-      type: 'text'
+      sender: userId,
+      chatType: 'group',
+      groupId: groupId
     });
 
     // Populate sender info for response
-    await message.populate('senderId', 'username email');
+    await message.populate('sender', 'username email');
 
     res.status(201).json({
       success: true,
@@ -157,16 +163,16 @@ export const sendVoiceMessage = [
         return res.status(403).json({ message: "Access denied: Not a group member" });
       }
 
-      const message = await GroupMessage.create({
-        groupId,
-        senderId: userId,
+      const message = await Message.create({
         content: content.trim(),
-        type: 'voice',
+        sender: userId,
+        chatType: 'group',
+        groupId: groupId,
         audioUrl: `uploads/${req.file.filename}`
       });
 
       // Populate sender info for response
-      await message.populate('senderId', 'username email');
+      await message.populate('sender', 'username email');
 
       res.status(201).json({
         success: true,
@@ -227,11 +233,11 @@ export const createPoll = async (req, res) => {
       votes: []
     }));
 
-    const message = await GroupMessage.create({
-      groupId,
-      senderId: userId,
+    const message = await Message.create({
       content: question.trim(),
-      type: 'poll',
+      sender: userId,
+      chatType: 'group',
+      groupId: groupId,
       pollData: {
         question: question.trim(),
         options: pollOptions
@@ -239,7 +245,7 @@ export const createPoll = async (req, res) => {
     });
 
     // Populate sender info for response
-    await message.populate('senderId', 'username email');
+    await message.populate('sender', 'username email');
 
     res.status(201).json({
       success: true,
@@ -268,12 +274,12 @@ export const voteInPoll = async (req, res) => {
       return res.status(400).json({ message: "Invalid option index" });
     }
 
-    const message = await GroupMessage.findById(messageId);
+    const message = await Message.findById(messageId);
     if (!message) {
       return res.status(404).json({ message: "Message not found" });
     }
 
-    if (message.type !== 'poll') {
+    if (!message.pollData) {
       return res.status(400).json({ message: "Message is not a poll" });
     }
 
@@ -311,7 +317,7 @@ export const deleteMessage = async (req, res) => {
       return res.status(400).json({ message: "Invalid message ID" });
     }
 
-    const message = await GroupMessage.findById(messageId);
+    const message = await Message.findById(messageId);
     if (!message) {
       return res.status(404).json({ message: "Message not found" });
     }
@@ -323,13 +329,13 @@ export const deleteMessage = async (req, res) => {
     }
 
     // Check permissions: sender or group admin
-    const canDelete = message.senderId.equals(userId) || group.isAdmin(userId);
+    const canDelete = message.sender.equals(userId) || group.isAdmin(userId);
     if (!canDelete) {
       return res.status(403).json({ message: "Only message sender or group admin can delete messages" });
     }
 
     // Delete audio file if it exists
-    if (message.type === 'voice' && message.audioUrl) {
+    if (message.audioUrl) {
       const filePath = path.join(UPLOADS_DIR, path.basename(message.audioUrl));
       await fs.promises.unlink(filePath).catch(() => {});
     }

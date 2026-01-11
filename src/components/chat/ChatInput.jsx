@@ -1,12 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { LuArrowLeft, LuMic, LuVote, LuPlus } from 'react-icons/lu';
+import { groupsAPI } from '../../utils/api';
+import PollModal from './PollModal';
 import './ChatInput.css';
 
-const ChatInput = ({ onSendMessage, disabled, placeholder }) => {
+const ChatInput = ({ onSendMessage, disabled, placeholder, groupId, sessionId, type }) => {
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showExtraButtons, setShowExtraButtons] = useState(true);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [showPollModal, setShowPollModal] = useState(false);
   const textareaRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const recordingIntervalRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -59,14 +67,83 @@ const ChatInput = ({ onSendMessage, disabled, placeholder }) => {
     // This is handled naturally by textarea
   };
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        await uploadVoiceMessage(audioBlob);
+
+        // Stop all tracks to release microphone
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+
+      // Start timer
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      alert('Could not access microphone. Please check permissions.');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      clearInterval(recordingIntervalRef.current);
+    }
+  };
+
+  const uploadVoiceMessage = async (audioBlob) => {
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'voice-message.webm');
+      formData.append('content', 'Voice message');
+
+      if (type === 'group' && groupId) {
+        await groupsAPI.sendVoiceMessage(groupId, formData);
+      }
+
+      // Reset recording state
+      setRecordingTime(0);
+    } catch (error) {
+      console.error('Error uploading voice message:', error);
+      alert('Failed to send voice message');
+    }
+  };
+
   const handleMicClick = () => {
-    // TODO: Implement voice message functionality
-    console.log('Mic button clicked');
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
   };
 
   const handlePollClick = () => {
-    // TODO: Implement poll creation functionality
-    console.log('Poll button clicked');
+    setShowPollModal(true);
+  };
+
+  const handlePollSuccess = () => {
+    // Poll created successfully
+    setShowPollModal(false);
   };
 
   const handlePlusClick = () => {
@@ -87,12 +164,13 @@ const ChatInput = ({ onSendMessage, disabled, placeholder }) => {
         <>
           <button
             type="button"
-            className="input-button mic-button"
+            className={`input-button mic-button ${isRecording ? 'recording' : ''}`}
             onClick={handleMicClick}
             disabled={disabled}
-            title="Voice message"
+            title={isRecording ? `Recording (${recordingTime}s)` : "Voice message"}
           >
             <LuMic size={20} />
+            {isRecording && <span className="recording-time">{recordingTime}s</span>}
           </button>
 
           <button
@@ -155,6 +233,15 @@ const ChatInput = ({ onSendMessage, disabled, placeholder }) => {
       >
         <LuArrowLeft size={20} style={{ transform: 'rotate(180deg)' }} />
       </button>
+
+      {/* Poll Modal */}
+      {showPollModal && (
+        <PollModal
+          onClose={() => setShowPollModal(false)}
+          onSuccess={handlePollSuccess}
+          groupId={groupId}
+        />
+      )}
     </form>
   );
 };

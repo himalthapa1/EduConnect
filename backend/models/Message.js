@@ -32,6 +32,11 @@ const messageSchema = new mongoose.Schema(
       required: function () {
         return this.chatType === 'session';
       }
+    },
+    // For voice messages
+    audioUrl: {
+      type: String,
+      trim: true
     }
   },
   {
@@ -69,6 +74,7 @@ messageSchema.methods.toPublicData = function () {
     chatType: this.chatType,
     groupId: this.groupId,
     sessionId: this.sessionId,
+    audioUrl: this.audioUrl,
     createdAt: this.createdAt
   };
 };
