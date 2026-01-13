@@ -23,7 +23,7 @@
 
 .create-session-btn {
   padding: 12px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-accent-darker);
   color: white;
   border: none;
   border-radius: 8px;
@@ -35,7 +35,7 @@
 
 .create-session-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(41, 122, 128, 0.4);
 }
 
 .sessions-tabs {
@@ -61,7 +61,7 @@
 }
 
 .tab.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-accent-darker);
   color: white;
 }
 
@@ -94,7 +94,7 @@
 }
 
 .filters input:focus {
-  border-color: #667eea;
+  border-color: var(--color-accent-darker);
 }
 
 .filter-btn, .clear-btn {
@@ -108,12 +108,12 @@
 }
 
 .filter-btn {
-  background: #667eea;
+  background: var(--color-accent-darker);
   color: white;
 }
 
 .filter-btn:hover {
-  background: #5a6fd8;
+  background: var(--color-accent);
 }
 
 .clear-btn {

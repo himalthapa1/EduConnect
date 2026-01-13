@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent-darker) 0%, var(--color-accent) 100%);
   padding: 20px;
 }
 
@@ -55,13 +55,13 @@
 }
 
 .interest-button:hover {
-  border-color: #667eea;
+  border-color: var(--color-accent-darker);
   background: #f8faff;
 }
 
 .interest-button.selected {
-  background: #667eea;
-  border-color: #667eea;
+  background: var(--color-accent-darker);
+  border-color: var(--color-accent-darker);
   color: white;
 }
 
@@ -102,7 +102,7 @@
 }
 
 .btn-primary {
-  background: #667eea;
+  background: var(--color-accent-darker);
   color: white;
   border: none;
   padding: 14px 32px;
@@ -115,7 +115,7 @@
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #5a67d8;
+  background: var(--color-accent);
 }
 
 .btn-primary:disabled {
