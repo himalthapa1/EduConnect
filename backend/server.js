@@ -222,6 +222,9 @@ let server;
       },
     });
 
+    // Export io instance for use in controllers
+    global.io = io;
+
     // Socket.IO authentication middleware
     io.use(async (socket, next) => {
       try {

@@ -67,7 +67,7 @@ const MessageBubble = ({ message, isOwn }) => {
   };
 
   // Handle polls
-  if (message.pollData) {
+  if (message.type === 'poll') {
     const { pollData } = message;
     const totalVotes = pollData.options.reduce((sum, option) => sum + option.votes.length, 0);
     const userVotedOption = pollData.options.findIndex(option =>

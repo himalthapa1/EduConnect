@@ -4,7 +4,7 @@ import { groupsAPI } from '../../utils/api';
 import PollModal from './PollModal';
 import './ChatInput.css';
 
-const ChatInput = ({ onSendMessage, disabled, placeholder, groupId, sessionId, type }) => {
+const ChatInput = ({ onSendMessage, disabled, placeholder, groupId }) => {
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showExtraButtons, setShowExtraButtons] = useState(true);
@@ -117,9 +117,7 @@ const ChatInput = ({ onSendMessage, disabled, placeholder, groupId, sessionId, t
       formData.append('audio', audioBlob, 'voice-message.webm');
       formData.append('content', 'Voice message');
 
-      if (type === 'group' && groupId) {
-        await groupsAPI.sendVoiceMessage(groupId, formData);
-      }
+      await groupsAPI.sendVoiceMessage(groupId, formData);
 
       // Reset recording state
       setRecordingTime(0);

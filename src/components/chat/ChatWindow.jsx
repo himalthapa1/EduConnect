@@ -8,7 +8,7 @@ import './ChatWindow.css';
 // Get the API base URL for socket connection
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-const ChatWindow = ({ type, groupId, sessionId, groupName, onClose }) => {
+const ChatWindow = ({ groupId, groupName, onClose }) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -71,17 +71,20 @@ const ChatWindow = ({ type, groupId, sessionId, groupName, onClose }) => {
         setMessages(prev => [...prev, message]);
       });
 
+      socket.on('poll-updated', (updatedMessage) => {
+        console.log('Poll updated:', updatedMessage);
+        setMessages(prev => prev.map(msg =>
+          msg._id === updatedMessage._id ? updatedMessage : msg
+        ));
+      });
+
       socket.on('error', (error) => {
         console.error('Chat error:', error.message);
         setIsLoading(false);
       });
 
-      // Join the appropriate room
-      const roomData = type === 'group'
-        ? { type: 'group', groupId }
-        : { type: 'session', sessionId };
-
-      socket.emit('join-room', roomData);
+      // Join the group room
+      socket.emit('join-room', { groupId });
 
       // Timeout to prevent infinite loading
       const timeout = setTimeout(() => {
@@ -99,26 +102,19 @@ const ChatWindow = ({ type, groupId, sessionId, groupName, onClose }) => {
     // Cleanup
     return () => {
       if (socketRef.current) {
-        socketRef.current.emit('leave-room', {
-          type,
-          groupId,
-          sessionId
-        });
+        socketRef.current.emit('leave-room', { groupId });
         socketRef.current.disconnect();
       }
     };
-  }, [type, groupId, sessionId]);
+  }, [groupId]);
 
   const handleSendMessage = (content) => {
     if (!socketRef.current || !isConnected) return;
 
-    const messageData = {
-      chatType: type,
-      content: content.trim(),
-      ...(type === 'group' ? { groupId } : { sessionId })
-    };
-
-    socketRef.current.emit('send-message', messageData);
+    socketRef.current.emit('send-message', {
+      groupId,
+      content: content.trim()
+    });
   };
 
   if (isLoading) {
@@ -136,7 +132,7 @@ const ChatWindow = ({ type, groupId, sessionId, groupName, onClose }) => {
     <div className="chat-window">
       <div className="chat-header">
         <h3>
-          {groupName || (type === 'group' ? 'Group Chat' : 'Session Chat')}
+          {groupName || 'Group Chat'}
         </h3>
         <button className="chat-close-btn" onClick={onClose} title="Close chat">
           ×
@@ -169,9 +165,7 @@ const ChatWindow = ({ type, groupId, sessionId, groupName, onClose }) => {
         onSendMessage={handleSendMessage}
         disabled={!isConnected}
         placeholder={isConnected ? "Type a message..." : "Connecting..."}
-        groupId={type === 'group' ? groupId : null}
-        sessionId={type === 'session' ? sessionId : null}
-        type={type}
+        groupId={groupId}
       />
     </div>
   );

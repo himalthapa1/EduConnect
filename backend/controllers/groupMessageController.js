@@ -122,6 +122,22 @@ export const sendTextMessage = async (req, res) => {
     // Populate sender info for response
     await message.populate('sender', 'username email');
 
+    // Emit to socket room for real-time updates
+    const roomId = `group-${groupId}`;
+    const messageData = {
+      _id: message._id,
+      content: message.content,
+      sender: message.sender,
+      type: message.type,
+      pollData: message.pollData,
+      audioUrl: message.audioUrl,
+      createdAt: message.createdAt
+    };
+
+    if (global.io) {
+      global.io.to(roomId).emit('new-message', messageData);
+    }
+
     res.status(201).json({
       success: true,
       data: { message }
@@ -173,6 +189,21 @@ export const sendVoiceMessage = [
 
       // Populate sender info for response
       await message.populate('sender', 'username email');
+
+      // Emit to socket room for real-time updates
+      const roomId = `group-${groupId}`;
+      const messageData = {
+        _id: message._id,
+        content: message.content,
+        sender: message.sender,
+        pollData: message.pollData,
+        audioUrl: message.audioUrl,
+        createdAt: message.createdAt
+      };
+
+      if (global.io) {
+        global.io.to(roomId).emit('new-message', messageData);
+      }
 
       res.status(201).json({
         success: true,
@@ -238,6 +269,7 @@ export const createPoll = async (req, res) => {
       sender: userId,
       chatType: 'group',
       groupId: groupId,
+      type: 'poll',
       pollData: {
         question: question.trim(),
         options: pollOptions
@@ -246,6 +278,22 @@ export const createPoll = async (req, res) => {
 
     // Populate sender info for response
     await message.populate('sender', 'username email');
+
+    // Emit to socket room for real-time updates
+    const roomId = `group-${groupId}`;
+    const messageData = {
+      _id: message._id,
+      content: message.content,
+      sender: message.sender,
+      type: message.type,
+      pollData: message.pollData,
+      audioUrl: message.audioUrl,
+      createdAt: message.createdAt
+    };
+
+    if (global.io) {
+      global.io.to(roomId).emit('new-message', messageData);
+    }
 
     res.status(201).json({
       success: true,
@@ -294,6 +342,22 @@ export const voteInPoll = async (req, res) => {
 
     // Get updated poll results
     const results = message.getPollResults();
+
+    // Emit updated poll to socket room for real-time updates
+    const roomId = `group-${message.groupId}`;
+    const updatedMessageData = {
+      _id: message._id,
+      content: message.content,
+      sender: message.sender,
+      type: message.type,
+      pollData: message.pollData,
+      audioUrl: message.audioUrl,
+      createdAt: message.createdAt
+    };
+
+    if (global.io) {
+      global.io.to(roomId).emit('poll-updated', updatedMessageData);
+    }
 
     res.json({
       success: true,
