@@ -1,7 +1,7 @@
 .sidebar {
   width: 280px;
   height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-accent-darker);
   color: white;
   display: flex;
   flex-direction: column;
@@ -78,9 +78,9 @@
 }
 
 .nav-item.active {
-  background-color: rgba(255, 255, 255, 0.2);
+  background: var(--color-accent-dark);
   color: white;
-  border-right: 3px solid white;
+  border-right: 4px solid var(--color-accent);
 }
 
 .nav-icon {

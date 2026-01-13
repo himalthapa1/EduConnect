@@ -197,8 +197,8 @@
 .search-input:focus,
 .subject-filter:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-focus);
 }
 
 /* Groups Grid */
@@ -383,8 +383,8 @@
 }
 
 .subject-badge {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--color-accent-light);
+  color: var(--color-accent-darker);
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 0.8rem;

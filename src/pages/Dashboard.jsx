@@ -202,11 +202,11 @@ const Dashboard = () => {
                 recentActivity.map(session => (
                   <div key={session._id} className="activity-item">
                     <div className="activity-icon">
-                      {session.organizer._id === user?.id ? <Icons.edit size={16} /> : <Icons.check size={16} />}
+                      {session.organizer && session.organizer._id === user?.id ? <Icons.edit size={16} /> : <Icons.check size={16} />}
                     </div>
                     <div className="activity-content">
                       <p>
-                        {session.organizer._id === user?.id
+                        {session.organizer && session.organizer._id === user?.id
                           ? `You created "${session.title}"`
                           : `You joined "${session.title}"`
                         }
