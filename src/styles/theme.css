@@ -1,9 +1,20 @@
 :root {
-  /* Brand Accents (Non-buttons) */
-  --color-accent: #52F4FF;
-  --color-accent-light: #86F7FF;
-  --color-accent-dark: #39ABB3;
-  --color-accent-darker: #297A80;
+  /* Spacing Tokens */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Typography */
+  --font-page-title: 24px;
+  --font-section-title: 16px;
+  --font-card-title: 14px;
+  --font-body: 14px;
+  --font-meta: 12px;
+
+  /* Brand Colors */
+  --color-primary: #0d9488; /* Subdued teal primary */
 
   /* Surfaces */
   --color-surface: #ffffff;
@@ -12,12 +23,13 @@
   /* Text */
   --color-text-primary: #1f2937;
   --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
 
   /* Borders */
   --color-border: #e5e7eb;
 
   /* Focus / Highlight */
-  --color-focus: rgba(82, 244, 255, 0.35);
+  --color-focus: rgba(13, 148, 136, 0.2);
 }
 
 body {
@@ -28,37 +40,33 @@ body {
 /* Login Page */
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(
-    180deg,
-    var(--color-surface) 0%,
-    #efffff 100%
-  );
+  background: var(--color-surface);
 }
 
 .login-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--spacing-sm);
 }
 
 input:focus {
-  border-color: var(--color-accent);
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 2px var(--color-focus);
 }
 
 .login-link {
-  color: var(--color-accent-dark);
+  color: var(--color-primary);
 }
 
 /* Dashboard Page */
 .sidebar {
-  background: var(--color-accent-darker);
+  background: var(--color-primary);
   color: #ffffff;
 }
 
 .sidebar-item.active {
-  background: var(--color-accent-dark);
-  border-left: 4px solid var(--color-accent);
+  background: rgba(255, 255, 255, 0.1);
+  border-left: 3px solid var(--color-surface);
 }
 
 .dashboard-content {
@@ -71,27 +79,27 @@ input:focus {
 }
 
 .card.recommended {
-  box-shadow: 0 0 0 2px rgba(82, 244, 255, 0.15);
+  box-shadow: 0 0 0 2px var(--color-focus);
 }
 
 /* Groups / Discover Page */
 .search-input:focus {
-  border-color: var(--color-accent);
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 2px var(--color-focus);
 }
 
 .group-tag {
-  background: var(--color-accent-light);
-  color: var(--color-accent-darker);
+  background: rgba(13, 148, 136, 0.1);
+  color: var(--color-primary);
 }
 
 .icon-accent {
-  color: var(--color-accent-dark);
+  color: var(--color-primary);
 }
 
 /* Focus, Hover, and Accessibility */
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
