@@ -1,169 +1,75 @@
-/* --- Fancy Create Group Form --- */
-.create-group-form-fancy {
-  max-width: 520px;
-  margin: 40px auto 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 38px;
-  align-items: center;
-  background: transparent;
-}
 
-.form-group-fancy {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: flex-start;
-}
-
-.form-group-fancy label {
-  font-size: 1.15rem;
-  font-weight: 500;
-  color: #222;
-}
-
-.form-group-fancy input,
-.form-group-fancy textarea {
-  width: 100%;
-  padding: 18px;
-  border: 2px solid #111;
-  border-radius: 18px;
-  font-size: 1.15rem;
-  outline: none;
-  font-family: inherit;
-  background: #fff;
-  transition: border-color 0.2s;
-}
-
-.form-group-fancy input:focus,
-.form-group-fancy textarea:focus {
-  border-color: #32ade6;
-}
-
-.group-tags-fancy {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #fff;
-  border: 2px solid #111;
-  border-radius: 18px;
-  padding: 6px 18px;
-}
-
-.tag-circle {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: inline-block;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
-}
-
-.create-btn-fancy {
-  margin-top: 12px;
-  padding: 12px 38px;
-  font-size: 1.2rem;
-  font-weight: 700;
-  border: none;
-  border-radius: 18px;
-  background: linear-gradient(90deg, #a259ff 0%, #38cfff 100%);
-  color: #fff;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(50, 173, 230, 0.08);
-  transition: background 0.2s, transform 0.2s;
-}
-
-.create-btn-fancy:hover:not(:disabled) {
-  background: linear-gradient(90deg, #38cfff 0%, #a259ff 100%);
-  transform: translateY(-2px) scale(1.03);
-}
-
-.create-btn-fancy:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
 
 .groups-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
-  background: #f8f9fa;
-  min-height: calc(100vh - 40px);
+  padding: var(--spacing-lg);
+  background: var(--color-surface-muted);
+  min-height: calc(100vh - var(--spacing-xl));
 }
 
 .groups-header {
   text-align: center;
-  margin-bottom: 30px;
-  color: #2c3e50;
+  margin-bottom: var(--spacing-xl);
+  color: var(--color-text-primary);
 }
 
 .groups-header h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-size: var(--font-page-title);
+  font-weight: 600;
   margin: 0;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .alert {
-  padding: 15px 20px;
-  margin-bottom: 20px;
-  border-radius: 8px;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  border-radius: var(--spacing-sm);
   font-weight: 500;
-  animation: slideIn 0.3s ease-out;
 }
 
 .alert-error {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
 }
 
 .alert-success {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
 }
 
 .groups-tabs {
   display: flex;
   gap: 0;
-  margin-bottom: 30px;
-  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: var(--spacing-xl);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--spacing-sm);
+  padding: var(--spacing-xs);
+  border: 1px solid var(--color-border);
 }
 
 .tab-button {
-  padding: 12px 24px;
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-lg);
   background: transparent;
   border: none;
-  color: #666;
-  font-size: 1rem;
+  border-radius: var(--spacing-sm);
+  color: var(--color-text-secondary);
+  font-size: var(--font-body);
   font-weight: 500;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.3s ease;
-  position: relative;
 }
 
-.tab-button:hover {
-  color: #2563eb;
-  background-color: rgba(37, 99, 235, 0.05);
+.tab-button:hover:not(.active) {
+  color: var(--color-primary);
+  background: rgba(13, 148, 136, 0.05);
 }
 
 .tab-button.active {
-  color: var(--color-accent-darker);
+  background: var(--color-primary);
+  color: white;
   font-weight: 600;
 }
 
@@ -510,14 +416,6 @@
   background: #e74c3c;
   color: white;
 }
-
-.leave-button:hover:not(:disabled) {
-  background: #c0392b;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
-}
-
-/* (rest of your file continues exactly the same…) */
 
 .leave-button:hover:not(:disabled) {
   background: #c0392b;
@@ -1620,59 +1518,30 @@
   border: 1px solid #d1d5db;
 }
 
-.form-navigation .btn-secondary:hover {
-  background: #e5e7eb;
-}
 
-.form-navigation .btn-primary {
-  background: #6366f1;
-  color: white;
-}
+</final_file_content>
 
-.form-navigation .btn-primary:hover:not(:disabled) {
-  background: #5855eb;
-  transform: translateY(-1px);
-}
+IMPORTANT: For any future changes to this file, use the final_file_content shown above as your reference. This content reflects the current state of the file, including any auto-formatting (e.g., if you used single quotes but the formatter converted them to double quotes). Always base your SEARCH/REPLACE operations on this final version to ensure accuracy.
 
-.form-navigation .btn-primary:disabled {
-  background: #d1d5db;
-  cursor: not-allowed;
-  transform: none;
-}
+<environment_details>
+# Visual Studio Code Visible Files
+src/pages/Groups.css
 
+# Visual Studio Code Open Tabs
+src/components/ResourcesList.jsx
+src/styles/theme.css
+src/pages/Dashboard.css
+src/pages/Resources.css
+src/pages/Sessions.css
+src/pages/Groups.css
+src/components/Sidebar.css
 
+# Current Time
+1/15/2026, 4:42:37 PM (Asia/Katmandu, UTC+5.75:00)
 
+# Context Window Usage
+197,086 / 256K tokens used (77%)
 
-
-
-
-
-
-/* Members count clickable styling */
-.members-count.clickable {
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.members-count.clickable:hover {
-  background: #bbf7d0;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
-}
-
-.members-clean.clickable {
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.members-clean.clickable:hover {
-  color: #4f46e5;
-  transform: translateY(-1px);
-}
-
-.members-clean.clickable:hover svg {
-  color: #4f46e5;
-}
+# Current Mode
+ACT MODE
+</environment_details>

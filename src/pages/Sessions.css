@@ -39,10 +39,12 @@
 
 .sessions-tabs {
   display: flex;
+  gap: 0;
+  margin-bottom: var(--spacing-xl);
+  border-bottom: 1px solid var(--color-border);
   background: var(--color-surface);
   border-radius: var(--spacing-sm);
   padding: var(--spacing-xs);
-  margin-bottom: var(--spacing-lg);
   border: 1px solid var(--color-border);
 }
 
@@ -52,10 +54,10 @@
   background: transparent;
   border: none;
   border-radius: var(--spacing-sm);
+  color: var(--color-text-secondary);
   font-size: var(--font-body);
   font-weight: 500;
   cursor: pointer;
-  color: var(--color-text-secondary);
 }
 
 .tab.active {
@@ -156,22 +158,32 @@
 /* Responsive design */
 @media (max-width: 768px) {
   .sessions-container {
-    padding: var(--spacing-md);
+    padding: 16px;
   }
 
   .sessions-header {
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 16px;
     text-align: center;
-    padding: var(--spacing-lg);
+    padding: 20px;
   }
 
   .sessions-header h1 {
-    font-size: var(--font-section-title);
+    font-size: 20px;
   }
 
   .sessions-tabs {
-    flex-direction: column;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .tab {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .tab-content {
+    padding: 20px;
   }
 
   .filters {
@@ -192,14 +204,14 @@
 
 @media (max-width: 480px) {
   .sessions-container {
-    padding: var(--spacing-sm);
+    padding: 15px;
   }
 
   .sessions-header {
-    padding: var(--spacing-md);
+    padding: 16px;
   }
 
   .sessions-content {
-    padding: var(--spacing-md);
+    padding: 16px;
   }
 }
