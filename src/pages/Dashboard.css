@@ -70,6 +70,73 @@
   margin-bottom: var(--spacing-xl);
 }
 
+/* Primary Focus Card */
+.focus-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--spacing-sm);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  width: 100%;
+}
+
+.focus-content {
+  text-align: center;
+}
+
+.focus-title {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: var(--font-section-title);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.focus-description {
+  margin: 0 0 var(--spacing-lg) 0;
+  font-size: var(--font-body);
+  color: var(--color-text-secondary);
+}
+
+.focus-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.focus-primary-btn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--spacing-sm);
+  font-size: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.focus-primary-btn:hover {
+  background: #0b7c6f;
+}
+
+.focus-secondary-btn {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--spacing-sm);
+  font-size: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.focus-secondary-btn:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -78,16 +145,12 @@
 
 .stat-card {
   background: var(--color-surface);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   border-radius: var(--spacing-sm);
   border: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-}
-
-.stat-card:hover {
-  border-color: var(--color-primary);
 }
 
 .stat-icon {
@@ -117,14 +180,14 @@
 /* Dashboard Content */
 .dashboard-content {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 3fr 2fr;
   gap: var(--spacing-xl);
   margin-bottom: var(--spacing-xl);
 }
 
 /* Upcoming Sessions */
 .upcoming-sessions-section {
-  background: var(--color-surface);
+  background: var(--color-surface-muted);
   border-radius: var(--spacing-sm);
   padding: var(--spacing-lg);
   border: 1px solid var(--color-border);

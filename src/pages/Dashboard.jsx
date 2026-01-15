@@ -149,6 +149,22 @@ const Dashboard = () => {
           </div>
         </section>
 
+        {/* Primary Focus Card */}
+        <section className="focus-card">
+          <div className="focus-content">
+            <h2 className="focus-title">Today's Focus</h2>
+            <p className="focus-description">You have no active sessions right now.</p>
+            <div className="focus-actions">
+              <button onClick={handleCreateSession} className="focus-primary-btn">
+                Start Study Session
+              </button>
+              <button onClick={() => navigate('/groups')} className="focus-secondary-btn">
+                Browse Groups
+              </button>
+            </div>
+          </div>
+        </section>
+
         <div className="dashboard-content">
           {/* Upcoming Sessions */}
           <section className="upcoming-sessions-section">
