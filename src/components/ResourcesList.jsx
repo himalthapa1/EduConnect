@@ -169,7 +169,10 @@ const ResourcesList = ({ group }) => {
     <div className="resources-section">
       <div className="resources-header">
         <h4>Resources & Files</h4>
-        <button onClick={() => setOpenForm(o => !o)}>
+        <button
+          className={openForm ? 'close-btn' : ''}
+          onClick={() => setOpenForm(o => !o)}
+        >
           {openForm ? 'Close' : '+ Add Resource'}
         </button>
       </div>
