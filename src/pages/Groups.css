@@ -165,7 +165,6 @@
 .tab-button.active {
   color: var(--color-accent-darker);
   font-weight: 600;
-  border-bottom-color: var(--color-accent-darker);
 }
 
 .tab-content {
@@ -749,7 +748,6 @@
 
 .tab-button.active {
   color: var(--color-accent-darker);
-  border-bottom-color: var(--color-accent-darker);
 }
 
 .resources-content {
