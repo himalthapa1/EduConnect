@@ -15,6 +15,10 @@
 
   /* Brand Colors */
   --color-primary: #0d9488; /* Subdued teal primary */
+  --color-accent: #0d9488; /* Same as primary for consistency */
+  --color-accent-darker: #0b7c6f; /* Darker teal */
+  --color-accent-dark: #0d9488; /* Same as primary */
+  --color-accent-light: rgba(13, 148, 136, 0.1); /* Light teal background */
 
   /* Surfaces */
   --color-surface: #ffffff;

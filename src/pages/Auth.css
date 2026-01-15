@@ -61,6 +61,8 @@
 
 .auth-form.two-column .full-width {
   grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
 }
 
 .form-group {
