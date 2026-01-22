@@ -38,6 +38,7 @@ const StudyWithMe = () => {
   const [showResourceList, setShowResourceList] = useState(false);
   const [activePdf, setActivePdf] = useState(null);
   const [showPdfDrawer, setShowPdfDrawer] = useState(false);
+  const [showResources, setShowResources] = useState(false);
   const studyIntervalRef = useRef(null);
   const breakIntervalRef = useRef(null);
 
@@ -466,90 +467,92 @@ const StudyWithMe = () => {
               </div>
             )}
 
-            <div className="form-group">
-              <label>Study Duration</label>
-              <select
-                value={formData.duration}
-                onChange={(e) =>
-                  setFormData(prev => ({
-                    ...prev,
-                    duration: e.target.value === 'custom'
-                      ? 'custom'
-                      : parseInt(e.target.value),
-                    customDuration: '' // Reset custom duration when switching
-                  }))
-                }
-              >
-                <option value={25}>25 minutes</option>
-                <option value={50}>50 minutes</option>
-                <option value={90}>90 minutes</option>
-                <option value={120}>2 hours</option>
-                <option value={180}>3 hours</option>
-                <option value={240}>4 hours</option>
-                <option value={300}>5 hours</option>
-                <option value={360}>6 hours</option>
-                <option value={420}>7 hours</option>
-                <option value={480}>8 hours</option>
-                <option value="custom">Custom</option>
-              </select>
-
-              {formData.duration === 'custom' && (
-                <input
-                  type="number"
-                  min={5}
-                  max={480}
-                  placeholder="Enter minutes (e.g. 180)"
-                  value={formData.customDuration}
+            <div className="duration-pair">
+              <div className="form-group">
+                <label>Study Duration</label>
+                <select
+                  value={formData.duration}
                   onChange={(e) =>
                     setFormData(prev => ({
                       ...prev,
-                      customDuration: parseInt(e.target.value) || ''
+                      duration: e.target.value === 'custom'
+                        ? 'custom'
+                        : parseInt(e.target.value),
+                      customDuration: '' // Reset custom duration when switching
                     }))
                   }
-                  style={{ marginTop: '8px' }}
-                />
-              )}
-            </div>
+                >
+                  <option value={25}>25 minutes</option>
+                  <option value={50}>50 minutes</option>
+                  <option value={90}>90 minutes</option>
+                  <option value={120}>2 hours</option>
+                  <option value={180}>3 hours</option>
+                  <option value={240}>4 hours</option>
+                  <option value={300}>5 hours</option>
+                  <option value={360}>6 hours</option>
+                  <option value={420}>7 hours</option>
+                  <option value={480}>8 hours</option>
+                  <option value="custom">Custom</option>
+                </select>
 
-            <div className="form-group">
-              <label>Break Duration</label>
-              <select
-                value={formData.breakDuration}
-                onChange={(e) =>
-                  setFormData(prev => ({
-                    ...prev,
-                    breakDuration: e.target.value === 'custom'
-                      ? 'custom'
-                      : parseInt(e.target.value),
-                    customBreakDuration: '' // Reset custom break duration when switching
-                  }))
-                }
-              >
-                <option value={5}>5 minutes</option>
-                <option value={10}>10 minutes</option>
-                <option value={15}>15 minutes</option>
-                <option value="custom">Custom</option>
-              </select>
+                {formData.duration === 'custom' && (
+                  <input
+                    type="number"
+                    min={5}
+                    max={480}
+                    placeholder="Enter minutes (e.g. 180)"
+                    value={formData.customDuration}
+                    onChange={(e) =>
+                      setFormData(prev => ({
+                        ...prev,
+                        customDuration: parseInt(e.target.value) || ''
+                      }))
+                    }
+                    style={{ marginTop: '8px' }}
+                  />
+                )}
+              </div>
 
-              {formData.breakDuration === 'custom' && (
-                <input
-                  type="number"
-                  min={1}
-                  max={60}
-                  placeholder="Enter minutes (e.g. 7)"
-                  value={formData.customBreakDuration}
+              <div className="form-group">
+                <label>Break Duration</label>
+                <select
+                  value={formData.breakDuration}
                   onChange={(e) =>
                     setFormData(prev => ({
                       ...prev,
-                      customBreakDuration: parseInt(e.target.value) || ''
+                      breakDuration: e.target.value === 'custom'
+                        ? 'custom'
+                        : parseInt(e.target.value),
+                      customBreakDuration: '' // Reset custom break duration when switching
                     }))
                   }
-                  style={{ marginTop: '8px' }}
-                />
-              )}
+                >
+                  <option value={5}>5 minutes</option>
+                  <option value={10}>10 minutes</option>
+                  <option value={15}>15 minutes</option>
+                  <option value="custom">Custom</option>
+                </select>
+
+                {formData.breakDuration === 'custom' && (
+                  <input
+                    type="number"
+                    min={1}
+                    max={60}
+                    placeholder="Enter minutes (e.g. 7)"
+                    value={formData.customBreakDuration}
+                    onChange={(e) =>
+                      setFormData(prev => ({
+                        ...prev,
+                        customBreakDuration: parseInt(e.target.value) || ''
+                      }))
+                    }
+                    style={{ marginTop: '8px' }}
+                  />
+                )}
+              </div>
             </div>
 
-            <div className="form-group">
+            <div className="form-group subject-field">
               <label>Subject / Topic</label>
               <input
                 type="text"
@@ -561,28 +564,39 @@ const StudyWithMe = () => {
             </div>
 
             <div className="form-group">
-              <label>Resources (Optional)</label>
-              <div className="resources-selector">
-                {availableResources.length > 0 ? (
-                  <div className="resources-list">
-                    {availableResources.map(resource => (
-                      <div key={resource._id} className="resource-item">
-                        <input
-                          type="checkbox"
-                          id={`resource-${resource._id}`}
-                          checked={formData.resources.some(r => r._id === resource._id)}
-                          onChange={() => handleResourceToggle(resource)}
-                        />
-                        <label htmlFor={`resource-${resource._id}`}>
-                          <span className="resource-title">{resource.title}</span>
-                          <span className="resource-group">({resource.groupName})</span>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="no-resources">No resources available. Join a group to access study materials.</p>
-                )}
+              <button
+                type="button"
+                className="resources-toggle"
+                onClick={() => setShowResources(!showResources)}
+              >
+                Resources (optional)
+                <span className={`toggle-icon ${showResources ? 'expanded' : ''}`}>
+                  ▶
+                </span>
+              </button>
+              <div className={`resources-collapsible ${showResources ? 'expanded' : ''}`}>
+                <div className="resources-selector">
+                  {availableResources.length > 0 ? (
+                    <div className="resources-list">
+                      {availableResources.map(resource => (
+                        <div key={resource._id} className="resource-item">
+                          <input
+                            type="checkbox"
+                            id={`resource-${resource._id}`}
+                            checked={formData.resources.some(r => r._id === resource._id)}
+                            onChange={() => handleResourceToggle(resource)}
+                          />
+                          <label htmlFor={`resource-${resource._id}`}>
+                            <span className="resource-title">{resource.title}</span>
+                            <span className="resource-group">({resource.groupName})</span>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="no-resources">No resources available. Join a group to access study materials.</p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -604,116 +618,116 @@ const StudyWithMe = () => {
 
     return (
       <div className={`study-with-me-container studying ${sessionData.mode === 'break' ? 'on-break' : ''} ${showPdfDrawer ? 'pdf-drawer-open' : ''}`}>
-        <div className="study-timer-section">
-          <div className="timer-display">
-            <div className="timer-circle">
-              <span className="timer-text">{formatTime(currentTimeLeft)}</span>
-              <div className="timer-label">
-                {sessionData.mode === 'break' ? 'Break' : 'Focus'}
-              </div>
-            </div>
-          </div>
-
-
-
-          <div className="timer-controls">
-            <button
-              className="control-btn resources"
-              onClick={() => setShowResourceList(!showResourceList)}
-              title="Access study resources"
-            >
-              📎 Resources ({formData.resources.length})
-            </button>
-
-            {showResourceList && (
-              <div className="resources-dropdown">
-                <div className="resources-list">
-                  {formData.resources.length > 0 ? (
-                    formData.resources.map(resource => (
-                      <button
-                        key={resource._id}
-                        className="resource-item-btn"
-                        onClick={() => handleResourceClick(resource)}
-                        title={`Open ${resource.title}`}
-                      >
-                        <span className="resource-title">{resource.title}</span>
-                        <span className="resource-type">
-                          {resource.file?.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Link'}
-                        </span>
-                      </button>
-                    ))
-                  ) : (
-                    <div className="no-session-resources">
-                      No resources attached to this session
-                      <br />
-                      <small>Go back to setup to add resources</small>
-                    </div>
-                  )}
+        <div className="focus-zone">
+          <div className="study-timer-section">
+            <div className="timer-display">
+              <div className="timer-circle">
+                <span className="timer-text">{formatTime(currentTimeLeft)}</span>
+                <div className="timer-label">
+                  {sessionData.mode === 'break' ? 'Break' : 'Focus'}
                 </div>
               </div>
-            )}
+            </div>
 
-            {sessionData.mode === 'studying' ? (
-              <>
-                <button className="control-btn break" onClick={handleTakeBreak}>
-                  🧘 Take a Break ({formData.breakDuration === 'custom' ? formData.customBreakDuration : formData.breakDuration}m)
-                </button>
-                <button className="control-btn end" onClick={handleEndSession}>
-                  🏁 End Session
-                </button>
-              </>
-            ) : (
-              <>
-                <button className="control-btn resume" onClick={handleResumeStudy}>
-                  ▶️ Resume Study
-                </button>
-                <button className="control-btn end" onClick={handleEndSession}>
-                  🏁 End Session
-                </button>
-              </>
-            )}
-          </div>
-        </div>
 
-        <div className="study-content">
-          <div className={`notes-section ${showPdfDrawer ? 'with-pdf' : ''}`}>
-            {showPdfDrawer && activePdf && (
-              <div className="pdf-in-notes">
-                <div className="pdf-header">
-                  <h4>{activePdf.title}</h4>
-                  <button
-                    className="pdf-close-btn"
-                    onClick={closePdfDrawer}
-                    title="Close PDF (Esc)"
-                  >
-                    ✕
+
+            <div className="timer-controls">
+              <button
+                className="control-btn resources"
+                onClick={() => setShowResourceList(!showResourceList)}
+                title="Access study resources"
+              >
+                📎 Resources ({formData.resources.length})
+              </button>
+
+              {showResourceList && (
+                <div className="resources-dropdown">
+                  <div className="resources-list">
+                    {formData.resources.length > 0 ? (
+                      formData.resources.map(resource => (
+                        <button
+                          key={resource._id}
+                          className="resource-item-btn"
+                          onClick={() => handleResourceClick(resource)}
+                          title={`Open ${resource.title}`}
+                        >
+                          <span className="resource-title">{resource.title}</span>
+                          <span className="resource-type">
+                            {resource.file?.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Link'}
+                          </span>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="no-session-resources">
+                        No resources attached to this session
+                        <br />
+                        <small>Go back to setup to add resources</small>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {sessionData.mode === 'studying' ? (
+                <>
+                  <button className="control-btn break" onClick={handleTakeBreak}>
+                    🧘 Take a Break ({formData.breakDuration === 'custom' ? formData.customBreakDuration : formData.breakDuration}m)
                   </button>
-                </div>
-                <div className="pdf-viewer-small">
-                  <iframe
-                    src={`/uploads/${activePdf.file}`}
-                    title={activePdf.title}
-                    width="100%"
-                    height="100%"
-                    style={{ border: 'none' }}
-                  />
-                </div>
-              </div>
-            )}
+                  <button className="control-btn end" onClick={handleEndSession}>
+                    🏁 End Session
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="control-btn resume" onClick={handleResumeStudy}>
+                    ▶️ Resume Study
+                  </button>
+                  <button className="control-btn end" onClick={handleEndSession}>
+                    🏁 End Session
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
 
-            <div className="notes-content">
-              <h3>📝 Notes</h3>
-              <textarea
-                className="notes-editor"
-                placeholder="Jot down thoughts, formulas, or ideas while you focus..."
-                value={sessionData.notes}
-                onChange={(e) => setSessionData(prev => ({ ...prev, notes: e.target.value }))}
-              />
+          <div className="study-content">
+            <div className={`notes-section ${showPdfDrawer ? 'with-pdf' : ''}`}>
+              {showPdfDrawer && activePdf && (
+                <div className="pdf-in-notes">
+                  <div className="pdf-header">
+                    <h4>{activePdf.title}</h4>
+                    <button
+                      className="pdf-close-btn"
+                      onClick={closePdfDrawer}
+                      title="Close PDF (Esc)"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="pdf-viewer-small">
+                    <iframe
+                      src={`/uploads/${activePdf.file}`}
+                      title={activePdf.title}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 'none' }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="notes-content">
+                <h3>📝 Notes</h3>
+                <textarea
+                  className="notes-editor"
+                  placeholder="Jot down thoughts, formulas, or ideas while you focus..."
+                  value={sessionData.notes}
+                  onChange={(e) => setSessionData(prev => ({ ...prev, notes: e.target.value }))}
+                />
+              </div>
             </div>
           </div>
         </div>
-
-
       </div>
     );
   }

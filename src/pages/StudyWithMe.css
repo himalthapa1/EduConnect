@@ -1,20 +1,33 @@
 /* Study With Me Page Styles */
+/* Spacing System: 24-32px sections, 6-8px labels, 44-48px inputs, 24px cards */
 .study-with-me-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  padding: 2rem;
+  padding: 32px;
   color: #1f2937;
 }
 
 .study-with-me-container.studying {
-  background: linear-gradient(135deg, #1E293B 0%, #243447 100%);
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 2rem;
-  align-items: start;
-  padding: 2rem;
+  background: #fafbfc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
   min-height: 100vh;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+}
+
+.focus-zone {
+  max-width: 440px;
+  width: 100%;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 }
 
 /* PDF Drawer as Overlay */
@@ -36,30 +49,44 @@
   margin: 0 auto;
   background: white;
   border-radius: 20px;
-  padding: 3rem;
+  padding: 24px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   border: 1px solid #e5e7eb;
 }
 
 .study-setup h1 {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
+  font-size: 4rem;
+  margin-bottom: 24px;
   text-align: center;
   color: #111827;
-  font-weight: 700;
+  font-weight: 900;
 }
 
 .study-setup p {
   text-align: center;
   color: #6b7280;
-  margin-bottom: 2rem;
+  margin-bottom: 32px;
   font-size: 1.1rem;
+  opacity: 0.6;
 }
 
 .setup-form {
   display: flex;
   flex-direction: column;
+  gap: 32px;
+}
+
+.duration-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .duration-pair {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
 }
 
 .form-group {
@@ -76,7 +103,7 @@
 
 .form-group select,
 .form-group input {
-  padding: 0.75rem;
+  padding: 14px 12px;
   border: 1px solid #d1d5db;
   border-radius: 10px;
   font-size: 1rem;
@@ -84,13 +111,16 @@
   color: #111827;
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
+  height: 48px;
 }
 
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
   border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+  transform: scale(1.01);
+  transition: all 180ms ease;
 }
 
 .form-group input:disabled {
@@ -106,40 +136,99 @@
   color: #6b7280;
 }
 
+/* Subject Field - Identity Styling */
+.subject-field label {
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.subject-field input {
+  padding: 14px 12px;
+  font-size: 1.1rem;
+  height: 48px;
+}
+
+.subject-field small {
+  font-size: 11px;
+  opacity: 0.5;
+  color: #9ca3af;
+}
+
 /* Segmented Control for Timer Mode */
 .segmented-control {
   display: flex;
-  background: #f3f4f6;
-  border-radius: 10px;
+  background: rgba(13, 148, 136, 0.05);
+  border-radius: 12px;
   padding: 4px;
   gap: 4px;
+  border: 1px solid rgba(13, 148, 136, 0.1);
 }
 
 .segmented-control button {
   flex: 1;
-  padding: 10px 16px;
+  padding: 12px 20px;
   border: none;
   background: transparent;
   border-radius: 8px;
   font-size: 14px;
-  font-weight: 600;
-  color: #6b7280;
+  font-weight: 500;
+  color: rgba(107, 114, 128, 0.7);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .segmented-control button.active {
-  background: white;
-  color: #111827;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: #0d9488;
+  color: white;
+  font-weight: 600;
 }
 
 .segmented-control button:hover:not(.active) {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(13, 148, 136, 0.08);
+  color: rgba(107, 114, 128, 0.9);
+}
+
+.resources-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 600;
   color: #374151;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: color 0.2s ease;
+}
+
+.resources-toggle:hover {
+  color: #0d9488;
+}
+
+.toggle-icon {
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+  color: #6b7280;
+}
+
+.toggle-icon.expanded {
+  transform: rotate(90deg);
+}
+
+.resources-collapsible {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.resources-collapsible.expanded {
+  max-height: 500px;
 }
 
 .resources-selector {
+  margin-top: 1rem;
   max-height: 200px;
   overflow-y: auto;
   background: rgba(255, 255, 255, 0.1);
@@ -193,15 +282,17 @@
   background: #6366f1;
   color: white;
   border: none;
-  padding: 1.25rem 2.5rem;
+  padding: 1.75rem 2.5rem;
   border-radius: 12px;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-  margin-top: 1rem;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+  margin-top: 3rem;
   width: 100%;
+  border-top: 1px solid rgba(99, 102, 241, 0.1);
+  padding-top: 2.25rem;
 }
 
 .start-session-btn:hover:not(:disabled) {
@@ -219,13 +310,13 @@
 
 /* Studying Phase */
 .study-timer-section {
-  background: #334155;
-  border-radius: 20px;
-  padding: 3.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 2rem;
+  margin-bottom: 3rem;
 }
 
 .timer-display {
@@ -234,62 +325,43 @@
 }
 
 .timer-circle {
-  width: 200px;
-  height: 200px;
+  width: 280px;
+  height: 280px;
   border-radius: 50%;
-  background: transparent;
-  border: 4px solid #6366F1;
+  background: rgba(13, 148, 136, 0.05);
+  border: 2px solid rgba(13, 148, 136, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   margin: 0 auto;
   position: relative;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 8px 32px rgba(13, 148, 136, 0.1);
   transition: all 0.3s ease;
 }
 
-.timer-circle::before {
-  content: '';
-  position: absolute;
-  top: -4px;
-  left: -4px;
-  right: -4px;
-  bottom: -4px;
-  border-radius: 50%;
-  border: 4px solid transparent;
-  border-top-color: rgba(99, 102, 241, 0.3);
-  animation: spin 60s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 .study-with-me-container.studying.on-break .timer-circle {
-  border-color: #f39c12;
-  box-shadow: 0 4px 20px rgba(243, 156, 18, 0.3);
-}
-
-.study-with-me-container.studying.on-break .timer-circle::before {
-  border-top-color: rgba(243, 156, 18, 0.3);
+  border-color: rgba(243, 156, 18, 0.3);
+  background: rgba(243, 156, 18, 0.05);
+  box-shadow: 0 8px 32px rgba(243, 156, 18, 0.1);
 }
 
 .timer-text {
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: white;
+  font-size: 3.5rem;
+  font-weight: 300;
+  color: #1f2937;
   font-family: 'Courier New', monospace;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
 }
 
 .timer-label {
-  font-size: 1rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.1em;
+  font-size: 0.9rem;
 }
 
 .mode-indicator {
@@ -306,76 +378,87 @@
 
 .timer-controls {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   justify-content: center;
   flex-wrap: wrap;
+  margin-top: 3rem;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.timer-controls:hover {
+  opacity: 1;
 }
 
 .control-btn {
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   border: none;
-  border-radius: 25px;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: 24px;
+  font-size: 0.9rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 140px;
+  background: rgba(13, 148, 136, 0.08);
+  color: #0d9488;
+  border: 1px solid rgba(13, 148, 136, 0.15);
+  min-width: 120px;
 }
 
-.control-btn.break {
-  background: rgba(99, 102, 241, 0.15);
-  color: #6366F1;
-  border: 1px solid rgba(99, 102, 241, 0.3);
+.control-btn:hover {
+  background: rgba(13, 148, 136, 0.12);
+  border-color: rgba(13, 148, 136, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.1);
 }
 
-.control-btn.resume {
-  background: rgba(99, 102, 241, 0.15);
-  color: #6366F1;
-  border: 1px solid rgba(99, 102, 241, 0.3);
+.control-btn.resources {
+  background: rgba(13, 148, 136, 0.05);
+  color: #6b7280;
+  border-color: rgba(13, 148, 136, 0.1);
+  font-size: 0.85rem;
+  min-width: auto;
+  padding: 0.5rem 1rem;
+}
+
+.control-btn.resources:hover {
+  background: rgba(13, 148, 136, 0.08);
+  color: #0d9488;
 }
 
 .control-btn.end {
   background: transparent;
-  color: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.control-btn:hover {
-  transform: scale(1.02);
-}
-
-.control-btn.break:hover {
-  background: rgba(99, 102, 241, 0.25);
-  border-color: rgba(99, 102, 241, 0.5);
-}
-
-.control-btn.resume:hover {
-  background: rgba(99, 102, 241, 0.25);
-  border-color: rgba(99, 102, 241, 0.5);
+  color: #9ca3af;
+  border-color: rgba(156, 163, 175, 0.3);
+  font-size: 0.8rem;
+  min-width: auto;
+  padding: 0.5rem 1rem;
 }
 
 .control-btn.end:hover {
-  background: rgba(231, 76, 60, 0.1);
-  color: #e74c3c;
-  border-color: rgba(231, 76, 60, 0.5);
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 /* Study Content */
 .study-content {
+  max-width: 800px;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 3rem;
+  margin-top: 4rem;
 }
 
 .notes-section {
-  background: #334155;
-  border-radius: 20px;
-  padding: 2.5rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  min-height: 400px;
+  background: rgba(13, 148, 136, 0.02);
+  border-radius: 16px;
+  padding: 3rem;
+  min-height: 350px;
   display: flex;
   flex-direction: column;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(13, 148, 136, 0.08);
 }
 
 .notes-section.with-pdf {
@@ -383,12 +466,12 @@
 }
 
 .notes-section.with-pdf .pdf-in-notes {
-  flex: 0 0 45%;
-  margin-bottom: 1.5rem;
+  flex: 0 0 50%;
+  margin-bottom: 2rem;
   border-radius: 12px;
   overflow: hidden;
   background: white;
-  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .notes-section.with-pdf .notes-content {
@@ -400,41 +483,38 @@
   flex: 1;
 }
 
-.resources-section {
-  background: #334155;
-  border-radius: 20px;
-  padding: 2.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.notes-section h3,
-.resources-section h3 {
-  margin-bottom: 1rem;
-  color: white;
+.notes-section h3 {
+  margin-bottom: 1.5rem;
+  color: #374151;
+  font-size: 1.25rem;
+  font-weight: 500;
+  text-align: center;
 }
 
 .notes-editor {
   width: 100%;
-  min-height: 300px;
-  background: #f8fafc;
+  min-height: 280px;
+  background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 2rem;
   font-size: 1rem;
-  color: #334155;
+  color: #374151;
   resize: vertical;
   font-family: inherit;
-  line-height: 1.6;
+  line-height: 1.7;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
 }
 
 .notes-editor:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: rgba(13, 148, 136, 0.3);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.08);
 }
 
 .notes-editor::placeholder {
-  color: #94a3b8;
+  color: #9ca3af;
   font-style: italic;
 }
 
