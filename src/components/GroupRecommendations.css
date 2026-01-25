@@ -1,14 +1,18 @@
 .group-recommendations {
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   margin-bottom: 24px;
+  border: 1px solid #e1e5e9;
+  position: relative;
+  overflow: hidden;
 }
 
 .group-recommendations.compact {
   padding: 16px;
   margin-bottom: 16px;
+  border-radius: 12px;
 }
 
 .recommendations-header {
@@ -34,23 +38,173 @@
   gap: 8px;
 }
 
+/* Horizontal scroll layout for compact mode */
+.recommendations-list.horizontal-scroll {
+  flex-direction: row;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+.recommendations-list.horizontal-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.recommendations-list.horizontal-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.recommendations-list.horizontal-scroll::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.recommendations-list.horizontal-scroll::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Grid layout for full mode */
+.recommendations-list.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
 .recommendation-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px;
-  border: 1px solid #e1e5e9;
-  border-radius: 8px;
+  padding: 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  background: #fafbfc;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: white;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Enhanced border glow effect for recommended cards */
+.recommendation-card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #007bff, #667eea);
+  border-radius: 14px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
 }
 
 .recommendation-card:hover {
-  border-color: #007bff;
-  background: #f8f9ff;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+  border-color: transparent;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.25);
+}
+
+.recommendation-card:hover::before {
+  opacity: 0.3;
+}
+
+.recommendation-card:hover .recommended-badge {
+  transform: translateX(0) scale(1.1);
+  opacity: 1;
+}
+
+.recommendation-card .recommended-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  transform: translateX(20px);
+  opacity: 0.8;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+/* Recommended Badge Styles */
+.recommended-badge {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  padding: 4px 12px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.badge-text {
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced Score Display */
+.match-percentage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.percentage-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #007bff;
+  text-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.percentage-label {
+  font-size: 0.7rem;
+  color: #666;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.score-stars {
+  margin-top: 4px;
+  color: #FFD700;
+  text-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+}
+
+/* Enhanced group category styling */
+.group-category {
+  margin: 0 0 8px 0;
+  color: #007bff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Enhanced difficulty styling */
+.difficulty {
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 123, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 123, 255, 0.2);
+}
+
+/* Enhanced members count styling */
+.members-count {
+  font-size: 0.8rem;
+  color: #666;
+  background: rgba(102, 102, 102, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(102, 102, 102, 0.2);
 }
 
 .recommendation-content {
@@ -82,19 +236,6 @@
   display: flex;
   gap: 12px;
   align-items: center;
-}
-
-.difficulty {
-  font-size: 0.8rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.members-count {
-  font-size: 0.8rem;
-  color: #666;
 }
 
 .recommendation-score {

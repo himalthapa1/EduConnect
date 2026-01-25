@@ -200,8 +200,11 @@ class RecommendationEngine:
                 # Popularity score
                 popularity_score = self._calculate_popularity_score(group)
 
-                # Final weighted score
-                final_score = (content_score * 0.4) + (collaborative_score * 0.4) + (popularity_score * 0.2)
+                # Final weighted score using required formula
+                # finalScore = (interestSimilarity × 0.6) + (popularityScore × 0.4)
+                # interestSimilarity = content_score (measures interest matching)
+                # popularityScore = popularity_score (measures group popularity)
+                final_score = (content_score * 0.6) + (popularity_score * 0.4)
 
                 recommendations.append({
                     'group_id': group['id'],

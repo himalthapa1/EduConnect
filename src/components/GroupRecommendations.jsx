@@ -145,7 +145,7 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
       {showHeader && (
         <div className="recommendations-header">
           <h3><Icons.checkCircle size={20} /> Recommended for You</h3>
-          <p>Groups based on your interests and activity</p>
+          <p>Personalized groups based on your interests and activity</p>
         </div>
       )}
 
@@ -161,17 +161,22 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
         </div>
       )}
 
-      <div className="recommendations-list">
+      <div className={`recommendations-list ${compact ? 'horizontal-scroll' : 'grid-layout'}`}>
         {recommendations.map((rec, index) => (
           <div
             key={rec.group_id || index}
             className="recommendation-card"
             onClick={() => handleViewGroup(rec.group_id)}
           >
+            {/* Recommended Badge */}
+            <div className="recommended-badge">
+              <span className="badge-text">Recommended</span>
+            </div>
+
             <div className="recommendation-content">
               <div className="recommendation-main">
                 <h4 className="group-name">{rec.name}</h4>
-                <p className="group-subject">{rec.subject}</p>
+                <p className="group-category">{rec.subject}</p>
                 <div className="group-meta">
                   <span className="difficulty" style={{ color: getDifficultyColor(rec.difficulty) }}>
                     {getDifficultyIcon(rec.difficulty)} {rec.difficulty}
@@ -183,10 +188,13 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
               </div>
 
               <div className="recommendation-score">
-                <div className="score-badge">
-                  {rec.score.toFixed(1)}
+                <div className="match-percentage">
+                  <span className="percentage-value">{Math.round(rec.score * 100)}%</span>
+                  <span className="percentage-label">match</span>
                 </div>
-                <span className="score-label">match</span>
+                <div className="score-stars">
+                  <Icons.star size={16} />
+                </div>
               </div>
             </div>
 

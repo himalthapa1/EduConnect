@@ -49,9 +49,19 @@ export const getGroupRecommendations = async (req, res) => {
         }
       );
 
+      let recommendations = response.data.recommendations || [];
+      
+      // Apply qualification rule: Only groups with finalScore >= 0.6
+      recommendations = recommendations.filter(rec => rec.score >= 0.6);
+      
+      // Sort by score and limit to 6 groups maximum (as specified in requirements)
+      recommendations = recommendations
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 6);
+
       return res.json({
         success: true,
-        data: response.data.recommendations || []
+        data: recommendations
       });
     } catch (pythonError) {
       console.log('Python service unavailable, using fallback recommendations');
@@ -81,14 +91,25 @@ export const getGroupRecommendations = async (req, res) => {
     .sort({ activityScore: -1, members: -1 }) // Sort by activity and member count
     .limit(parseInt(limit));
 
-    // Calculate simple scores based on interest matching
+    // Calculate scores using the required formula: (interestSimilarity × 0.6) + (popularityScore × 0.4)
     const recommendations = groups.map(group => {
       const groupTags = group.subjectTags || [];
       const interestMatch = userInterests.filter(interest =>
         groupTags.some(tag => tag.toLowerCase().includes(interest.toLowerCase()))
       ).length;
 
-      const score = interestMatch > 0 ? 0.7 + (interestMatch / userInterests.length) * 0.3 : 0.3;
+      // Calculate interest similarity (0-1)
+      const interestSimilarity = userInterests.length > 0 
+        ? interestMatch / userInterests.length 
+        : 0;
+
+      // Calculate popularity score based on members and activity
+      const membersScore = Math.min((group.members?.length || 0) / 100, 1.0);
+      const activityScore = Math.min((group.activityScore || 0) / 1000, 1.0);
+      const popularityScore = (membersScore * 0.5) + (activityScore * 0.3) + 0.2; // 0.2 base score
+
+      // Apply required formula: finalScore = (interestSimilarity × 0.6) + (popularityScore × 0.4)
+      const finalScore = (interestSimilarity * 0.6) + (popularityScore * 0.4);
 
       return {
         group_id: group._id.toString(),
@@ -96,13 +117,21 @@ export const getGroupRecommendations = async (req, res) => {
         subject: group.subject,
         difficulty: group.difficulty || 'beginner',
         members_count: group.members?.length || 0,
-        score: Math.round(score * 100) / 100
+        score: Math.round(finalScore * 100) / 100
       };
     });
 
+    // Apply qualification rule: Only groups with finalScore >= 0.6
+    const qualifiedRecommendations = recommendations.filter(rec => rec.score >= 0.6);
+    
+    // Sort by score and limit to 6 groups maximum
+    const finalRecommendations = qualifiedRecommendations
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 6);
+
     res.json({
       success: true,
-      data: recommendations,
+      data: finalRecommendations,
       message: 'Using basic recommendations (Python service unavailable)'
     });
 
