@@ -245,14 +245,15 @@
   border: 1px solid rgba(255, 107, 53, 0.2);
 }
 
-/* Enhanced members count styling */
+/* Enhanced members count styling - compact version */
 .members-count {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: #666;
   background: rgba(102, 102, 102, 0.1);
-  padding: 2px 8px;
-  border-radius: 12px;
+  padding: 1px 6px;
+  border-radius: 8px;
   border: 1px solid rgba(102, 102, 102, 0.2);
+  margin-left: 8px;
 }
 
 .trending-content {
@@ -284,7 +285,7 @@
 }
 
 .join-btn {
-  background: #28a745;
+  background: #ff9800;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -296,7 +297,7 @@
 }
 
 .join-btn:hover:not(:disabled) {
-  background: #218838;
+  background: #f57c00;
   transform: translateY(-1px);
 }
 
@@ -304,6 +305,20 @@
   background: #6c757d;
   cursor: not-allowed;
   transform: none;
+}
+
+/* Secondary button styling for display rules */
+.join-btn.secondary {
+  background: transparent;
+  border: 1px solid #ff9800;
+  color: #ff9800;
+  box-shadow: none;
+}
+
+.join-btn.secondary:hover:not(:disabled) {
+  background: #ff9800;
+  color: white;
+  transform: translateY(-1px);
 }
 
 .joined-btn {

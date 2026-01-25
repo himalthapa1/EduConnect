@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { recommendationsAPI, groupsAPI } from '../utils/api';
 import { Icons } from '../ui/icons';
+import { transformGroup, transformGroups, validateGroup, createDefaultGroup } from '../types/group';
 import './GroupRecommendations.css';
 
 const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false }) => {
@@ -25,7 +26,16 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
       setError(null);
 
       const response = await recommendationsAPI.getGroupRecommendations({ limit });
-      setRecommendations(response.data.data || []);
+      const backendGroups = response.data.data || [];
+      
+      // Transform backend data to standardized Group interface
+      const transformedGroups = transformGroups(backendGroups, {
+        defaultCategory: 'General',
+        defaultLevel: 'beginner',
+        defaultMembersCount: 0
+      });
+      
+      setRecommendations(transformedGroups);
     } catch (error) {
       console.error('Error loading recommendations:', error);
       console.log('Error response:', error.response?.data);
@@ -88,6 +98,10 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
       case 'advanced': return <Icons.trendingUp size={14} />;
       default: return <Icons.book size={14} />;
     }
+  };
+
+  const formatRating = (rating) => {
+    return rating.toFixed(1);
   };
 
   if (loading) {
@@ -162,11 +176,11 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
       )}
 
       <div className={`recommendations-list ${compact ? 'horizontal-scroll' : 'grid-layout'}`}>
-        {recommendations.map((rec, index) => (
+        {recommendations.map((group, index) => (
           <div
-            key={rec.group_id || index}
+            key={group.id || index}
             className="recommendation-card"
-            onClick={() => handleViewGroup(rec.group_id)}
+            onClick={() => handleViewGroup(group.id)}
           >
             {/* Recommended Badge */}
             <div className="recommended-badge">
@@ -175,31 +189,34 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
 
             <div className="recommendation-content">
               <div className="recommendation-main">
-                <h4 className="group-name">{rec.name}</h4>
-                <p className="group-category">{rec.subject}</p>
+                <h4 className="group-name">{group.name}</h4>
+                <p className="group-category uppercase">{group.category}</p>
                 <div className="group-meta">
-                  <span className="difficulty" style={{ color: getDifficultyColor(rec.difficulty) }}>
-                    {getDifficultyIcon(rec.difficulty)} {rec.difficulty}
+                  <span className="difficulty" style={{ color: getDifficultyColor(group.level) }}>
+                    {getDifficultyIcon(group.level)} {group.level}
                   </span>
                   <span className="members-count">
-                    <Icons.users size={14} /> {rec.members_count} members
+                    <Icons.users size={14} /> {group.membersCount} members
                   </span>
                 </div>
               </div>
 
               <div className="recommendation-score">
                 <div className="match-percentage">
-                  <span className="percentage-value">{Math.round(rec.score * 100)}%</span>
+                  <span className="percentage-value">100%</span>
                   <span className="percentage-label">match</span>
                 </div>
-                <div className="score-stars">
-                  <Icons.star size={16} />
-                </div>
+                {group.rating > 0 && (
+                  <div className="rating-info">
+                    <span className="rating-value">{formatRating(group.rating)}</span>
+                    <span className="rating-label">⭐ rating</span>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="recommendation-actions">
-              {user?.joinedGroups?.includes(rec.group_id) ? (
+              {user?.joinedGroups?.includes(group.id) ? (
                 <button
                   className="joined-btn"
                   disabled
@@ -208,11 +225,11 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
                 </button>
               ) : (
                 <button
-                  onClick={(e) => handleJoinGroup(rec.group_id, e)}
-                  className="join-btn"
-                  disabled={joiningGroupId === rec.group_id}
+                  onClick={(e) => handleJoinGroup(group.id, e)}
+                  className="join-btn secondary"
+                  disabled={joiningGroupId === group.id}
                 >
-                  {joiningGroupId === rec.group_id ? 'Joining...' : 'Join Group'}
+                  {joiningGroupId === group.id ? 'Joining...' : 'Join Group'}
                 </button>
               )}
             </div>
