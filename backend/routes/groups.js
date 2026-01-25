@@ -9,6 +9,7 @@ import {
   getMyGroups,
   getGroupById,
   getTagOptions,
+  getTrendingGroups,
   addResource,
   getResources,
   deleteResource,
@@ -31,6 +32,7 @@ const router = express.Router();
 ========================= */
 router.get("/list", listGroups);
 router.get("/tag-options", getTagOptions);
+router.get("/trending", getTrendingGroups); // Add trending route
 
 /* =========================
    PROTECTED ROUTES

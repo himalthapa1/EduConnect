@@ -238,6 +238,45 @@ export const getTagOptions = async (req, res) => {
 };
 
 /* =========================
+   TRENDING GROUPS
+========================= */
+
+export const getTrendingGroups = async (req, res) => {
+  try {
+    const { limit = 6 } = req.query;
+
+    // Get trending groups sorted by popularity score (highest first)
+    const groups = await StudyGroup.find({ isPublic: true })
+      .sort({ popularityScore: -1 }) // Sort by popularity score descending
+      .limit(parseInt(limit))
+      .populate("creator", "username email")
+      .populate("members", "username");
+
+    res.json({ 
+      success: true, 
+      data: { 
+        groups: groups.map(group => ({
+          _id: group._id,
+          name: group.name,
+          description: group.description,
+          subject: group.subject,
+          difficulty: group.difficulty || 'beginner',
+          members: group.members,
+          popularityScore: group.popularityScore,
+          averageRating: group.averageRating || 0,
+          memberCount: group.members?.length || 0,
+          creator: group.creator,
+          createdAt: group.createdAt
+        }))
+      } 
+    });
+  } catch (err) {
+    console.error("Error getting trending groups:", err);
+    res.status(500).json({ message: "Failed to fetch trending groups" });
+  }
+};
+
+/* =========================
    MEMBERSHIP
 ========================= */
 

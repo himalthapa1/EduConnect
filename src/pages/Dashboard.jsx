@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { sessionsAPI, groupsAPI } from '../utils/api';
 import { Icons } from '../ui/icons';
 import GroupRecommendations from '../components/GroupRecommendations';
+import TrendingGroups from '../components/TrendingGroups';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -243,6 +244,9 @@ const Dashboard = () => {
 
           {/* Group Recommendations */}
           <GroupRecommendations limit={3} />
+
+          {/* Trending Groups */}
+          <TrendingGroups limit={3} />
         </div>
 
 

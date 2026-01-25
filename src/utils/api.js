@@ -83,6 +83,9 @@ export const groupsAPI = {
   listGroups: (params = {}) =>
     api.get('/groups/list', { params }),
 
+  getTrendingGroups: (params = {}) =>
+    api.get('/groups/trending', { params }),
+
   getTagOptions: () =>
     api.get('/groups/tag-options'),
 

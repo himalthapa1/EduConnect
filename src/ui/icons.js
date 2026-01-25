@@ -1,5 +1,5 @@
 import * as Lu from "react-icons/lu";
-import { LuMic } from "react-icons/lu";
+import { LuMic, LuFlame, LuStar } from "react-icons/lu";
 
 export const Icons = {
   // Core UI
@@ -50,4 +50,10 @@ export const Icons = {
 
   // Chat features
   mic: LuMic,
+
+  // Trending features
+  flame: LuFlame,
+
+  // Rating features
+  star: LuStar,
 };
