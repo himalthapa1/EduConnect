@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { groupsAPI, studyWithMeAPI } from '../utils/api';
+import FullPageWrapper from '../components/FullPageWrapper';
+import FocusArea from '../components/FocusArea';
+import NotesArea from '../components/NotesArea';
 import './StudyWithMe.css';
 
 const StudyWithMe = () => {
@@ -610,125 +613,30 @@ const StudyWithMe = () => {
   }
 
   if (step === 'studying') {
-    const currentTimeLeft = sessionData.mode === 'studying'
-      ? sessionData.studySecondsLeft
-      : sessionData.breakSecondsLeft;
-
-
-
     return (
-      <div className={`study-with-me-container studying ${sessionData.mode === 'break' ? 'on-break' : ''} ${showPdfDrawer ? 'pdf-drawer-open' : ''}`}>
-        <div className="focus-zone">
-          <div className="study-timer-section">
-            <div className="timer-display">
-              <div className="timer-circle">
-                <span className="timer-text">{formatTime(currentTimeLeft)}</span>
-                <div className="timer-label">
-                  {sessionData.mode === 'break' ? 'Break' : 'Focus'}
-                </div>
-              </div>
-            </div>
-
-
-
-            <div className="timer-controls">
-              <button
-                className="control-btn resources"
-                onClick={() => setShowResourceList(!showResourceList)}
-                title="Access study resources"
-              >
-                📎 Resources ({formData.resources.length})
-              </button>
-
-              {showResourceList && (
-                <div className="resources-dropdown">
-                  <div className="resources-list">
-                    {formData.resources.length > 0 ? (
-                      formData.resources.map(resource => (
-                        <button
-                          key={resource._id}
-                          className="resource-item-btn"
-                          onClick={() => handleResourceClick(resource)}
-                          title={`Open ${resource.title}`}
-                        >
-                          <span className="resource-title">{resource.title}</span>
-                          <span className="resource-type">
-                            {resource.file?.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Link'}
-                          </span>
-                        </button>
-                      ))
-                    ) : (
-                      <div className="no-session-resources">
-                        No resources attached to this session
-                        <br />
-                        <small>Go back to setup to add resources</small>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {sessionData.mode === 'studying' ? (
-                <>
-                  <button className="control-btn break" onClick={handleTakeBreak}>
-                    🧘 Take a Break ({formData.breakDuration === 'custom' ? formData.customBreakDuration : formData.breakDuration}m)
-                  </button>
-                  <button className="control-btn end" onClick={handleEndSession}>
-                    🏁 End Session
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button className="control-btn resume" onClick={handleResumeStudy}>
-                    ▶️ Resume Study
-                  </button>
-                  <button className="control-btn end" onClick={handleEndSession}>
-                    🏁 End Session
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="study-content">
-            <div className={`notes-section ${showPdfDrawer ? 'with-pdf' : ''}`}>
-              {showPdfDrawer && activePdf && (
-                <div className="pdf-in-notes">
-                  <div className="pdf-header">
-                    <h4>{activePdf.title}</h4>
-                    <button
-                      className="pdf-close-btn"
-                      onClick={closePdfDrawer}
-                      title="Close PDF (Esc)"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                  <div className="pdf-viewer-small">
-                    <iframe
-                      src={`/uploads/${activePdf.file}`}
-                      title={activePdf.title}
-                      width="100%"
-                      height="100%"
-                      style={{ border: 'none' }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="notes-content">
-                <h3>📝 Notes</h3>
-                <textarea
-                  className="notes-editor"
-                  placeholder="Jot down thoughts, formulas, or ideas while you focus..."
-                  value={sessionData.notes}
-                  onChange={(e) => setSessionData(prev => ({ ...prev, notes: e.target.value }))}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <FullPageWrapper className={`layout-grid ${sessionData.mode === 'break' ? 'on-break' : ''} ${showPdfDrawer ? 'pdf-drawer-open' : ''}`}>
+        <FocusArea
+          sessionData={sessionData}
+          formData={formData}
+          showResourceList={showResourceList}
+          onToggleResourceList={() => setShowResourceList(!showResourceList)}
+          onTakeBreak={handleTakeBreak}
+          onResumeStudy={handleResumeStudy}
+          onEndSession={handleEndSession}
+          onResourceClick={handleResourceClick}
+          onClosePdfDrawer={closePdfDrawer}
+          activePdf={activePdf}
+          showPdfDrawer={showPdfDrawer}
+        />
+        
+        <NotesArea
+          sessionData={sessionData}
+          onNotesChange={(notes) => setSessionData(prev => ({ ...prev, notes }))}
+          activePdf={activePdf}
+          showPdfDrawer={showPdfDrawer}
+          onClosePdfDrawer={closePdfDrawer}
+        />
+      </FullPageWrapper>
     );
   }
 
