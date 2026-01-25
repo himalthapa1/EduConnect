@@ -1,4 +1,5 @@
 import React from 'react';
+import { Icons } from '../ui/icons';
 import './ControlsRow.css';
 
 const ControlsRow = ({
@@ -30,7 +31,7 @@ const ControlsRow = ({
           onClick={onToggleResourceList}
           title="Access study resources"
         >
-          📎 Resources ({formData.resources.length})
+          <Icons.file size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> Resources ({formData.resources.length})
         </button>
 
         {showResourceList && (
@@ -64,19 +65,19 @@ const ControlsRow = ({
         {sessionData.mode === 'studying' ? (
           <>
             <button className="control-btn break" onClick={onTakeBreak}>
-              🧘 Take a Break ({formData.breakDuration === 'custom' ? formData.customBreakDuration : formData.breakDuration}m)
+              <Icons.coffee size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> Take a Break ({formData.breakDuration === 'custom' ? formData.customBreakDuration : formData.breakDuration}m)
             </button>
             <button className="control-btn end" onClick={onEndSession}>
-              🏁 End Session
+              <Icons.checkCircle size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> End Session
             </button>
           </>
         ) : (
           <>
             <button className="control-btn resume" onClick={onResumeStudy}>
-              ▶️ Resume Study
+              <Icons.play size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> Resume Study
             </button>
             <button className="control-btn end" onClick={onEndSession}>
-              🏁 End Session
+              <Icons.checkCircle size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> End Session
             </button>
           </>
         )}
@@ -92,7 +93,7 @@ const ControlsRow = ({
               onClick={closePdfDrawer}
               title="Close PDF (Esc)"
             >
-              ✕
+              <Icons.close size={18} />
             </button>
           </div>
           <div className="pdf-viewer">

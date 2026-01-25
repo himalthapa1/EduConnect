@@ -1,4 +1,5 @@
 import React from 'react';
+import { Icons } from '../ui/icons';
 import './NotesCard.css';
 
 const NotesCard = ({ 
@@ -35,7 +36,7 @@ const NotesCard = ({
               onClick={closePdfDrawer}
               title="Close PDF (Esc)"
             >
-              ✕
+              <Icons.close size={18} />
             </button>
           </div>
           <div className="pdf-viewer-small">
@@ -51,7 +52,7 @@ const NotesCard = ({
       )}
 
       <div className="notes-content">
-        <h3>📝 Notes</h3>
+        <h3><Icons.edit size={24} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> Notes</h3>
         <textarea
           className="notes-editor"
           placeholder="Jot down thoughts, formulas, or ideas while you focus..."

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { groupsAPI, studyWithMeAPI } from '../utils/api';
+import { Icons } from '../ui/icons';
 import FullPageWrapper from '../components/FullPageWrapper';
 import FocusArea from '../components/FocusArea';
 import NotesArea from '../components/NotesArea';
@@ -433,7 +434,7 @@ const StudyWithMe = () => {
     return (
       <div className="study-with-me-container">
         <div className="study-setup">
-          <h1>📚 Study With Me</h1>
+          <h1><Icons.book size={40} style={{ marginRight: '10px', verticalAlign: 'middle' }} /> Study With Me</h1>
           <p>Focus deeply on your studies in a distraction-free environment.</p>
 
           <div className="setup-form">
@@ -604,7 +605,7 @@ const StudyWithMe = () => {
             </div>
 
             <button className="start-session-btn" onClick={handleStartSession}>
-              🚀 Start Studying
+              <Icons.trendingUp size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> Start Studying
             </button>
           </div>
         </div>
@@ -644,7 +645,7 @@ const StudyWithMe = () => {
     return (
       <div className="study-with-me-container completed">
         <div className="completion-modal">
-          <h1>🎉 Session Complete!</h1>
+          <h1><Icons.checkCircle size={40} style={{ marginRight: '10px', verticalAlign: 'middle' }} /> Session Complete!</h1>
           <div className="session-summary">
             <p><strong>Subject:</strong> {formData.subject}</p>
             <p><strong>Timer Mode:</strong> {formData.timerMode === 'pomodoro' ? 'Pomodoro' : 'Normal'}</p>
