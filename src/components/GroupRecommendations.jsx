@@ -98,6 +98,16 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
     return rating.toFixed(1);
   };
 
+  const formatMemberCount = (count) => {
+    if (count == null || count === undefined) {
+      return '0';
+    }
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}k`;
+    }
+    return count.toString();
+  };
+
   if (loading) {
     return (
       <div className={`group-recommendations ${compact ? 'compact' : ''}`}>
@@ -172,20 +182,23 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
       <div className={`recommendations-list ${compact ? 'horizontal-scroll' : 'grid-layout'}`}>
         {recommendations.map((group, index) => (
           <div
-            key={group.id || index}
+            key={group.group_id || index}
             className="recommendation-card"
-            onClick={() => handleViewGroup(group.id)}
+            onClick={() => handleViewGroup(group.group_id)}
           >
             <div className="recommendation-content">
               <div className="recommendation-main">
                 <h4 className="group-name">{group.name}</h4>
                 <p className="group-category uppercase">{group.category}</p>
+                {group.description && (
+                  <p className="group-description">{group.description}</p>
+                )}
                 <div className="group-meta">
-                  <span className="difficulty" style={{ color: getDifficultyColor(group.level) }}>
-                    {getDifficultyIcon(group.level)} {group.level}
+                  <span className="difficulty" style={{ color: getDifficultyColor(group.difficulty) }}>
+                    {getDifficultyIcon(group.difficulty)} {group.difficulty}
                   </span>
                   <span className="members-count">
-                    <Icons.users size={14} /> {group.membersCount}
+                    <Icons.users size={14} /> {formatMemberCount(group.memberCount)}
                   </span>
                 </div>
               </div>
@@ -205,7 +218,7 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
             </div>
 
             <div className="recommendation-actions">
-              {user?.joinedGroups?.includes(group.id) ? (
+              {user?.joinedGroups?.includes(group.group_id) ? (
                 <button
                   className="joined-btn"
                   disabled
@@ -214,11 +227,11 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
                 </button>
               ) : (
                 <button
-                  onClick={(e) => handleJoinGroup(group._id, e)}
+                  onClick={(e) => handleJoinGroup(group.group_id, e)}
                   className="join-btn"
-                  disabled={joiningGroupId === group._id}
+                  disabled={joiningGroupId === group.group_id}
                 >
-                  {joiningGroupId === group._id ? 'Joining...' : 'Join'}
+                  {joiningGroupId === group.group_id ? 'Joining...' : 'Join'}
                 </button>
               )}
             </div>
