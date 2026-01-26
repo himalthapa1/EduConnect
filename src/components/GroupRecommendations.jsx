@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { recommendationsAPI, groupsAPI } from '../utils/api';
 import { Icons } from '../ui/icons';
-import { transformGroup, transformGroups, validateGroup, createDefaultGroup } from '../types/group';
 import './GroupRecommendations.css';
 
 const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false }) => {
@@ -20,6 +19,51 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
     loadRecommendations();
   }, [limit]);
 
+  // Helper function to normalize level values
+  const normalizeLevel = (level) => {
+    const normalized = String(level || "").toLowerCase().trim();
+    const levelMap = {
+      'beginner': 'beginner',
+      'begining': 'beginner', // Common typo
+      'intermediate': 'intermediate',
+      'advanced': 'advanced',
+      'expert': 'advanced',
+      'pro': 'advanced'
+    };
+    return levelMap[normalized] || 'beginner';
+  };
+
+  // Helper function to normalize category values
+  const normalizeCategory = (category) => {
+    if (!category) return 'General';
+    const normalized = String(category).trim();
+    return normalized.length > 0 ? normalized : 'General';
+  };
+
+  // Helper function to normalize members count
+  const normalizeMembersCount = (membersCount) => {
+    if (membersCount == null || membersCount === '') return 0;
+    const count = Number(membersCount);
+    return isNaN(count) || count < 0 ? 0 : Math.floor(count);
+  };
+
+  // Transform backend group data to standardized format
+  const transformGroup = (backendGroup) => {
+    if (!backendGroup) return null;
+
+    const id = backendGroup.group_id || backendGroup.id || '';
+    if (!id) return null;
+
+    return {
+      id,
+      name: String(backendGroup.name || '').trim() || 'Unnamed Group',
+      category: normalizeCategory(backendGroup.subject),
+      level: normalizeLevel(backendGroup.difficulty),
+      membersCount: normalizeMembersCount(backendGroup.members_count),
+      rating: backendGroup.score || null
+    };
+  };
+
   const loadRecommendations = async () => {
     try {
       setLoading(true);
@@ -29,11 +73,9 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
       const backendGroups = response.data.data || [];
       
       // Transform backend data to standardized Group interface
-      const transformedGroups = transformGroups(backendGroups, {
-        defaultCategory: 'General',
-        defaultLevel: 'beginner',
-        defaultMembersCount: 0
-      });
+      const transformedGroups = backendGroups
+        .map(transformGroup)
+        .filter(group => group !== null);
       
       setRecommendations(transformedGroups);
     } catch (error) {
@@ -182,11 +224,6 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
             className="recommendation-card"
             onClick={() => handleViewGroup(group.id)}
           >
-            {/* Recommended Badge */}
-            <div className="recommended-badge">
-              <span className="badge-text">Recommended</span>
-            </div>
-
             <div className="recommendation-content">
               <div className="recommendation-main">
                 <h4 className="group-name">{group.name}</h4>
@@ -196,7 +233,7 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
                     {getDifficultyIcon(group.level)} {group.level}
                   </span>
                   <span className="members-count">
-                    <Icons.users size={14} /> {group.membersCount} members
+                    <Icons.users size={14} /> {group.membersCount}
                   </span>
                 </div>
               </div>
@@ -225,11 +262,11 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
                 </button>
               ) : (
                 <button
-                  onClick={(e) => handleJoinGroup(group.id, e)}
-                  className="join-btn secondary"
-                  disabled={joiningGroupId === group.id}
+                  onClick={(e) => handleJoinGroup(group._id, e)}
+                  className="join-btn"
+                  disabled={joiningGroupId === group._id}
                 >
-                  {joiningGroupId === group.id ? 'Joining...' : 'Join Group'}
+                  {joiningGroupId === group._id ? 'Joining...' : 'Join'}
                 </button>
               )}
             </div>

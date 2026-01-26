@@ -471,7 +471,7 @@ const Groups = () => {
       {/* BROWSE TAB */}
       {activeTab === 'browse' && (
         <>
-          <GroupRecommendations limit={6} compact={true} />
+          <GroupRecommendations limit={6} />
           <div className="groups-grid">
             {groups.map(group => {
               const isMember = user && group.members?.some(m => m._id === user.id);

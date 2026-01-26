@@ -177,12 +177,6 @@ const TrendingGroups = ({ limit = 6, showHeader = true, compact = false }) => {
             className="trending-card"
             onClick={() => handleViewGroup(group._id)}
           >
-            {/* Trending Badge */}
-            <div className="trending-badge">
-              <Icons.flame size={16} />
-              <span className="badge-text">Trending</span>
-            </div>
-
             <div className="trending-content">
               <div className="trending-main">
                 <h4 className="group-name">{group.name}</h4>
@@ -192,7 +186,7 @@ const TrendingGroups = ({ limit = 6, showHeader = true, compact = false }) => {
                     {getDifficultyIcon(group.difficulty)} {group.difficulty}
                   </span>
                   <span className="members-count">
-                    <Icons.users size={14} /> {formatMemberCount(group.memberCount)} members
+                    <Icons.users size={14} /> {formatMemberCount(group.memberCount)}
                   </span>
                 </div>
               </div>
@@ -202,10 +196,12 @@ const TrendingGroups = ({ limit = 6, showHeader = true, compact = false }) => {
                   <span className="rating-value">{formatRating(group.averageRating)}</span>
                   <span className="rating-label">⭐ rating</span>
                 </div>
-                <div className="popularity-score">
-                  <span className="score-value">{Math.round(group.popularityScore)}</span>
-                  <span className="score-label">popularity</span>
-                </div>
+                {group.popularityScore && group.popularityScore > 0 && (
+                  <div className="popularity-score">
+                    <span className="score-value">{Math.round(group.popularityScore)}</span>
+                    <span className="score-label">popularity</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -223,7 +219,7 @@ const TrendingGroups = ({ limit = 6, showHeader = true, compact = false }) => {
                   className="join-btn"
                   disabled={joiningGroupId === group._id}
                 >
-                  {joiningGroupId === group._id ? 'Joining...' : 'Join Group'}
+                  {joiningGroupId === group._id ? 'Joining...' : 'Join'}
                 </button>
               )}
             </div>
