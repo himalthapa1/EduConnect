@@ -108,6 +108,16 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
     return count.toString();
   };
 
+  const getRecommendationBadge = (score) => {
+    if (score >= 0.8) return { text: '⭐ Recommended', color: '#28a745' };
+    if (score >= 0.6) return { text: '👍 Good match', color: '#ffc107' };
+    return null; // No badge for low scores
+  };
+
+  const getMatchPercentage = (score) => {
+    return Math.round((score || 0) * 100);
+  };
+
   if (loading) {
     return (
       <div className={`group-recommendations ${compact ? 'compact' : ''}`}>
@@ -198,16 +208,21 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
                     {getDifficultyIcon(group.difficulty)} {group.difficulty}
                   </span>
                   <span className="members-count">
-                    <Icons.users size={14} /> {formatMemberCount(group.memberCount)}
+                    <Icons.users size={14} /> {formatMemberCount(group.members_count || group.memberCount || 0)}
                   </span>
                 </div>
               </div>
 
               <div className="recommendation-score">
                 <div className="match-percentage">
-                  <span className="percentage-value">100%</span>
+                  <span className="percentage-value">{getMatchPercentage(group.score)}%</span>
                   <span className="percentage-label">match</span>
                 </div>
+                {getRecommendationBadge(group.score) && (
+                  <div className="recommendation-badge" style={{ color: getRecommendationBadge(group.score).color }}>
+                    {getRecommendationBadge(group.score).text}
+                  </div>
+                )}
                 {group.rating > 0 && (
                   <div className="rating-info">
                     <span className="rating-value">{formatRating(group.rating)}</span>
