@@ -5,6 +5,8 @@ import { sessionsAPI, groupsAPI } from '../utils/api';
 import { Icons } from '../ui/icons';
 import GroupRecommendations from '../components/GroupRecommendations';
 import TrendingGroups from '../components/TrendingGroups';
+import TodaysFocus from '../components/TodaysFocus';
+import EventCalendar from '../components/EventCalendar';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -150,19 +152,11 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {/* Primary Focus Card */}
-        <section className="focus-card">
-          <div className="focus-content">
-            <h2 className="focus-title">Today's Focus</h2>
-            <p className="focus-description">You have no active sessions right now.</p>
-            <div className="focus-actions">
-              <button onClick={handleCreateSession} className="focus-primary-btn">
-                Start Study Session
-              </button>
-              <button onClick={() => navigate('/groups')} className="focus-secondary-btn">
-                Browse Groups
-              </button>
-            </div>
+        {/* Split Focus and Calendar Section */}
+        <section className="focus-calendar-section">
+          <div className="focus-calendar-grid">
+            <TodaysFocus />
+            <EventCalendar />
           </div>
         </section>
 
