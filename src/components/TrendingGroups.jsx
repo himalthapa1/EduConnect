@@ -196,12 +196,6 @@ const TrendingGroups = ({ limit = 6, showHeader = true, compact = false }) => {
                   <span className="rating-value">{formatRating(group.averageRating)}</span>
                   <span className="rating-label">⭐ rating</span>
                 </div>
-                {group.popularityScore && group.popularityScore > 0 && (
-                  <div className="popularity-score">
-                    <span className="score-value">{Math.round(group.popularityScore)}</span>
-                    <span className="score-label">popularity</span>
-                  </div>
-                )}
               </div>
             </div>
 

@@ -96,6 +96,34 @@ const studyGroupSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  // Rating system for group quality
+  ratings: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5
+    },
+    ratedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  averageRating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5
+  },
+  popularityScore: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now

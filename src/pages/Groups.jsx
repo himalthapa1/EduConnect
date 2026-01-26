@@ -5,6 +5,7 @@ import ResourcesList from '../components/ResourcesList';
 import CompleteSessionModal from '../components/CompleteSessionModal';
 import ChatWindow from '../components/chat/ChatWindow';
 import GroupRecommendations from '../components/GroupRecommendations';
+import GroupLeaveRatingModal from '../components/GroupLeaveRatingModal';
 
 
 import { Icons } from '../ui/icons';
@@ -141,6 +142,8 @@ const Groups = () => {
   const [actionsModeGroupId, setActionsModeGroupId] = useState(null);
   const [showMembersPanel, setShowMembersPanel] = useState(false);
   const [membersPanelGroup, setMembersPanelGroup] = useState(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [ratingGroup, setRatingGroup] = useState(null);
 
   // Chat state
   const [activeChatGroup, setActiveChatGroup] = useState(null);
@@ -310,6 +313,25 @@ const Groups = () => {
       const errorMessage = error.response?.data?.message || error.message || 'Failed to leave group';
       setError(errorMessage);
       // Don't exit actions mode on error so user can try again
+    }
+  };
+
+  const handleLeaveGroupWithRating = (group) => {
+    setRatingGroup(group);
+    setShowRatingModal(true);
+  };
+
+  const handleRatingSubmitted = () => {
+    setSuccess('Thank you for your feedback!');
+    fetchMyGroups();
+    fetchGroups();
+  };
+
+  const handleLeaveWithoutRating = async () => {
+    if (ratingGroup) {
+      await handleLeaveGroup(ratingGroup._id);
+      setShowRatingModal(false);
+      setRatingGroup(null);
     }
   };
 
@@ -595,11 +617,7 @@ const Groups = () => {
                   {actionsModeGroupId === group._id ? (
                     <button
                       className="footer-btn leave-btn"
-                      onClick={() => {
-                        if (confirm('Are you sure you want to leave this group?')) {
-                          handleLeaveGroup(group._id);
-                        }
-                      }}
+                      onClick={() => handleLeaveGroupWithRating(group)}
                     >
                       <Icons.logout size={16} />
                       Leave
@@ -875,6 +893,19 @@ const Groups = () => {
           onClose={closeChat}
         />
       )}
+
+      {/* Group Leave Rating Modal */}
+      <GroupLeaveRatingModal
+        isOpen={showRatingModal}
+        onClose={() => {
+          setShowRatingModal(false);
+          setRatingGroup(null);
+        }}
+        onLeaveWithoutRating={handleLeaveWithoutRating}
+        onRatingSubmitted={handleRatingSubmitted}
+        groupId={ratingGroup?._id}
+        groupName={ratingGroup?.name}
+      />
 
     </div>
   );

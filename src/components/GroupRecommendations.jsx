@@ -118,6 +118,32 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
     return Math.round((score || 0) * 100);
   };
 
+  const getExplanationText = (group) => {
+    const explanations = [];
+    
+    // Interest match explanation
+    if (group.score >= 0.7) {
+      explanations.push('Matches your interests');
+    }
+    
+    // Popularity explanation
+    if (group.members_count >= 50) {
+      explanations.push('Popular among students');
+    }
+    
+    // Activity explanation
+    if (group.activity_score >= 100) {
+      explanations.push('High weekly activity');
+    }
+    
+    return explanations.slice(0, 2); // Limit to 2 explanations
+  };
+
+  const getGroupLeaveRatingModal = () => {
+    // This will be implemented in Phase 3
+    return null;
+  };
+
   if (loading) {
     return (
       <div className={`group-recommendations ${compact ? 'compact' : ''}`}>
@@ -227,6 +253,15 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
                   <div className="rating-info">
                     <span className="rating-value">{formatRating(group.rating)}</span>
                     <span className="rating-label">⭐ rating</span>
+                  </div>
+                )}
+                {getExplanationText(group).length > 0 && (
+                  <div className="explanation-text">
+                    {getExplanationText(group).map((explanation, idx) => (
+                      <span key={idx} className="explanation-item">
+                        {explanation}
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>
