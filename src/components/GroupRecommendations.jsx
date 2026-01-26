@@ -19,50 +19,6 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
     loadRecommendations();
   }, [limit]);
 
-  // Helper function to normalize level values
-  const normalizeLevel = (level) => {
-    const normalized = String(level || "").toLowerCase().trim();
-    const levelMap = {
-      'beginner': 'beginner',
-      'begining': 'beginner', // Common typo
-      'intermediate': 'intermediate',
-      'advanced': 'advanced',
-      'expert': 'advanced',
-      'pro': 'advanced'
-    };
-    return levelMap[normalized] || 'beginner';
-  };
-
-  // Helper function to normalize category values
-  const normalizeCategory = (category) => {
-    if (!category) return 'General';
-    const normalized = String(category).trim();
-    return normalized.length > 0 ? normalized : 'General';
-  };
-
-  // Helper function to normalize members count
-  const normalizeMembersCount = (membersCount) => {
-    if (membersCount == null || membersCount === '') return 0;
-    const count = Number(membersCount);
-    return isNaN(count) || count < 0 ? 0 : Math.floor(count);
-  };
-
-  // Transform backend group data to standardized format
-  const transformGroup = (backendGroup) => {
-    if (!backendGroup) return null;
-
-    const id = backendGroup.group_id || backendGroup.id || '';
-    if (!id) return null;
-
-    return {
-      id,
-      name: String(backendGroup.name || '').trim() || 'Unnamed Group',
-      category: normalizeCategory(backendGroup.subject),
-      level: normalizeLevel(backendGroup.difficulty),
-      membersCount: normalizeMembersCount(backendGroup.members_count),
-      rating: backendGroup.score || null
-    };
-  };
 
   const loadRecommendations = async () => {
     try {
@@ -72,12 +28,8 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
       const response = await recommendationsAPI.getGroupRecommendations({ limit });
       const backendGroups = response.data.data || [];
       
-      // Transform backend data to standardized Group interface
-      const transformedGroups = backendGroups
-        .map(transformGroup)
-        .filter(group => group !== null);
-      
-      setRecommendations(transformedGroups);
+      // Use backend data directly, assuming it's already in the correct format
+      setRecommendations(backendGroups);
     } catch (error) {
       console.error('Error loading recommendations:', error);
       console.log('Error response:', error.response?.data);
