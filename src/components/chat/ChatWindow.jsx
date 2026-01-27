@@ -68,11 +68,19 @@ const ChatWindow = ({ groupId, groupName, onClose }) => {
 
       socket.on('new-message', (message) => {
         console.log('New message received:', message);
+        // Ensure groupId is set for poll voting
+        if (!message.groupId) {
+          message.groupId = groupId;
+        }
         setMessages(prev => [...prev, message]);
       });
 
       socket.on('poll-updated', (updatedMessage) => {
         console.log('Poll updated:', updatedMessage);
+        // Ensure groupId is set for poll voting
+        if (!updatedMessage.groupId) {
+          updatedMessage.groupId = groupId;
+        }
         setMessages(prev => prev.map(msg =>
           msg._id === updatedMessage._id ? updatedMessage : msg
         ));

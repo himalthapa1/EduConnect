@@ -51,8 +51,10 @@ export const registerChatHandlers = async (io, socket) => {
           _id: msg._id,
           content: msg.content,
           sender: msg.sender,
+          type: msg.type,
           pollData: msg.pollData,
           audioUrl: msg.audioUrl,
+          groupId: msg.groupId,
           createdAt: msg.createdAt
         }))
       });
@@ -91,8 +93,10 @@ export const registerChatHandlers = async (io, socket) => {
         _id: message._id,
         content: message.content,
         sender: message.sender,
+        type: message.type,
         pollData: message.pollData,
         audioUrl: message.audioUrl,
+        groupId: message.groupId,
         createdAt: message.createdAt
       };
 

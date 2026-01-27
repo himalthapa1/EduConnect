@@ -71,14 +71,14 @@ const MessageBubble = ({ message, isOwn }) => {
     const { pollData } = message;
     const totalVotes = pollData.options.reduce((sum, option) => sum + option.votes.length, 0);
     const userVotedOption = pollData.options.findIndex(option =>
-      option.votes.some(vote => vote.equals(user?.id))
+      option.votes.some(vote => vote === user?.id || vote.toString() === user?.id)
     );
 
     const handleVote = async (optionIndex) => {
       if (!user) return;
 
       try {
-        await groupsAPI.voteInPoll(message._id, optionIndex);
+        await groupsAPI.voteInPoll(message.groupId, message._id, optionIndex);
         // The vote will be reflected via socket updates
       } catch (error) {
         console.error('Error voting in poll:', error);

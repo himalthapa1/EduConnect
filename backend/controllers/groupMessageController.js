@@ -131,6 +131,7 @@ export const sendTextMessage = async (req, res) => {
       type: message.type,
       pollData: message.pollData,
       audioUrl: message.audioUrl,
+      groupId: message.groupId,
       createdAt: message.createdAt
     };
 
@@ -184,6 +185,7 @@ export const sendVoiceMessage = [
         sender: userId,
         chatType: 'group',
         groupId: groupId,
+        type: 'voice',
         audioUrl: `uploads/${req.file.filename}`
       });
 
@@ -196,8 +198,10 @@ export const sendVoiceMessage = [
         _id: message._id,
         content: message.content,
         sender: message.sender,
+        type: message.type,
         pollData: message.pollData,
         audioUrl: message.audioUrl,
+        groupId: message.groupId,
         createdAt: message.createdAt
       };
 
@@ -288,6 +292,7 @@ export const createPoll = async (req, res) => {
       type: message.type,
       pollData: message.pollData,
       audioUrl: message.audioUrl,
+      groupId: message.groupId,
       createdAt: message.createdAt
     };
 
@@ -352,6 +357,7 @@ export const voteInPoll = async (req, res) => {
       type: message.type,
       pollData: message.pollData,
       audioUrl: message.audioUrl,
+      groupId: message.groupId,
       createdAt: message.createdAt
     };
 
