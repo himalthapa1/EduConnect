@@ -25,8 +25,12 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
       setLoading(true);
       setError(null);
 
+      console.log('Loading recommendations with limit:', limit);
       const response = await recommendationsAPI.getGroupRecommendations({ limit });
+      console.log('Recommendations API response:', response.data);
+      
       const backendGroups = response.data.data || [];
+      console.log('Recommendations received:', backendGroups.length, 'groups');
       
       // Use backend data directly (transformation now handled by backend)
       setRecommendations(backendGroups);

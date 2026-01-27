@@ -246,7 +246,7 @@ const Dashboard = () => {
           </section>
 
           {/* Group Recommendations */}
-          <GroupRecommendations limit={3} />
+          <GroupRecommendations limit={6} />
 
           {/* Trending Groups */}
           <TrendingGroups limit={3} />

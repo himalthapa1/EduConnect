@@ -263,3 +263,54 @@ export const checkRecommendationServiceHealth = async (req, res) => {
     });
   }
 };
+
+/* =========================
+   DEBUG: CHECK USER RECOMMENDATIONS
+========================= */
+export const debugUserRecommendations = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    
+    if (!userId) {
+      return res.json({ error: 'Not authenticated' });
+    }
+
+    const User = (await import('../models/User.js')).default;
+    const StudyGroup = (await import('../models/StudyGroup.js')).default;
+
+    const user = await User.findById(userId);
+    const allGroups = await StudyGroup.find({ isPublic: true });
+
+    const userInfo = {
+      userId: user._id.toString(),
+      username: user.username,
+      interests: user.preferences?.interests || [],
+      joinedGroups: (user.joinedGroups || []).map(g => g.toString())
+    };
+
+    const groupsInfo = allGroups.map(g => ({
+      id: g._id.toString(),
+      name: g.name,
+      tags: g.subjectTags || [],
+      members: g.members.map(m => m.toString()),
+      isUserMember: g.members.some(m => m.toString() === userId),
+      isCreator: g.creator?.toString() === userId
+    }));
+
+    res.json({
+      user: userInfo,
+      groups: groupsInfo,
+      matchingGroups: groupsInfo.filter(g => 
+        !g.isUserMember && 
+        g.tags.some(tag => 
+          userInfo.interests.some(interest => 
+            tag.toLowerCase().includes(interest.toLowerCase())
+          )
+        )
+      )
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
