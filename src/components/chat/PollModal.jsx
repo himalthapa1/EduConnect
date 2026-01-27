@@ -85,11 +85,14 @@ const PollModal = ({ onClose, onSuccess, groupId }) => {
         options: options.map(option => option.trim())
       };
 
-      await groupsAPI.createPoll(groupId, pollData);
+      console.log('Creating poll:', { groupId, pollData });
+      const response = await groupsAPI.createPoll(groupId, pollData);
+      console.log('Poll created successfully:', response.data);
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Error creating poll:', error);
+      console.error('Error details:', error.response?.data);
       setErrors({
         general: error.response?.data?.message || 'Failed to create poll'
       });

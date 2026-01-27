@@ -45,6 +45,14 @@ export const registerChatHandlers = async (io, socket) => {
       // Send recent messages
       const messages = await Message.getGroupMessages(groupId);
 
+      console.log(`Sending ${messages.length} messages to user ${userId} for group ${groupId}`);
+      if (messages.length > 0) {
+        console.log('Sample message types:', messages.slice(0, 3).map(m => ({
+          type: m.type,
+          hasPollData: !!m.pollData
+        })));
+      }
+
       socket.emit('room-joined', {
         roomId,
         messages: messages.map(msg => ({

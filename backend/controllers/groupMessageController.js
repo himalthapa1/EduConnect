@@ -122,17 +122,20 @@ export const sendTextMessage = async (req, res) => {
     // Populate sender info for response
     await message.populate('sender', 'username email');
 
+    // Convert to plain object to ensure all fields are included
+    const messageObj = message.toObject();
+
     // Emit to socket room for real-time updates
     const roomId = `group-${groupId}`;
     const messageData = {
-      _id: message._id,
-      content: message.content,
-      sender: message.sender,
-      type: message.type,
-      pollData: message.pollData,
-      audioUrl: message.audioUrl,
-      groupId: message.groupId,
-      createdAt: message.createdAt
+      _id: messageObj._id,
+      content: messageObj.content,
+      sender: messageObj.sender,
+      type: messageObj.type,
+      pollData: messageObj.pollData,
+      audioUrl: messageObj.audioUrl,
+      groupId: messageObj.groupId,
+      createdAt: messageObj.createdAt
     };
 
     if (global.io) {
@@ -192,17 +195,20 @@ export const sendVoiceMessage = [
       // Populate sender info for response
       await message.populate('sender', 'username email');
 
+      // Convert to plain object to ensure all fields are included
+      const messageObj = message.toObject();
+
       // Emit to socket room for real-time updates
       const roomId = `group-${groupId}`;
       const messageData = {
-        _id: message._id,
-        content: message.content,
-        sender: message.sender,
-        type: message.type,
-        pollData: message.pollData,
-        audioUrl: message.audioUrl,
-        groupId: message.groupId,
-        createdAt: message.createdAt
+        _id: messageObj._id,
+        content: messageObj.content,
+        sender: messageObj.sender,
+        type: messageObj.type,
+        pollData: messageObj.pollData,
+        audioUrl: messageObj.audioUrl,
+        groupId: messageObj.groupId,
+        createdAt: messageObj.createdAt
       };
 
       if (global.io) {
@@ -280,24 +286,46 @@ export const createPoll = async (req, res) => {
       }
     });
 
+    console.log('Poll message created:', {
+      _id: message._id,
+      type: message.type,
+      hasPollData: !!message.pollData,
+      optionsCount: message.pollData?.options?.length
+    });
+
     // Populate sender info for response
     await message.populate('sender', 'username email');
+
+    console.log('After populate - message.type:', message.type);
+    console.log('After populate - message.pollData:', !!message.pollData);
+
+    // Convert to plain object to ensure all fields are included
+    const messageObj = message.toObject();
+
+    console.log('After toObject - messageObj.type:', messageObj.type);
+    console.log('After toObject - messageObj.pollData:', !!messageObj.pollData);
 
     // Emit to socket room for real-time updates
     const roomId = `group-${groupId}`;
     const messageData = {
-      _id: message._id,
-      content: message.content,
-      sender: message.sender,
-      type: message.type,
-      pollData: message.pollData,
-      audioUrl: message.audioUrl,
-      groupId: message.groupId,
-      createdAt: message.createdAt
+      _id: messageObj._id,
+      content: messageObj.content,
+      sender: messageObj.sender,
+      type: messageObj.type,
+      pollData: messageObj.pollData,
+      audioUrl: messageObj.audioUrl,
+      groupId: messageObj.groupId,
+      createdAt: messageObj.createdAt
     };
+
+    console.log('Emitting poll to room:', roomId);
+    console.log('Full messageData being emitted:', JSON.stringify(messageData, null, 2));
 
     if (global.io) {
       global.io.to(roomId).emit('new-message', messageData);
+      console.log('Poll emitted successfully');
+    } else {
+      console.error('Socket.io instance not available!');
     }
 
     res.status(201).json({
@@ -345,24 +373,43 @@ export const voteInPoll = async (req, res) => {
     // Add vote
     await message.addVote(userId, optionIdx);
 
+    console.log('Vote added successfully:', {
+      messageId: message._id,
+      userId,
+      optionIndex: optionIdx
+    });
+
+    // Populate sender info
+    await message.populate('sender', 'username email');
+
+    // Convert to plain object to ensure all fields are included
+    const messageObj = message.toObject();
+
     // Get updated poll results
     const results = message.getPollResults();
+
+    console.log('Updated poll results:', results);
 
     // Emit updated poll to socket room for real-time updates
     const roomId = `group-${message.groupId}`;
     const updatedMessageData = {
-      _id: message._id,
-      content: message.content,
-      sender: message.sender,
-      type: message.type,
-      pollData: message.pollData,
-      audioUrl: message.audioUrl,
-      groupId: message.groupId,
-      createdAt: message.createdAt
+      _id: messageObj._id,
+      content: messageObj.content,
+      sender: messageObj.sender,
+      type: messageObj.type,
+      pollData: messageObj.pollData,
+      audioUrl: messageObj.audioUrl,
+      groupId: messageObj.groupId,
+      createdAt: messageObj.createdAt
     };
+
+    console.log('Emitting poll update to room:', roomId);
 
     if (global.io) {
       global.io.to(roomId).emit('poll-updated', updatedMessageData);
+      console.log('Poll update emitted successfully');
+    } else {
+      console.error('Socket.io instance not available!');
     }
 
     res.json({

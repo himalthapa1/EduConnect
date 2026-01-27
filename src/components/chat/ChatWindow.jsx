@@ -62,12 +62,21 @@ const ChatWindow = ({ groupId, groupName, onClose }) => {
       // Chat events
       socket.on('room-joined', (data) => {
         console.log('Joined chat room:', data.roomId);
+        console.log('Initial messages count:', data.messages?.length || 0);
+        if (data.messages && data.messages.length > 0) {
+          console.log('Sample message types:', data.messages.slice(0, 3).map(m => ({
+            type: m.type,
+            hasPollData: !!m.pollData
+          })));
+        }
         setMessages(data.messages || []);
         setIsLoading(false);
       });
 
       socket.on('new-message', (message) => {
         console.log('New message received:', message);
+        console.log('Message type:', message.type);
+        console.log('Has pollData:', !!message.pollData);
         // Ensure groupId is set for poll voting
         if (!message.groupId) {
           message.groupId = groupId;
