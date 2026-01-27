@@ -112,7 +112,7 @@
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
   margin-bottom: 20px;
-  align-items: start;
+  align-items: stretch;
 }
 
 /* New Group Card Design */
@@ -125,6 +125,8 @@
   display: flex;
   flex-direction: column;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  min-height: 280px;
+  height: 100%;
 }
 
 .group-card:hover {
@@ -185,6 +187,8 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  min-height: 48px;
+  flex-shrink: 0;
 }
 
 .group-actions {
