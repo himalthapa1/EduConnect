@@ -42,9 +42,9 @@ export const getGroupRecommendations = async (req, res) => {
       let recommendations = response.data.recommendations || [];
       console.log('Python service returned', recommendations.length, 'recommendations');
       
-      // Apply qualification rule: Only groups with finalScore >= 0.45 (45% threshold)
-      recommendations = recommendations.filter(rec => rec.score >= 0.45);
-      console.log('After 45% filter:', recommendations.length, 'recommendations');
+      // Apply qualification rule: Only groups with finalScore >= 0.25 (25% threshold)
+      recommendations = recommendations.filter(rec => rec.score >= 0.25);
+      console.log('After 25% filter:', recommendations.length, 'recommendations');
       
       // Sort by score and limit to 6 groups maximum (as specified in requirements)
       recommendations = recommendations
@@ -91,16 +91,25 @@ export const getGroupRecommendations = async (req, res) => {
     console.log('Found', groups.length, 'groups (excluding joined)');
 
     // Calculate scores using the required formula: (interestSimilarity × 0.6) + (popularityScore × 0.4)
-    // Groups need 45% or higher to be recommended
+    // Groups need 25% or higher to be recommended
     const recommendations = groups.map(group => {
       const groupTags = group.subjectTags || [];
       
       console.log(`\nGroup: ${group.name}`);
-      console.log('  Group tags:', groupTags);
+      console.log('  Group tags:', JSON.stringify(groupTags));
+      console.log('  User interests:', JSON.stringify(userInterests));
       
-      const interestMatch = userInterests.filter(interest =>
-        groupTags.some(tag => tag.toLowerCase().includes(interest.toLowerCase()))
-      ).length;
+      // More flexible matching: check if any interest matches any tag
+      const interestMatch = userInterests.filter(interest => {
+        const interestLower = interest.toLowerCase().trim();
+        const matches = groupTags.some(tag => {
+          const tagLower = tag.toLowerCase().trim();
+          // Check both ways: tag includes interest OR interest includes tag
+          return tagLower.includes(interestLower) || interestLower.includes(tagLower);
+        });
+        console.log(`    Interest "${interest}" matches: ${matches}`);
+        return matches;
+      }).length;
 
       console.log('  Interest matches:', interestMatch, 'out of', userInterests.length);
 
@@ -134,16 +143,16 @@ export const getGroupRecommendations = async (req, res) => {
       };
     });
 
-    // Apply qualification rule: Only groups with finalScore >= 0.45 (45% threshold)
+    // Apply qualification rule: Only groups with finalScore >= 0.25 (25% threshold)
     const qualifiedRecommendations = recommendations.filter(rec => {
-      const passes = rec.score >= 0.45;
+      const passes = rec.score >= 0.25;
       console.log(`\n${rec.name}: Score ${rec.score} - ${passes ? 'PASS' : 'FAIL'}`);
       return passes;
     });
     
     console.log(`\n=== SUMMARY ===`);
     console.log(`Total groups evaluated: ${recommendations.length}`);
-    console.log(`Qualified (>= 45%): ${qualifiedRecommendations.length}`);
+    console.log(`Qualified (>= 25%): ${qualifiedRecommendations.length}`);
     
     // Sort by score and limit to 6 groups maximum
     const finalRecommendations = qualifiedRecommendations

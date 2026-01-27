@@ -13,7 +13,7 @@ finalScore = (contentScore × 0.7) + (popularityScore × 0.3)
 - **Content**: TF-IDF cosine similarity (0-1)
 - **Collaborative**: Average similarity with group members (0-1)
 - **Popularity**: (members/100 × 0.5) + (activity/1000 × 0.3) + (0.2)
-- **Threshold**: Only show if score >= 0.45 (45%)
+- **Threshold**: Only show if score >= 0.25 (25%)
 - **Limit**: Maximum 6 groups
 - **Cold Start**: Applies when user has < 2 groups OR activity < 10
 
@@ -44,7 +44,7 @@ activityScore = members.length + resources.length
 
 ## 🔑 KEY NUMBERS
 
-- **Recommendation threshold**: 45%
+- **Recommendation threshold**: 25%
 - **Max recommendations**: 6 groups
 - **Max trending groups**: 6 groups
 - **Rate limit**: 200 requests / 15 min
