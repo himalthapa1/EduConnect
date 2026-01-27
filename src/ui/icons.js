@@ -60,4 +60,7 @@ export const Icons = {
   // Additional icons
   target: Lu.LuTarget,
   add: Lu.LuPlus,
+  close: Lu.LuX,
+  delete: Lu.LuTrash,
+  home: Lu.LuMapPin,
 };

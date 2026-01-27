@@ -6,7 +6,7 @@ import { Icons } from '../ui/icons';
 import GroupRecommendations from '../components/GroupRecommendations';
 import TrendingGroups from '../components/TrendingGroups';
 import TodaysFocus from '../components/TodaysFocus';
-import EventCalendar from '../components/EventCalendar';
+import EventTracker from '../components/EventTracker';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -156,7 +156,7 @@ const Dashboard = () => {
         <section className="focus-calendar-section">
           <div className="focus-calendar-grid">
             <TodaysFocus />
-            <EventCalendar />
+            <EventTracker />
           </div>
         </section>
 

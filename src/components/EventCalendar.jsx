@@ -2,14 +2,15 @@ import { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import { sessionsAPI } from '../utils/api';
 import { Icons } from '../ui/icons';
+import CalendarModal from './CalendarModal';
 import 'react-calendar/dist/Calendar.css';
 import './EventCalendar.css';
 
 const EventCalendar = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [events, setEvents] = useState([]);
-  const [showEventModal, setShowEventModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
 
   useEffect(() => {
     loadEvents();
@@ -38,6 +39,18 @@ const EventCalendar = () => {
     }
   };
 
+  const handleCreateEvent = () => {
+    setShowCalendarModal(true);
+  };
+
+  const handleSaveEvent = (newEvent) => {
+    setEvents(prevEvents => [...prevEvents, newEvent]);
+  };
+
+  const handleCloseModal = () => {
+    setShowCalendarModal(false);
+  };
+
   const formatTime = (timeString) => {
     const [hours, minutes] = timeString.split(':');
     const hour = parseInt(hours);
@@ -57,21 +70,23 @@ const EventCalendar = () => {
     if (view === 'month') {
       const dayEvents = getEventsForDate(date);
       if (dayEvents.length > 0) {
-        return (
-          <div className="calendar-event-indicator">
-            <div className="event-dot"></div>
-          </div>
-        );
+        return null; // We'll use CSS classes instead of content
+      }
+    }
+    return null;
+  };
+
+  const tileClassName = ({ date, view }) => {
+    if (view === 'month') {
+      const dayEvents = getEventsForDate(date);
+      if (dayEvents.length > 0) {
+        return 'has-events';
       }
     }
     return null;
   };
 
   const selectedDateEvents = getEventsForDate(selectedDate);
-
-  const handleCreateEvent = () => {
-    setShowEventModal(true);
-  };
 
   if (loading) {
     return (
@@ -100,6 +115,7 @@ const EventCalendar = () => {
           onChange={setSelectedDate}
           value={selectedDate}
           tileContent={tileContent}
+          tileClassName={tileClassName}
           className="custom-calendar"
         />
       </div>
@@ -131,6 +147,13 @@ const EventCalendar = () => {
           <p>No events on this date</p>
         </div>
       )}
+
+      <CalendarModal
+        isOpen={showCalendarModal}
+        onClose={handleCloseModal}
+        onSaveEvent={handleSaveEvent}
+        existingEvents={events}
+      />
     </div>
   );
 };

@@ -144,21 +144,32 @@
   color: var(--color-text-muted);
 }
 
-.calendar-event-indicator {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
+.custom-calendar .react-calendar__tile.has-events {
+  background: rgba(13, 148, 136, 0.15);
+  color: var(--color-primary);
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-primary);
 }
 
-.event-dot {
-  width: 4px;
-  height: 4px;
+.custom-calendar .react-calendar__tile.has-events:hover {
+  background: rgba(13, 148, 136, 0.25);
+}
+
+.custom-calendar .react-calendar__tile--active.has-events {
   background: var(--color-primary);
-  border-radius: 50%;
+  color: white;
+  border-bottom: 2px solid white;
 }
 
-.custom-calendar .react-calendar__tile--active .event-dot {
-  background: white;
+.custom-calendar .react-calendar__tile--active.has-events:hover {
+  background: #0b7c6f;
+}
+
+.custom-calendar .react-calendar__tile--now.has-events {
+  background: rgba(13, 148, 136, 0.2);
+  color: var(--color-primary);
+  font-weight: 700;
+  border-bottom: 2px solid var(--color-primary);
 }
 
 .selected-date-events {
