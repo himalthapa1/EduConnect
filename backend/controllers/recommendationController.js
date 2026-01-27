@@ -110,14 +110,17 @@ export const getGroupRecommendations = async (req, res) => {
         : 0;
 
       // Calculate popularity score based on members and activity
+      // No base score - groups must earn their popularity
       const membersScore = Math.min((group.members?.length || 0) / 100, 1.0);
       const activityScore = Math.min((group.activityScore || 0) / 1000, 1.0);
-      const popularityScore = (membersScore * 0.5) + (activityScore * 0.3) + 0.2; // 0.2 base score
+      const popularityScore = (membersScore * 0.6) + (activityScore * 0.4);
 
       // Apply required formula: finalScore = (interestSimilarity × 0.6) + (popularityScore × 0.4)
       const finalScore = (interestSimilarity * 0.6) + (popularityScore * 0.4);
 
       console.log('  Interest similarity:', interestSimilarity.toFixed(3));
+      console.log('  Members score:', membersScore.toFixed(3), `(${group.members?.length || 0} members)`);
+      console.log('  Activity score:', activityScore.toFixed(3), `(${group.activityScore || 0} activity)`);
       console.log('  Popularity score:', popularityScore.toFixed(3));
       console.log('  Final score:', finalScore.toFixed(3));
 

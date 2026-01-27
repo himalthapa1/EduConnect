@@ -136,9 +136,9 @@ class RecommendationEngine:
         """Calculate popularity score based on members and activity"""
         members_score = min(group['members_count'] / 100, 1.0)  # Cap at 100 members
         activity_score = min(group['activity_score'] / 1000, 1.0)  # Normalize activity
-        recency_score = 1.0  # Could be based on creation date
-
-        return (members_score * 0.5 + activity_score * 0.3 + recency_score * 0.2)
+        
+        # No base score - groups must earn their popularity through members and activity
+        return (members_score * 0.6 + activity_score * 0.4)
 
     def _get_cold_start_recommendations(self, user_data: Dict[str, Any], limit: int) -> List[Dict[str, Any]]:
         """Recommendations for new users based on interests and popularity"""
