@@ -11,6 +11,27 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+}
+
+.mobile-menu-toggle {
+  display: none;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--spacing-md);
+  flex-shrink: 0;
+}
+
+.mobile-menu-toggle:active {
+  transform: scale(0.95);
 }
 
 .header-content h1 {
@@ -43,20 +64,6 @@
 
 .create-session-btn:hover {
   background: #0b7c6f;
-}
-
-.logout-button {
-  background: #dc2626;
-  color: white;
-  border: none;
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--spacing-sm);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.logout-button:hover {
-  background: #b91c1c;
 }
 
 .dashboard-main {
@@ -139,42 +146,56 @@
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--spacing-lg);
 }
 
 .stat-card {
   background: var(--color-surface);
-  padding: var(--spacing-md);
+  padding: var(--spacing-lg);
   border-radius: var(--spacing-sm);
   border: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.1);
 }
 
 .stat-icon {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--color-primary);
   border-radius: var(--spacing-sm);
   color: white;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.stat-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .stat-content h3 {
-  margin: 0;
-  font-size: var(--font-card-title);
-  font-weight: 500;
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: 1.75rem;
+  font-weight: 700;
   color: var(--color-text-primary);
 }
 
 .stat-content p {
-  margin: var(--spacing-xs) 0 0 0;
+  margin: 0;
   color: var(--color-text-secondary);
-  font-size: var(--font-meta);
+  font-size: var(--font-body);
+  font-weight: 500;
 }
 
 /* Dashboard Content */
@@ -357,6 +378,10 @@
   .dashboard-content {
     grid-template-columns: 1fr;
   }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
@@ -366,45 +391,166 @@
 
   .dashboard-header {
     padding: var(--spacing-md);
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: var(--spacing-md);
-    text-align: center;
+  }
+  
+  .mobile-menu-toggle {
+    display: flex;
+  }
+  
+  .header-content {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .header-actions {
+    flex-direction: row;
+    width: 100%;
+    order: 3;
+  }
+  
+  .create-session-btn {
+    width: 100%;
+    padding: var(--spacing-md);
   }
 
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+  }
+  
+  .stat-card {
+    padding: var(--spacing-md);
+  }
+  
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.25rem;
+  }
+  
+  .stat-content h3 {
+    font-size: 1.5rem;
+  }
+  
+  .stat-content p {
+    font-size: 0.875rem;
+  }
+  
+  .focus-card {
+    padding: var(--spacing-lg);
+  }
+  
+  .focus-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .focus-primary-btn,
+  .focus-secondary-btn {
+    width: 100%;
   }
 
   .session-card {
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-sm);
   }
 
   .session-participants {
     text-align: left;
+    width: 100%;
+  }
+  
+  .session-details {
+    flex-wrap: wrap;
+  }
+  
+  .upcoming-sessions-section,
+  .recent-activity-section {
+    padding: var(--spacing-md);
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  
+  .view-all-btn {
+    align-self: flex-start;
   }
 }
 
 @media (max-width: 480px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
+  .dashboard-main {
+    padding: var(--spacing-sm);
+  }
+  
+  .dashboard-header {
+    padding: var(--spacing-sm);
   }
 
   .dashboard-header h1 {
-    font-size: var(--font-page-title);
+    font-size: 1.5rem;
+  }
+  
+  .dashboard-header p {
+    font-size: 0.875rem;
+  }
+
+  .stats-grid {
+    gap: var(--spacing-sm);
   }
 
   .stat-card {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
   }
 
   .stat-icon {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
+    font-size: 1.125rem;
   }
 
   .stat-content h3 {
-    font-size: var(--font-card-title);
+    font-size: 1.25rem;
+  }
+  
+  .stat-content p {
+    font-size: 0.8rem;
+  }
+  
+  .focus-card {
+    padding: var(--spacing-md);
+  }
+  
+  .focus-title {
+    font-size: 1.25rem;
+  }
+  
+  .focus-description {
+    font-size: 0.875rem;
+  }
+  
+  .session-card {
+    padding: var(--spacing-sm);
+  }
+  
+  .session-info h4 {
+    font-size: 0.875rem;
+  }
+  
+  .activity-item {
+    padding: var(--spacing-xs);
+  }
+  
+  .activity-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 0.875rem;
   }
 }

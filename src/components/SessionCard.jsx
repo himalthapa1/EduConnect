@@ -103,7 +103,6 @@ function SessionCard({ session, onJoin, onLeave, onComplete, isOrganizer = false
 
           {session.participants && session.participants.length > 0 && (
             <div className="participants-list">
-              <h4>Participants:</h4>
               <div className="participants">
                 {session.participants
                   .filter(participant => participant.user) // Filter out null users
