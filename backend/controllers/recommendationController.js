@@ -11,28 +11,13 @@ export const getGroupRecommendations = async (req, res) => {
     const userId = req.user?.userId;
     const { limit = 10 } = req.query;
 
-    // If not authenticated, return basic recommendations
+    // If not authenticated, return empty recommendations
+    // (Users should log in to get personalized recommendations)
     if (!userId) {
-      const StudyGroup = (await import('../models/StudyGroup.js')).default;
-
-      // Get public groups sorted by activity and member count
-      const groups = await StudyGroup.find({ isPublic: true })
-        .sort({ activityScore: -1, members: -1 })
-        .limit(parseInt(limit));
-
-      const recommendations = groups.map(group => ({
-        group_id: group._id.toString(),
-        name: group.name,
-        subject: group.subject,
-        difficulty: group.difficulty || 'beginner',
-        members_count: group.members?.length || 0,
-        score: 0.5 // Default score for unauthenticated users
-      }));
-
       return res.json({
         success: true,
-        data: recommendations,
-        message: 'Basic recommendations (not authenticated)'
+        data: [],
+        message: 'Please log in to see personalized recommendations'
       });
     }
 
@@ -122,7 +107,12 @@ export const getGroupRecommendations = async (req, res) => {
     });
 
     // Apply qualification rule: Only groups with finalScore >= 0.6
-    const qualifiedRecommendations = recommendations.filter(rec => rec.score >= 0.6);
+    const qualifiedRecommendations = recommendations.filter(rec => {
+      console.log(`Group: ${rec.name}, Score: ${rec.score}, Pass: ${rec.score >= 0.6}`);
+      return rec.score >= 0.6;
+    });
+    
+    console.log(`Total groups: ${recommendations.length}, Qualified: ${qualifiedRecommendations.length}`);
     
     // Sort by score and limit to 6 groups maximum
     const finalRecommendations = qualifiedRecommendations

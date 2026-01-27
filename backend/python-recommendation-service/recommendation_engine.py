@@ -156,8 +156,9 @@ class RecommendationEngine:
             # Popularity score
             popularity_score = self._calculate_popularity_score(group)
 
-            # Combined score for cold start
-            final_score = (content_score * 0.6) + (popularity_score * 0.4)
+            # Combined score for cold start (no collaborative filtering for new users)
+            # Weight more heavily on content (70%) and popularity (30%) for new users
+            final_score = (content_score * 0.7) + (popularity_score * 0.3)
 
             recommendations.append({
                 'group_id': group['id'],
@@ -200,11 +201,13 @@ class RecommendationEngine:
                 # Popularity score
                 popularity_score = self._calculate_popularity_score(group)
 
-                # Final weighted score using required formula
-                # finalScore = (interestSimilarity × 0.6) + (popularityScore × 0.4)
-                # interestSimilarity = content_score (measures interest matching)
-                # popularityScore = popularity_score (measures group popularity)
-                final_score = (content_score * 0.6) + (popularity_score * 0.4)
+                # Final weighted score using hybrid approach
+                # Combines content-based (50%), collaborative filtering (20%), and popularity (30%)
+                # This creates a balanced recommendation considering:
+                # - What user is interested in (content)
+                # - What similar users liked (collaborative)
+                # - What's popular overall (popularity)
+                final_score = (content_score * 0.5) + (collaborative_score * 0.2) + (popularity_score * 0.3)
 
                 recommendations.append({
                     'group_id': group['id'],

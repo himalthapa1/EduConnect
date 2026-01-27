@@ -45,14 +45,24 @@ export const registerChatHandlers = async (io, socket) => {
       // Send recent messages
       const messages = await Message.getGroupMessages(groupId);
 
+      console.log(`Sending ${messages.length} messages to user ${userId} for group ${groupId}`);
+      if (messages.length > 0) {
+        console.log('Sample message types:', messages.slice(0, 3).map(m => ({
+          type: m.type,
+          hasPollData: !!m.pollData
+        })));
+      }
+
       socket.emit('room-joined', {
         roomId,
         messages: messages.map(msg => ({
           _id: msg._id,
           content: msg.content,
           sender: msg.sender,
+          type: msg.type,
           pollData: msg.pollData,
           audioUrl: msg.audioUrl,
+          groupId: msg.groupId,
           createdAt: msg.createdAt
         }))
       });
@@ -91,8 +101,10 @@ export const registerChatHandlers = async (io, socket) => {
         _id: message._id,
         content: message.content,
         sender: message.sender,
+        type: message.type,
         pollData: message.pollData,
         audioUrl: message.audioUrl,
+        groupId: message.groupId,
         createdAt: message.createdAt
       };
 

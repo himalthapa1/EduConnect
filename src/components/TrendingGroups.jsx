@@ -99,6 +99,18 @@ const TrendingGroups = ({ limit = 6, showHeader = true, compact = false }) => {
     return rating.toFixed(1);
   };
 
+  const renderStars = (rating) => {
+    const fullStars = Math.floor(rating);
+    const stars = [];
+    
+    // Create star icons based on rating
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<Icons.star key={i} size={16} />);
+    }
+    
+    return stars;
+  };
+
   if (loading) {
     return (
       <div className={`trending-groups ${compact ? 'compact' : ''}`}>
@@ -191,18 +203,6 @@ const TrendingGroups = ({ limit = 6, showHeader = true, compact = false }) => {
                 </div>
               </div>
 
-              <div className="trending-stats">
-                <div className="rating-info">
-                  <span className="rating-value">{formatRating(group.averageRating)}</span>
-                  <span className="rating-label">⭐ rating</span>
-                </div>
-                {group.popularityScore && group.popularityScore > 0 && (
-                  <div className="popularity-score">
-                    <span className="score-value">{Math.round(group.popularityScore)}</span>
-                    <span className="score-label">popularity</span>
-                  </div>
-                )}
-              </div>
             </div>
 
             <div className="trending-actions">
@@ -222,6 +222,9 @@ const TrendingGroups = ({ limit = 6, showHeader = true, compact = false }) => {
                   {joiningGroupId === group._id ? 'Joining...' : 'Join'}
                 </button>
               )}
+              <div className="rating-info">
+                <span className="rating-value">{renderStars(group.averageRating)}</span>
+              </div>
             </div>
           </div>
         ))}

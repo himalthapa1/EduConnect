@@ -143,18 +143,11 @@
 }
 
 .rating-value {
-  font-size: 1.1rem;
-  font-weight: 700;
+  display: flex;
+  gap: 4px;
+  align-items: center;
   color: #ffc107;
   text-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
-}
-
-.rating-label {
-  font-size: 0.7rem;
-  color: #666;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .popularity-score {
@@ -242,6 +235,10 @@
 
 .trending-actions {
   margin-left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
 }
 
 .join-btn {

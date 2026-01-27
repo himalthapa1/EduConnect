@@ -126,6 +126,9 @@ export const groupsAPI = {
   updateResource: (groupId, resourceId, data) =>
     api.put(`/groups/${groupId}/resources/${resourceId}`, data),
 
+  rateGroup: (groupId, rating) =>
+    api.post(`/groups/${groupId}/rate`, { rating }),
+
   getGroupMessages: (groupId, params = {}) =>
     api.get(`/groups/${groupId}/messages`, { params }),
 

@@ -15,6 +15,8 @@ export const Icons = {
   eye: Lu.LuEye,
   eyeOff: Lu.LuEyeOff,
   upload: Lu.LuUpload,
+  download: Lu.LuDownload,
+  externalLink: Lu.LuExternalLink,
   logout: Lu.LuLogOut,
   login: Lu.LuLogIn,
   settings: Lu.LuSettings,

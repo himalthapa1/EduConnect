@@ -395,20 +395,18 @@ const StudyWithMe = () => {
   };
 
   const handleResourceClick = (resource) => {
-    // Check if it's a PDF (by file extension or resource type)
-    const isPdf = resource.file?.toLowerCase().endsWith('.pdf') ||
-                  resource.resourceType === 'pdf' ||
-                  resource.title?.toLowerCase().includes('.pdf');
+    // Check if it's a PDF or image file
+    const isFile = resource.file;
+    const isPdf = resource.file?.toLowerCase().endsWith('.pdf');
+    const isImage = resource.file?.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/);
 
-    if (isPdf) {
+    if (isFile && (isPdf || isImage)) {
       setActivePdf(resource);
       setShowPdfDrawer(true);
       setShowResourceList(false);
-    } else {
-      // For non-PDF resources, open in new tab as before
-      if (resource.url) {
-        window.open(resource.url, '_blank', 'noopener,noreferrer');
-      }
+    } else if (resource.url) {
+      // For URL resources, open in new tab
+      window.open(resource.url, '_blank', 'noopener,noreferrer');
       setShowResourceList(false);
     }
   };
@@ -463,7 +461,15 @@ const StudyWithMe = () => {
                 <label>Pomodoro Cycle</label>
                 <select
                   value={formData.pomodoroType}
-                  onChange={(e) => setFormData(prev => ({ ...prev, pomodoroType: e.target.value }))}
+                  onChange={(e) => {
+                    const [work, breakTime] = e.target.value.split('/').map(Number);
+                    setFormData(prev => ({
+                      ...prev,
+                      pomodoroType: e.target.value,
+                      duration: work,
+                      breakDuration: breakTime
+                    }));
+                  }}
                 >
                   <option value="25/5">25 minutes work / 5 minutes break</option>
                   <option value="50/10">50 minutes work / 10 minutes break</option>
@@ -485,6 +491,7 @@ const StudyWithMe = () => {
                       customDuration: '' // Reset custom duration when switching
                     }))
                   }
+                  disabled={formData.timerMode === 'pomodoro'}
                 >
                   <option value={25}>25 minutes</option>
                   <option value={50}>50 minutes</option>
@@ -499,7 +506,7 @@ const StudyWithMe = () => {
                   <option value="custom">Custom</option>
                 </select>
 
-                {formData.duration === 'custom' && (
+                {formData.duration === 'custom' && formData.timerMode !== 'pomodoro' && (
                   <input
                     type="number"
                     min={5}
@@ -530,6 +537,7 @@ const StudyWithMe = () => {
                       customBreakDuration: '' // Reset custom break duration when switching
                     }))
                   }
+                  disabled={formData.timerMode === 'pomodoro'}
                 >
                   <option value={5}>5 minutes</option>
                   <option value={10}>10 minutes</option>
@@ -537,7 +545,7 @@ const StudyWithMe = () => {
                   <option value="custom">Custom</option>
                 </select>
 
-                {formData.breakDuration === 'custom' && (
+                {formData.breakDuration === 'custom' && formData.timerMode !== 'pomodoro' && (
                   <input
                     type="number"
                     min={1}
@@ -605,7 +613,7 @@ const StudyWithMe = () => {
             </div>
 
             <button className="start-session-btn" onClick={handleStartSession}>
-              <Icons.trendingUp size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> Start Studying
+              <Icons.play size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> Start Studying
             </button>
           </div>
         </div>

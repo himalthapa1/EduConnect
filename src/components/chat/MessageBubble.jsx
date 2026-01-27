@@ -71,17 +71,33 @@ const MessageBubble = ({ message, isOwn }) => {
     const { pollData } = message;
     const totalVotes = pollData.options.reduce((sum, option) => sum + option.votes.length, 0);
     const userVotedOption = pollData.options.findIndex(option =>
-      option.votes.some(vote => vote.equals(user?.id))
+      option.votes.some(vote => vote === user?.id || vote.toString() === user?.id)
     );
 
     const handleVote = async (optionIndex) => {
-      if (!user) return;
+      if (!user) {
+        console.log('User not logged in, cannot vote');
+        return;
+      }
+
+      if (!message.groupId) {
+        console.error('Poll message missing groupId:', message);
+        return;
+      }
 
       try {
-        await groupsAPI.voteInPoll(message._id, optionIndex);
+        console.log('Voting in poll:', {
+          groupId: message.groupId,
+          messageId: message._id,
+          optionIndex
+        });
+        const response = await groupsAPI.voteInPoll(message.groupId, message._id, optionIndex);
+        console.log('Vote successful:', response.data);
         // The vote will be reflected via socket updates
       } catch (error) {
         console.error('Error voting in poll:', error);
+        console.error('Error details:', error.response?.data);
+        alert('Failed to vote in poll. Please try again.');
       }
     };
 

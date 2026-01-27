@@ -5,6 +5,7 @@ import ResourcesList from '../components/ResourcesList';
 import CompleteSessionModal from '../components/CompleteSessionModal';
 import ChatWindow from '../components/chat/ChatWindow';
 import GroupRecommendations from '../components/GroupRecommendations';
+import GroupLeaveRatingModal from '../components/GroupLeaveRatingModal';
 
 
 import { Icons } from '../ui/icons';
@@ -141,6 +142,8 @@ const Groups = () => {
   const [actionsModeGroupId, setActionsModeGroupId] = useState(null);
   const [showMembersPanel, setShowMembersPanel] = useState(false);
   const [membersPanelGroup, setMembersPanelGroup] = useState(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [ratingGroup, setRatingGroup] = useState(null);
 
   // Chat state
   const [activeChatGroup, setActiveChatGroup] = useState(null);
@@ -161,6 +164,8 @@ const Groups = () => {
   });
   const [tagOptions, setTagOptions] = useState(null);
   const [tagStep, setTagStep] = useState(1); // Progressive disclosure
+  const [searchQuery, setSearchQuery] = useState(''); // Search state
+  const [filteredGroups, setFilteredGroups] = useState([]); // Filtered groups
 
   const subjects = [
     'Mathematics',
@@ -191,6 +196,22 @@ const Groups = () => {
       loadTagOptions();
     }
   }, [activeTab, user]);
+
+  // Filter groups based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredGroups(groups);
+    } else {
+      const query = searchQuery.toLowerCase();
+      const filtered = groups.filter(group =>
+        group.name.toLowerCase().includes(query) ||
+        group.description.toLowerCase().includes(query) ||
+        group.subject.toLowerCase().includes(query) ||
+        group.subjectTags?.some(tag => tag.toLowerCase().includes(query))
+      );
+      setFilteredGroups(filtered);
+    }
+  }, [searchQuery, groups]);
 
   // Click outside to exit actions mode
   useEffect(() => {
@@ -310,6 +331,25 @@ const Groups = () => {
       const errorMessage = error.response?.data?.message || error.message || 'Failed to leave group';
       setError(errorMessage);
       // Don't exit actions mode on error so user can try again
+    }
+  };
+
+  const handleLeaveGroupWithRating = (group) => {
+    setRatingGroup(group);
+    setShowRatingModal(true);
+  };
+
+  const handleRatingSubmitted = () => {
+    setSuccess('Thank you for your feedback!');
+    fetchMyGroups();
+    fetchGroups();
+  };
+
+  const handleLeaveWithoutRating = async () => {
+    if (ratingGroup) {
+      await handleLeaveGroup(ratingGroup._id);
+      setShowRatingModal(false);
+      setRatingGroup(null);
     }
   };
 
@@ -472,8 +512,29 @@ const Groups = () => {
       {activeTab === 'browse' && (
         <>
           <GroupRecommendations limit={6} />
+          
+          {/* Search Bar */}
+          <div className="search-section">
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="What are you looking for?"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+              />
+              <button
+                className="clear-search"
+                onClick={() => searchQuery && setSearchQuery('')}
+                aria-label="Search"
+              >
+                <Icons.search size={20} />
+              </button>
+            </div>
+          </div>
+
           <div className="groups-grid">
-            {groups.map(group => {
+            {filteredGroups.map(group => {
               const isMember = user && group.members?.some(m => m._id === user.id);
 
               return (
@@ -595,11 +656,7 @@ const Groups = () => {
                   {actionsModeGroupId === group._id ? (
                     <button
                       className="footer-btn leave-btn"
-                      onClick={() => {
-                        if (confirm('Are you sure you want to leave this group?')) {
-                          handleLeaveGroup(group._id);
-                        }
-                      }}
+                      onClick={() => handleLeaveGroupWithRating(group)}
                     >
                       <Icons.logout size={16} />
                       Leave
@@ -875,6 +932,19 @@ const Groups = () => {
           onClose={closeChat}
         />
       )}
+
+      {/* Group Leave Rating Modal */}
+      <GroupLeaveRatingModal
+        isOpen={showRatingModal}
+        onClose={() => {
+          setShowRatingModal(false);
+          setRatingGroup(null);
+        }}
+        onLeaveWithoutRating={handleLeaveWithoutRating}
+        onRatingSubmitted={handleRatingSubmitted}
+        groupId={ratingGroup?._id}
+        groupName={ratingGroup?.name}
+      />
 
     </div>
   );

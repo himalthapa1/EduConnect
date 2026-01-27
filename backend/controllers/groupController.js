@@ -625,3 +625,119 @@ export const updateResource = async (req, res) => {
     res.status(500).json({ message: "Failed to update resource", error: err.message });
   }
 };
+
+/* =========================
+   GROUP RATING
+========================= */
+
+export const rateGroup = async (req, res) => {
+  try {
+    console.log('rateGroup called with:', {
+      params: req.params,
+      body: req.body,
+      user: req.user
+    });
+
+    const userId = getUserObjectId(req);
+    console.log('Extracted userId:', userId);
+
+    if (!userId) {
+      console.error('No userId found in request');
+      return res.status(401).json({ message: "Unauthorized: No valid user ID" });
+    }
+
+    const { groupId } = req.params;
+    const { rating } = req.body;
+
+    // Validate rating
+    if (!rating || typeof rating !== 'number' || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: "Rating must be a number between 1 and 5" });
+    }
+
+    // Validate groupId
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+      return res.status(400).json({ message: "Invalid group ID" });
+    }
+
+    // Check if group exists
+    const group = await StudyGroup.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    console.log('Found group:', group._id);
+
+    // Check if user is a member of the group
+    const isMember = group.members.some((m) => m.equals(userId));
+    if (!isMember) {
+      return res.status(403).json({ message: "Only group members can rate the group" });
+    }
+
+    console.log('User is a member, checking existing ratings...');
+
+    // Check if user has already rated this group
+    const existingRating = group.ratings.find((r) => r.user.equals(userId));
+    if (existingRating) {
+      return res.status(400).json({ message: "You have already rated this group" });
+    }
+
+    console.log('Adding new rating...');
+
+    // Add new rating
+    group.ratings.push({
+      user: userId,
+      rating: rating,
+      ratedAt: new Date()
+    });
+
+    // Calculate new average rating
+    const totalRatings = group.ratings.length;
+    const sumRatings = group.ratings.reduce((sum, r) => sum + r.rating, 0);
+    group.averageRating = sumRatings / totalRatings;
+
+    // Update group popularity score based on rating
+    // Higher ratings increase popularity score
+    const ratingBoost = (rating - 3) * 10; // +20 for 5-star, -10 for 1-star
+    group.popularityScore = Math.max(0, group.popularityScore + ratingBoost);
+
+    console.log('Saving group with new rating...');
+
+    // Use atomic update to avoid full document validation for existing groups
+    await StudyGroup.findByIdAndUpdate(
+      groupId,
+      {
+        $push: { ratings: { user: userId, rating: rating, ratedAt: new Date() } },
+        $set: { 
+          averageRating: group.averageRating,
+          popularityScore: group.popularityScore
+        }
+      }
+    );
+
+    console.log('Updating user activity score...');
+
+    // Update user activity score for providing feedback
+    await User.findByIdAndUpdate(userId, {
+      $inc: { activityScore: 2 } // Rating increases activity slightly
+    });
+
+    console.log('Rating submitted successfully');
+
+    res.json({ 
+      success: true, 
+      message: "Rating submitted successfully",
+      data: {
+        averageRating: group.averageRating,
+        totalRatings: totalRatings
+      }
+    });
+  } catch (err) {
+    console.error("rateGroup error:", err);
+    console.error("rateGroup error stack:", err.stack);
+    res.status(500).json({ 
+      message: "Failed to submit rating", 
+      error: err.message,
+      stack: err.stack 
+    });
+  }
+};

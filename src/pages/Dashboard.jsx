@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useMobileMenu } from '../components/Layout';
 import { useNavigate } from 'react-router-dom';
 import { sessionsAPI, groupsAPI } from '../utils/api';
 import { Icons } from '../ui/icons';
+import { HiMenu } from 'react-icons/hi';
 import GroupRecommendations from '../components/GroupRecommendations';
 import TrendingGroups from '../components/TrendingGroups';
 import TodaysFocus from '../components/TodaysFocus';
@@ -11,6 +13,7 @@ import './Dashboard.css';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
+  const { toggleMobileMenu } = useMobileMenu();
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalSessions: 0,
@@ -103,6 +106,9 @@ const Dashboard = () => {
     <div className="dashboard-container">
       {/* Header */}
       <header className="dashboard-header">
+        <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
+          <HiMenu />
+        </button>
         <div className="header-content">
           <h1 className="header-title"><Icons.trendingUp size={24} /> Dashboard</h1>
           <p className="header-subtitle">Welcome back, {user?.username}!</p>
@@ -110,9 +116,6 @@ const Dashboard = () => {
         <div className="header-actions">
           <button onClick={handleCreateSession} className="create-session-btn">
             + New Session
-          </button>
-          <button onClick={handleLogout} className="logout-button">
-            Logout
           </button>
         </div>
       </header>

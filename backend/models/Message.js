@@ -33,10 +33,38 @@ const messageSchema = new mongoose.Schema(
         return this.chatType === 'session';
       }
     },
+    // Message type (text, voice, poll)
+    type: {
+      type: String,
+      enum: ['text', 'voice', 'poll'],
+      default: 'text'
+    },
     // For voice messages
     audioUrl: {
       type: String,
       trim: true
+    },
+    // For polls
+    pollData: {
+      question: {
+        type: String,
+        trim: true
+      },
+      options: [
+        {
+          text: {
+            type: String,
+            required: true,
+            trim: true
+          },
+          votes: [
+            {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: 'User'
+            }
+          ]
+        }
+      ]
     }
   },
   {
@@ -74,8 +102,50 @@ messageSchema.methods.toPublicData = function () {
     chatType: this.chatType,
     groupId: this.groupId,
     sessionId: this.sessionId,
+    type: this.type,
     audioUrl: this.audioUrl,
+    pollData: this.pollData,
     createdAt: this.createdAt
+  };
+};
+
+// Add vote to poll
+messageSchema.methods.addVote = async function (userId, optionIndex) {
+  if (!this.pollData || !this.pollData.options[optionIndex]) {
+    throw new Error('Invalid poll or option index');
+  }
+
+  // Remove user's previous vote if exists
+  this.pollData.options.forEach(option => {
+    option.votes = option.votes.filter(vote => !vote.equals(userId));
+  });
+
+  // Add new vote
+  this.pollData.options[optionIndex].votes.push(userId);
+  
+  await this.save();
+  return this;
+};
+
+// Get poll results
+messageSchema.methods.getPollResults = function () {
+  if (!this.pollData) {
+    return null;
+  }
+
+  const totalVotes = this.pollData.options.reduce(
+    (sum, option) => sum + option.votes.length,
+    0
+  );
+
+  return {
+    question: this.pollData.question,
+    options: this.pollData.options.map(option => ({
+      text: option.text,
+      votes: option.votes.length,
+      percentage: totalVotes > 0 ? (option.votes.length / totalVotes) * 100 : 0
+    })),
+    totalVotes
   };
 };
 
@@ -102,12 +172,13 @@ messageSchema.statics.getSessionMessages = function (sessionId, limit = 50) {
     .limit(limit);
 };
 
-messageSchema.statics.createGroupMessage = function (groupId, senderId, content) {
+messageSchema.statics.createGroupMessage = function (groupId, senderId, content, type = 'text') {
   return this.create({
     content: content.trim(),
     sender: senderId,
     chatType: 'group',
-    groupId: groupId
+    groupId: groupId,
+    type: type
   });
 };
 

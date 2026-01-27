@@ -98,6 +98,52 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
     return rating.toFixed(1);
   };
 
+  const formatMemberCount = (count) => {
+    if (count == null || count === undefined) {
+      return '0';
+    }
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}k`;
+    }
+    return count.toString();
+  };
+
+  const getRecommendationBadge = (score) => {
+    if (score >= 0.8) return { text: '⭐ Recommended', color: '#28a745' };
+    if (score >= 0.6) return { text: '👍 Good match', color: '#ffc107' };
+    return null; // No badge for low scores
+  };
+
+  const getMatchPercentage = (score) => {
+    return Math.round((score || 0) * 100);
+  };
+
+  const getExplanationText = (group) => {
+    const explanations = [];
+    
+    // Interest match explanation
+    if (group.score >= 0.7) {
+      explanations.push('Matches your interests');
+    }
+    
+    // Popularity explanation
+    if (group.members_count >= 50) {
+      explanations.push('Popular among students');
+    }
+    
+    // Activity explanation
+    if (group.activity_score >= 100) {
+      explanations.push('High weekly activity');
+    }
+    
+    return explanations.slice(0, 2); // Limit to 2 explanations
+  };
+
+  const getGroupLeaveRatingModal = () => {
+    // This will be implemented in Phase 3
+    return null;
+  };
+
   if (loading) {
     return (
       <div className={`group-recommendations ${compact ? 'compact' : ''}`}>
@@ -172,40 +218,57 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
       <div className={`recommendations-list ${compact ? 'horizontal-scroll' : 'grid-layout'}`}>
         {recommendations.map((group, index) => (
           <div
-            key={group.id || index}
+            key={group.group_id || index}
             className="recommendation-card"
-            onClick={() => handleViewGroup(group.id)}
+            onClick={() => handleViewGroup(group.group_id)}
           >
             <div className="recommendation-content">
               <div className="recommendation-main">
                 <h4 className="group-name">{group.name}</h4>
                 <p className="group-category uppercase">{group.category}</p>
+                {group.description && (
+                  <p className="group-description">{group.description}</p>
+                )}
                 <div className="group-meta">
-                  <span className="difficulty" style={{ color: getDifficultyColor(group.level) }}>
-                    {getDifficultyIcon(group.level)} {group.level}
+                  <span className="difficulty" style={{ color: getDifficultyColor(group.difficulty) }}>
+                    {getDifficultyIcon(group.difficulty)} {group.difficulty}
                   </span>
                   <span className="members-count">
-                    <Icons.users size={14} /> {group.membersCount}
+                    <Icons.users size={14} /> {formatMemberCount(group.members_count || group.memberCount || 0)}
                   </span>
                 </div>
               </div>
 
               <div className="recommendation-score">
                 <div className="match-percentage">
-                  <span className="percentage-value">100%</span>
+                  <span className="percentage-value">{getMatchPercentage(group.score)}%</span>
                   <span className="percentage-label">match</span>
                 </div>
+                {getRecommendationBadge(group.score) && (
+                  <div className="recommendation-badge" style={{ color: getRecommendationBadge(group.score).color }}>
+                    {getRecommendationBadge(group.score).text}
+                  </div>
+                )}
                 {group.rating > 0 && (
                   <div className="rating-info">
                     <span className="rating-value">{formatRating(group.rating)}</span>
                     <span className="rating-label">⭐ rating</span>
                   </div>
                 )}
+                {getExplanationText(group).length > 0 && (
+                  <div className="explanation-text">
+                    {getExplanationText(group).map((explanation, idx) => (
+                      <span key={idx} className="explanation-item">
+                        {explanation}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="recommendation-actions">
-              {user?.joinedGroups?.includes(group.id) ? (
+              {user?.joinedGroups?.includes(group.group_id) ? (
                 <button
                   className="joined-btn"
                   disabled
@@ -214,11 +277,11 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
                 </button>
               ) : (
                 <button
-                  onClick={(e) => handleJoinGroup(group._id, e)}
+                  onClick={(e) => handleJoinGroup(group.group_id, e)}
                   className="join-btn"
-                  disabled={joiningGroupId === group._id}
+                  disabled={joiningGroupId === group.group_id}
                 >
-                  {joiningGroupId === group._id ? 'Joining...' : 'Join'}
+                  {joiningGroupId === group.group_id ? 'Joining...' : 'Join'}
                 </button>
               )}
             </div>

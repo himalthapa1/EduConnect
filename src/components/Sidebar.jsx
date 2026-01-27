@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Icons } from '../ui/icons';
 import './Sidebar.css';
 
-const Sidebar = ({ collapsed, onToggleCollapse }) => {
+const Sidebar = ({ collapsed, onToggleCollapse, mobileOpen, onMobileClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -49,21 +49,27 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
 
   const handleNavigation = (path) => {
     navigate(path);
+    if (onMobileClose) {
+      onMobileClose();
+    }
   };
 
   const handleLogout = () => {
     logout();
+    if (onMobileClose) {
+      onMobileClose();
+    }
   };
 
   return (
-    <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
+    <div className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-header">
         <div className="logo">
           <span className="logo-icon"><Icons.book size={20} /></span>
           {!collapsed && <span className="logo-text">EduConnect</span>}
         </div>
         <button
-          className="collapse-btn"
+          className="collapse-btn desktop-only"
           onClick={() => onToggleCollapse(!collapsed)}
         >
           {collapsed ? '→' : '←'}
