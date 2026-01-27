@@ -516,29 +516,21 @@ const Groups = () => {
           {/* Search Bar */}
           <div className="search-section">
             <div className="search-bar">
-              <Icons.search size={20} />
               <input
                 type="text"
-                placeholder="Search groups by name, subject, or tags..."
+                placeholder="What are you looking for?"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="search-input"
               />
-              {searchQuery && (
-                <button
-                  className="clear-search"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Clear search"
-                >
-                  <FiX size={18} />
-                </button>
-              )}
+              <button
+                className="clear-search"
+                onClick={() => searchQuery && setSearchQuery('')}
+                aria-label="Search"
+              >
+                <Icons.search size={20} />
+              </button>
             </div>
-            {searchQuery && (
-              <p className="search-results-count">
-                Found {filteredGroups.length} group{filteredGroups.length !== 1 ? 's' : ''}
-              </p>
-            )}
           </div>
 
           <div className="groups-grid">

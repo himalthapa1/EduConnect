@@ -1488,13 +1488,17 @@
 .form-navigation .btn-secondary,
 .form-navigation .btn-primary {
   padding: 12px 24px;
-  border: none;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   flex: 1;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .form-navigation .btn-secondary {
@@ -1503,71 +1507,85 @@
   border: 1px solid #d1d5db;
 }
 
+.form-navigation .btn-primary {
+  border: 1px solid var(--color-primary);
+}
+
 
 
 /* Search Section */
 .search-section {
-  margin-bottom: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
 }
 
 .search-bar {
   position: relative;
   display: flex;
   align-items: center;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--color-border);
-  border-radius: 0;
-  padding: var(--spacing-sm) 0;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 50px;
+  padding: var(--spacing-sm) var(--spacing-md);
   transition: all 0.2s ease;
-  gap: var(--spacing-sm);
-  box-shadow: none;
+  gap: var(--spacing-md);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  height: 50px;
 }
 
 .search-bar:focus-within {
-  border-bottom-color: var(--color-primary);
-  box-shadow: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .search-bar svg {
-  color: var(--color-text-secondary);
+  color: #6b7280;
   flex-shrink: 0;
 }
 
 .search-input {
   flex: 1;
-  border: none;
-  outline: none;
+  border: none !important;
+  outline: none !important;
   background: transparent;
-  font-size: var(--font-body);
-  color: var(--color-text-primary);
+  font-size: 15px;
+  color: #1f2937;
   padding: 0;
-  box-shadow: none;
+  box-shadow: none !important;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
 }
 
+.search-input:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 .search-input::placeholder {
-  color: var(--color-text-secondary);
+  color: #9ca3af;
+  font-weight: 400;
 }
 
 .clear-search {
-  background: none;
+  background: transparent;
   border: none;
-  padding: var(--spacing-xs);
+  padding: 0;
   cursor: pointer;
-  color: var(--color-text-secondary);
+  color: #6b7280;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  width: 38px;
+  height: 38px;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .clear-search:hover {
-  background: var(--color-surface-muted);
-  color: var(--color-text-primary);
+  color: var(--color-primary);
+  transform: scale(1.05);
 }
 
 .search-results-count {
