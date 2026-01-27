@@ -726,21 +726,6 @@
   margin-left: 15px;
 }
 
-.resource-actions button {
-  padding: 6px 12px;
-  background: #e53e3e;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background-color 0.2s;
-}
-
-.resource-actions button:hover {
-  background: #c53030;
-}
-
 .empty-state {
   text-align: center;
   color: #718096;

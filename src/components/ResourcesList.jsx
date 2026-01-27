@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { groupsAPI, API_BASE_URL } from '../utils/api';
 import ResourceForm from './ResourceForm';
+import { Icons } from '../ui/icons';
 import '../pages/Resources.css';
 
 const ResourcesList = ({ group }) => {
@@ -127,6 +128,11 @@ const ResourcesList = ({ group }) => {
     return resources.shared || [];
   };
 
+  const handleOpenFile = (filePath) => {
+    const fileUrl = `${API_BASE_URL}/${filePath}`;
+    window.open(fileUrl, '_blank');
+  };
+
   const renderResourceList = (resourceList, isMyUploads = false) => (
     <div className="resources-list">
       {resourceList.map(r => (
@@ -135,7 +141,22 @@ const ResourcesList = ({ group }) => {
             <h4>{r.title}</h4>
             <div className="resource-meta">
               <div>({r.resourceType})</div>
-              {r.file && <a href={`${API_BASE_URL}/${r.file}`} target="_blank" rel="noreferrer" className="download-link">Download file</a>}
+              {r.file && (
+                <div className="file-actions">
+                  <button
+                    onClick={() => handleOpenFile(r.file)}
+                    className="btn-open btn-with-text"
+                    title="Open file in new tab"
+                  >
+                    <Icons.externalLink size={16} />
+                    <span>Open</span>
+                  </button>
+                  <a href={`${API_BASE_URL}/${r.file}`} download className="btn-download btn-with-text" title="Download file">
+                    <Icons.download size={16} />
+                    <span>Download</span>
+                  </a>
+                </div>
+              )}
               {r.url && <a href={r.url} target="_blank" rel="noreferrer" className="download-link">Open link</a>}
               <div>{isMyUploads ? 'Uploaded by you' : `Shared by ${r.addedBy?.username}`} · {new Date(r.createdAt).toLocaleString()}</div>
             </div>
@@ -145,18 +166,18 @@ const ResourcesList = ({ group }) => {
               {isMyUploads && !r.isShared && (
                 <button
                   onClick={() => handleShare(r._id)}
-                  className="btn-share"
+                  className="btn-share btn-icon"
                   title="Share this file with the group"
                 >
-                  Share with Group
+                  <Icons.share size={18} />
                 </button>
               )}
               <button
                 onClick={() => handleDelete(r._id)}
-                className="btn-delete"
+                className="btn-delete btn-icon"
                 title="Delete this file"
               >
-                Delete
+                <Icons.delete size={18} />
               </button>
             </div>
           )}

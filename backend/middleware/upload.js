@@ -1,8 +1,13 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 
-const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Save to root uploads folder (one level up from backend)
+const UPLOADS_DIR = path.join(__dirname, '..', '..', 'uploads');
 
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
