@@ -58,4 +58,11 @@ export const Icons = {
 
   // Rating features
   star: LuStar,
+
+  // Additional icons
+  target: Lu.LuTarget,
+  add: Lu.LuPlus,
+  close: Lu.LuX,
+  delete: Lu.LuTrash,
+  home: Lu.LuMapPin,
 };
