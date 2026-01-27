@@ -1520,6 +1520,7 @@
   padding: var(--spacing-sm) var(--spacing-md);
   transition: all 0.2s ease;
   gap: var(--spacing-sm);
+  box-shadow: none;
 }
 
 .search-bar:focus-within {
@@ -1540,6 +1541,10 @@
   font-size: var(--font-body);
   color: var(--color-text-primary);
   padding: 0;
+  box-shadow: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 .search-input::placeholder {
