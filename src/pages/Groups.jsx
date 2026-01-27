@@ -164,6 +164,8 @@ const Groups = () => {
   });
   const [tagOptions, setTagOptions] = useState(null);
   const [tagStep, setTagStep] = useState(1); // Progressive disclosure
+  const [searchQuery, setSearchQuery] = useState(''); // Search state
+  const [filteredGroups, setFilteredGroups] = useState([]); // Filtered groups
 
   const subjects = [
     'Mathematics',
@@ -194,6 +196,22 @@ const Groups = () => {
       loadTagOptions();
     }
   }, [activeTab, user]);
+
+  // Filter groups based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredGroups(groups);
+    } else {
+      const query = searchQuery.toLowerCase();
+      const filtered = groups.filter(group =>
+        group.name.toLowerCase().includes(query) ||
+        group.description.toLowerCase().includes(query) ||
+        group.subject.toLowerCase().includes(query) ||
+        group.subjectTags?.some(tag => tag.toLowerCase().includes(query))
+      );
+      setFilteredGroups(filtered);
+    }
+  }, [searchQuery, groups]);
 
   // Click outside to exit actions mode
   useEffect(() => {
@@ -494,8 +512,37 @@ const Groups = () => {
       {activeTab === 'browse' && (
         <>
           <GroupRecommendations limit={6} />
+          
+          {/* Search Bar */}
+          <div className="search-section">
+            <div className="search-bar">
+              <Icons.search size={20} />
+              <input
+                type="text"
+                placeholder="Search groups by name, subject, or tags..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+              />
+              {searchQuery && (
+                <button
+                  className="clear-search"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear search"
+                >
+                  <FiX size={18} />
+                </button>
+              )}
+            </div>
+            {searchQuery && (
+              <p className="search-results-count">
+                Found {filteredGroups.length} group{filteredGroups.length !== 1 ? 's' : ''}
+              </p>
+            )}
+          </div>
+
           <div className="groups-grid">
-            {groups.map(group => {
+            {filteredGroups.map(group => {
               const isMember = user && group.members?.some(m => m._id === user.id);
 
               return (
