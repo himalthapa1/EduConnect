@@ -137,8 +137,8 @@ class RecommendationEngine:
         members_score = min(group['members_count'] / 100, 1.0)  # Cap at 100 members
         activity_score = min(group['activity_score'] / 1000, 1.0)  # Normalize activity
         
-        # No base score - groups must earn their popularity through members and activity
-        return (members_score * 0.6 + activity_score * 0.4)
+        # Small base score (0.1) to help new groups, but they still need interest match
+        return (members_score * 0.5 + activity_score * 0.3 + 0.1)
 
     def _get_cold_start_recommendations(self, user_data: Dict[str, Any], limit: int) -> List[Dict[str, Any]]:
         """Recommendations for new users based on interests and popularity"""

@@ -110,10 +110,10 @@ export const getGroupRecommendations = async (req, res) => {
         : 0;
 
       // Calculate popularity score based on members and activity
-      // No base score - groups must earn their popularity
+      // Small base score (0.1) to help new groups, but they still need interest match
       const membersScore = Math.min((group.members?.length || 0) / 100, 1.0);
       const activityScore = Math.min((group.activityScore || 0) / 1000, 1.0);
-      const popularityScore = (membersScore * 0.6) + (activityScore * 0.4);
+      const popularityScore = (membersScore * 0.5) + (activityScore * 0.3) + 0.1; // 0.1 base score
 
       // Apply required formula: finalScore = (interestSimilarity × 0.6) + (popularityScore × 0.4)
       const finalScore = (interestSimilarity * 0.6) + (popularityScore * 0.4);
