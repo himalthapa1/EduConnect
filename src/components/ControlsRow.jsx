@@ -1,5 +1,6 @@
 import React from 'react';
 import { Icons } from '../ui/icons';
+import { API_BASE_URL } from '../utils/api';
 import './ControlsRow.css';
 
 const ControlsRow = ({
@@ -16,11 +17,24 @@ const ControlsRow = ({
   onClosePdfDrawer
 }) => {
   const handleResourceClick = (resource) => {
+    console.log('Resource clicked:', resource);
+    console.log('API_BASE_URL:', API_BASE_URL);
+    console.log('Full URL:', `${API_BASE_URL}/${resource.file}`);
     onResourceClick(resource);
   };
 
   const closePdfDrawer = () => {
     onClosePdfDrawer();
+  };
+
+  const getResourceType = (resource) => {
+    if (resource.file) {
+      const fileName = resource.file.toLowerCase();
+      if (fileName.endsWith('.pdf')) return 'PDF';
+      if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.png') || fileName.endsWith('.gif')) return 'Image';
+      return 'File';
+    }
+    return 'Link';
   };
 
   return (
@@ -47,7 +61,7 @@ const ControlsRow = ({
                   >
                     <span className="resource-title">{resource.title}</span>
                     <span className="resource-type">
-                      {resource.file?.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Link'}
+                      {getResourceType(resource)}
                     </span>
                   </button>
                 ))
@@ -83,7 +97,7 @@ const ControlsRow = ({
         )}
       </div>
 
-      {/* PDF Drawer */}
+      {/* PDF/Image Drawer */}
       {showPdfDrawer && activePdf && (
         <div className="pdf-drawer">
           <div className="pdf-drawer-header">
@@ -91,19 +105,27 @@ const ControlsRow = ({
             <button
               className="pdf-close-btn"
               onClick={closePdfDrawer}
-              title="Close PDF (Esc)"
+              title="Close (Esc)"
             >
               <Icons.close size={18} />
             </button>
           </div>
           <div className="pdf-viewer">
-            <iframe
-              src={`/uploads/${activePdf.file}`}
-              title={activePdf.title}
-              width="100%"
-              height="100%"
-              style={{ border: 'none' }}
-            />
+            {activePdf.file?.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/) ? (
+              <img
+                src={`${API_BASE_URL}/${activePdf.file}`}
+                alt={activePdf.title}
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            ) : (
+              <iframe
+                src={`${API_BASE_URL}/${activePdf.file}`}
+                title={activePdf.title}
+                width="100%"
+                height="100%"
+                style={{ border: 'none', display: 'block' }}
+              />
+            )}
           </div>
         </div>
       )}
