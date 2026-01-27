@@ -11,9 +11,13 @@ export const getGroupRecommendations = async (req, res) => {
     const userId = req.user?.userId;
     const { limit = 10 } = req.query;
 
+    console.log('=== GET GROUP RECOMMENDATIONS ===');
+    console.log('User ID:', userId);
+
     // If not authenticated, return empty recommendations
     // (Users should log in to get personalized recommendations)
     if (!userId) {
+      console.log('No user ID - returning empty recommendations');
       return res.json({
         success: true,
         data: [],
@@ -23,6 +27,7 @@ export const getGroupRecommendations = async (req, res) => {
 
     // Try to call Python recommendation service first
     try {
+      console.log('Attempting to call Python service at:', RECOMMENDATION_SERVICE_URL);
       const response = await axios.post(
         `${RECOMMENDATION_SERVICE_URL}/api/recommendations/groups`,
         {
@@ -35,9 +40,11 @@ export const getGroupRecommendations = async (req, res) => {
       );
 
       let recommendations = response.data.recommendations || [];
+      console.log('Python service returned', recommendations.length, 'recommendations');
       
-      // Apply qualification rule: Only groups with finalScore >= 0.6
-      recommendations = recommendations.filter(rec => rec.score >= 0.6);
+      // Apply qualification rule: Only groups with finalScore >= 0.45 (45% threshold)
+      recommendations = recommendations.filter(rec => rec.score >= 0.45);
+      console.log('After 45% filter:', recommendations.length, 'recommendations');
       
       // Sort by score and limit to 6 groups maximum (as specified in requirements)
       recommendations = recommendations
@@ -49,7 +56,8 @@ export const getGroupRecommendations = async (req, res) => {
         data: recommendations
       });
     } catch (pythonError) {
-      console.log('Python service unavailable, using fallback recommendations');
+      console.log('Python service unavailable:', pythonError.message);
+      console.log('Using fallback recommendations');
     }
 
     // Fallback: Get basic recommendations from MongoDB
@@ -59,6 +67,7 @@ export const getGroupRecommendations = async (req, res) => {
     // Get user data
     const user = await User.findById(userId);
     if (!user) {
+      console.log('User not found in database');
       return res.json({
         success: true,
         data: []
@@ -68,6 +77,9 @@ export const getGroupRecommendations = async (req, res) => {
     const userInterests = user.preferences?.interests || [];
     const joinedGroups = user.joinedGroups || [];
 
+    console.log('User interests:', userInterests);
+    console.log('User joined groups:', joinedGroups.map(g => g.toString()));
+
     // Get public groups excluding already joined ones
     const groups = await StudyGroup.find({
       isPublic: true,
@@ -76,12 +88,21 @@ export const getGroupRecommendations = async (req, res) => {
     .sort({ activityScore: -1, members: -1 }) // Sort by activity and member count
     .limit(parseInt(limit));
 
+    console.log('Found', groups.length, 'groups (excluding joined)');
+
     // Calculate scores using the required formula: (interestSimilarity × 0.6) + (popularityScore × 0.4)
+    // Groups need 45% or higher to be recommended
     const recommendations = groups.map(group => {
       const groupTags = group.subjectTags || [];
+      
+      console.log(`\nGroup: ${group.name}`);
+      console.log('  Group tags:', groupTags);
+      
       const interestMatch = userInterests.filter(interest =>
         groupTags.some(tag => tag.toLowerCase().includes(interest.toLowerCase()))
       ).length;
+
+      console.log('  Interest matches:', interestMatch, 'out of', userInterests.length);
 
       // Calculate interest similarity (0-1)
       const interestSimilarity = userInterests.length > 0 
@@ -96,6 +117,10 @@ export const getGroupRecommendations = async (req, res) => {
       // Apply required formula: finalScore = (interestSimilarity × 0.6) + (popularityScore × 0.4)
       const finalScore = (interestSimilarity * 0.6) + (popularityScore * 0.4);
 
+      console.log('  Interest similarity:', interestSimilarity.toFixed(3));
+      console.log('  Popularity score:', popularityScore.toFixed(3));
+      console.log('  Final score:', finalScore.toFixed(3));
+
       return {
         group_id: group._id.toString(),
         name: group.name,
@@ -106,18 +131,24 @@ export const getGroupRecommendations = async (req, res) => {
       };
     });
 
-    // Apply qualification rule: Only groups with finalScore >= 0.6
+    // Apply qualification rule: Only groups with finalScore >= 0.45 (45% threshold)
     const qualifiedRecommendations = recommendations.filter(rec => {
-      console.log(`Group: ${rec.name}, Score: ${rec.score}, Pass: ${rec.score >= 0.6}`);
-      return rec.score >= 0.6;
+      const passes = rec.score >= 0.45;
+      console.log(`\n${rec.name}: Score ${rec.score} - ${passes ? 'PASS' : 'FAIL'}`);
+      return passes;
     });
     
-    console.log(`Total groups: ${recommendations.length}, Qualified: ${qualifiedRecommendations.length}`);
+    console.log(`\n=== SUMMARY ===`);
+    console.log(`Total groups evaluated: ${recommendations.length}`);
+    console.log(`Qualified (>= 45%): ${qualifiedRecommendations.length}`);
     
     // Sort by score and limit to 6 groups maximum
     const finalRecommendations = qualifiedRecommendations
       .sort((a, b) => b.score - a.score)
       .slice(0, 6);
+
+    console.log(`Final recommendations: ${finalRecommendations.length}`);
+    console.log('=== END ===\n');
 
     res.json({
       success: true,
