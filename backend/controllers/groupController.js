@@ -6,6 +6,7 @@ import { upload } from "../middleware/upload.js";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import NotificationService from "../services/notificationService.js";
 
 // Predefined tag options for semantic tagging
 export const TAG_OPTIONS = {
@@ -306,6 +307,9 @@ export const joinGroup = async (req, res) => {
       { $addToSet: { members: userId } }
     );
 
+    // Get user info for notification
+    const user = await User.findById(userId).select('username');
+
     // Update user tracking for recommendations
     await User.findByIdAndUpdate(userId, {
       $addToSet: { joinedGroups: group._id },
@@ -315,6 +319,18 @@ export const joinGroup = async (req, res) => {
     // Update group activity score (find fresh document to avoid validation issues)
     const updatedGroup = await StudyGroup.findById(groupId);
     await updatedGroup.updateActivityScore();
+
+    // Send notification to group creator
+    const io = req.app?.get('io');
+    if (io) {
+      await NotificationService.notifyGroupJoin(io, {
+        groupId: group._id,
+        groupName: group.name,
+        userId: userId,
+        userName: user.username,
+        creatorId: group.creator
+      });
+    }
 
     res.json({ success: true, message: "Joined group successfully" });
   } catch (error) {
@@ -533,6 +549,9 @@ export const addResource = [
 
       const resource = await GroupResource.create(resourceData);
 
+      // Get user info for notification
+      const user = await User.findById(userId).select('username');
+
       // Update user activity score for uploading resource
       await User.findByIdAndUpdate(userId, {
         $inc: { activityScore: 5 } // Uploading resource increases activity
@@ -540,6 +559,19 @@ export const addResource = [
 
       // Update group activity score
       await group.updateActivityScore();
+
+      // Notify group members about new resource
+      const io = req.app?.get('io');
+      if (io) {
+        await NotificationService.notifyResourceAdded(io, {
+          groupId: group._id,
+          groupName: group.name,
+          resourceTitle: title,
+          userId: userId,
+          userName: user.username,
+          members: group.members
+        });
+      }
 
       res.status(201).json({ success: true, data: { resource } });
     } catch (err) {

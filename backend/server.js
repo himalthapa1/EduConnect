@@ -18,6 +18,7 @@ import sessionRoutes from "./routes/sessions.js";
 import studyWithMeRoutes from "./routes/studyWithMe.js";
 import userRoutes from "./routes/users.js";
 import recommendationRoutes from "./routes/recommendations.js";
+import notificationRoutes from "./routes/notifications.js";
 import { registerChatHandlers } from "./sockets/chatSocket.js";
 
 /* =========================
@@ -172,6 +173,7 @@ let server;
     app.use("/api/study-with-me", studyWithMeRoutes);
     app.use("/api/users", userRoutes);
     app.use("/api/recommendations", recommendationRoutes);
+    app.use("/api/notifications", notificationRoutes);
 
     // 404 HANDLER
     app.use((req, res) => {
@@ -224,6 +226,7 @@ let server;
 
     // Export io instance for use in controllers
     global.io = io;
+    app.set('io', io);
 
     // Socket.IO authentication middleware
     io.use(async (socket, next) => {
@@ -249,7 +252,18 @@ let server;
 
     // Register chat handlers
     io.on('connection', (socket) => {
+      console.log(`User connected: ${socket.userId}`);
+      
+      // Join user-specific room for notifications
+      socket.join(`user:${socket.userId}`);
+      
+      // Register chat handlers
       registerChatHandlers(io, socket);
+      
+      // Handle disconnect
+      socket.on('disconnect', () => {
+        console.log(`User disconnected: ${socket.userId}`);
+      });
     });
 
     console.log('✅ Socket.IO server initialized');
