@@ -1,0 +1,223 @@
+EDUCONNECT - ENTITY RELATIONSHIP DIAGRAM (SIMPLE FORMAT)
+========================================================
+
+ENTITIES:
+---------
+
+1. USER
+   - _id (PK)
+   - username (Unique)
+   - email (Unique)
+   - password (Hashed)
+   - dateOfBirth
+   - collegeName
+   - currentYear
+   - preferences { interests[], skillsLevel, studyTimePreference[] }
+   - onboarding { completed }
+   - joinedGroups[] (FK → StudyGroup)
+   - attendedSessions[] (FK → Session)
+   - activityScore
+   - createdAt, updatedAt
+
+2. STUDY_GROUP
+   - _id (PK)
+   - name
+   - description
+   - subject
+   - tags { topics[], level, styles[], commitment[] }
+   - subjectTags[]
+   - difficulty
+   - creator (FK → User)
+   - members[] (FK → User)
+   - maxMembers
+   - isPublic
+   - activityScore
+   - ratings[] { user (FK), rating, ratedAt }
+   - averageRating
+   - popularityScore
+   - resources[] { title, url, description, type, creator (FK), isPublic, createdAt }
+   - createdAt, updatedAt
+
+3. SESSION
+   - _id (PK)
+   - title
+   - description
+   - subject
+   - date
+   - startTime, endTime
+   - location
+   - maxParticipants
+   - organizer (FK → User)
+   - group (FK → StudyGroup, Optional)
+   - participants[] { user (FK), joinedAt }
+   - status (scheduled/ongoing/completed/cancelled)
+   - notes
+   - resources[] { title, url, description, type, creator (FK), createdAt }
+   - completedAt
+   - isPublic
+   - createdAt, updatedAt
+
+4. GROUP_MESSAGE
+   - _id (PK)
+   - groupId (FK → StudyGroup)
+   - senderId (FK → User)
+   - content
+   - type (text/voice/poll)
+   - audioUrl (Optional)
+   - pollData { question, options[] { text, votes[] (FK → User) } }
+   - createdAt, updatedAt
+
+5. STUDY_WITH_ME_SESSION
+   - _id (PK)
+   - userId (FK → User)
+   - subject
+   - studyMinutes
+   - breakMinutes
+   - actualDuration
+   - startTime, endTime
+   - notes
+   - resources[] { title, resourceType, url, file }
+   - status (active/completed/paused)
+   - createdAt, updatedAt
+
+
+RELATIONSHIPS:
+--------------
+
+ONE-TO-MANY (1:N):
+------------------
+1. USER → STUDY_GROUP (creator)
+   One user creates many study groups
+   
+2. USER → SESSION (organizer)
+   One user organizes many sessions
+   
+3. STUDY_GROUP → SESSION (optional)
+   One study group has many sessions
+   
+4. STUDY_GROUP → GROUP_MESSAGE
+   One study group contains many messages
+   
+5. USER → GROUP_MESSAGE (sender)
+   One user sends many messages
+   
+6. USER → STUDY_WITH_ME_SESSION
+   One user creates many personal study sessions
+
+
+MANY-TO-MANY (M:N):
+-------------------
+1. USER ↔ STUDY_GROUP (members)
+   Users join multiple groups, groups have multiple members
+   Stored in: User.joinedGroups[] ↔ StudyGroup.members[]
+   
+2. USER ↔ SESSION (participants)
+   Users participate in multiple sessions, sessions have multiple participants
+   Stored in: User.attendedSessions[] ↔ Session.participants[]
+   
+3. USER ↔ STUDY_GROUP (ratings)
+   Users rate multiple groups, groups rated by multiple users
+   Stored in: StudyGroup.ratings[]
+   
+4. USER ↔ GROUP_MESSAGE (poll votes)
+   Users vote in multiple polls, polls have multiple voters
+   Stored in: GroupMessage.pollData.options[].votes[]
+
+
+VISUAL REPRESENTATION:
+----------------------
+
+                    ┌─────────────┐
+                    │    USER     │
+                    │   (Central) │
+                    └──────┬──────┘
+                           │
+        ┌──────────────────┼──────────────────┐
+        │                  │                  │
+        │ creates          │ joins            │ organizes
+        │ (1:N)            │ (M:N)            │ (1:N)
+        │                  │                  │
+        ▼                  ▼                  ▼
+┌───────────────┐  ┌───────────────┐  ┌──────────────┐
+│ STUDY_GROUP   │  │ STUDY_GROUP   │  │   SESSION    │
+│               │  │               │  │              │
+│ • creator     │  │ • members[]   │  │ • organizer  │
+│ • members[]   │  │               │  │ • group (FK) │
+│ • ratings[]   │  │               │  │ • parts[]    │
+└───────┬───────┘  └───────────────┘  └──────────────┘
+        │                                      ▲
+        │ contains (1:N)                       │
+        │                                      │ participates (M:N)
+        ▼                                      │
+┌───────────────┐                      ┌──────┴──────┐
+│ GROUP_MESSAGE │                      │    USER     │
+│               │                      │             │
+│ • groupId     │                      │ • attended  │
+│ • senderId    │                      │   Sessions[]│
+│ • pollData    │                      └─────────────┘
+└───────────────┘
+
+        ┌─────────────┐
+        │    USER     │
+        └──────┬──────┘
+               │
+               │ creates (1:N)
+               │
+               ▼
+┌──────────────────────┐
+│ STUDY_WITH_ME_SESSION│
+│                      │
+│ • userId             │
+│ • subject            │
+│ • status             │
+└──────────────────────┘
+
+
+CARDINALITY NOTATION:
+---------------------
+1:1   = One-to-One
+1:N   = One-to-Many
+M:N   = Many-to-Many
+PK    = Primary Key
+FK    = Foreign Key
+
+
+KEY DESIGN DECISIONS:
+---------------------
+1. Embedded vs Referenced:
+   - Resources embedded in StudyGroup and Session (faster access)
+   - Members referenced (avoid document size limits)
+   - Ratings embedded in StudyGroup (atomic updates)
+
+2. Denormalization:
+   - activityScore stored directly (fast queries)
+   - averageRating calculated and stored (avoid aggregation)
+   - Member arrays duplicated (bidirectional access)
+
+3. Indexes:
+   - Unique: email, username
+   - Compound: (date, startTime), (groupId, createdAt)
+   - Single: creator, organizer, groupId, userId
+
+
+RECOMMENDATION SYSTEM DATA FLOW:
+---------------------------------
+1. User.preferences.interests[] → Content-based filtering
+2. StudyGroup.subjectTags[] → Content matching (TF-IDF)
+3. StudyGroup.members[] → Collaborative filtering (Jaccard)
+4. StudyGroup.activityScore → Popularity scoring
+5. User.joinedGroups[] → Exclude already joined groups
+6. User.activityScore → Determine cold start vs active user
+
+
+MONGODB CONSIDERATIONS:
+-----------------------
+- Document size limit: 16MB
+- Arrays monitored for growth
+- Atomic operations for embedded documents
+- Transactions for multi-document updates
+- Indexes for common query patterns
+
+
+Generated: 2024
+Project: EduConnect Study Group Platform

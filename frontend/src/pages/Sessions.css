@@ -1,0 +1,217 @@
+.sessions-container {
+  padding: var(--spacing-lg);
+  background: var(--color-surface-muted);
+  min-height: calc(100vh - var(--spacing-xl));
+}
+
+.sessions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-surface);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-radius: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-lg);
+}
+
+.sessions-header h1 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-page-title);
+  font-weight: 600;
+}
+
+.create-session-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--spacing-sm);
+  font-size: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.create-session-btn:hover {
+  background: #0b7c6f;
+}
+
+.sessions-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: var(--spacing-xl);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--spacing-sm);
+  padding: var(--spacing-xs);
+  border: 1px solid var(--color-border);
+}
+
+.tab {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: transparent;
+  border: none;
+  border-radius: var(--spacing-sm);
+  color: var(--color-text-secondary);
+  font-size: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: var(--color-primary);
+  color: white;
+  font-weight: 600;
+}
+
+.tab:hover:not(.active) {
+  background: rgba(13, 148, 136, 0.05);
+  color: var(--color-primary);
+}
+
+.filters-section {
+  background: var(--color-surface);
+  padding: var(--spacing-lg);
+  border-radius: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+  border: 1px solid var(--color-border);
+}
+
+.filters {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filters input {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--spacing-sm);
+  font-size: var(--font-body);
+  outline: none;
+}
+
+.filters input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus);
+}
+
+.filter-btn, .clear-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: none;
+  border-radius: var(--spacing-sm);
+  font-size: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.filter-btn {
+  background: var(--color-primary);
+  color: white;
+}
+
+.filter-btn:hover {
+  background: #0b7c6f;
+}
+
+.clear-btn {
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+.clear-btn:hover {
+  background: var(--color-border);
+}
+
+.sessions-content {
+  background: var(--color-surface);
+  border-radius: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--color-border);
+  min-height: 400px;
+}
+
+.sessions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.no-sessions {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-body);
+  padding: var(--spacing-xl) var(--spacing-lg);
+  grid-column: 1 / -1;
+}
+
+.loading {
+  text-align: center;
+  color: var(--color-text-primary);
+  font-size: var(--font-body);
+  padding: 100px var(--spacing-lg);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .sessions-container {
+    padding: 16px;
+  }
+
+  .sessions-header {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .sessions-header h1 {
+    font-size: 20px;
+  }
+
+  .sessions-tabs {
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .tab {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .tab-content {
+    padding: 20px;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters input,
+  .filter-btn,
+  .clear-btn {
+    width: 100%;
+  }
+
+  .sessions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .sessions-container {
+    padding: 15px;
+  }
+
+  .sessions-header {
+    padding: 16px;
+  }
+
+  .sessions-content {
+    padding: 16px;
+  }
+}
