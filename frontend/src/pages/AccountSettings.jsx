@@ -43,6 +43,8 @@ const AccountSettings = () => {
   const [editing, setEditing] = useState(false);
   const [editingPreferences, setEditingPreferences] = useState(false);
   const [selectedInterests, setSelectedInterests] = useState(user?.preferences?.interests || []);
+  const [profilePicture, setProfilePicture] = useState(user?.profilePicture || null);
+  const [uploadingPicture, setUploadingPicture] = useState(false);
   const [form, setForm] = useState({
     username: user?.username || '',
     email: user?.email || '',
@@ -59,6 +61,55 @@ const AccountSettings = () => {
   });
 
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+
+  const handleProfilePictureChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setMessage('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage('Image size must be less than 5MB');
+      return;
+    }
+
+    setUploadingPicture(true);
+    setMessage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('profilePicture', file);
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3004'}/api/users/profile-picture`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setProfilePicture(data.data.profilePicture);
+        setMessage('Profile picture updated successfully');
+        // Refresh user data
+        await verifyToken();
+      } else {
+        setMessage(data.error || 'Failed to upload profile picture');
+      }
+    } catch (err) {
+      setMessage('Failed to upload profile picture');
+    } finally {
+      setUploadingPicture(false);
+      setTimeout(() => setMessage(null), 3000);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -286,10 +337,31 @@ const AccountSettings = () => {
             <>
               {/* Profile Header */}
               <div className="profile-header">
-                <div className="avatar">{(user?.username || 'U').charAt(0).toUpperCase()}</div>
+                <div className="avatar-container">
+                  {profilePicture || user?.profilePicture ? (
+                    <img 
+                      src={`${import.meta.env.VITE_API_URL || 'http://localhost:3004'}${profilePicture || user?.profilePicture}`} 
+                      alt="Profile" 
+                      className="avatar-image"
+                    />
+                  ) : (
+                    <div className="avatar">{(user?.username || 'U').charAt(0).toUpperCase()}</div>
+                  )}
+                  <label className="avatar-upload-btn" title="Change profile picture">
+                    <Icons.camera size={16} />
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleProfilePictureChange}
+                      disabled={uploadingPicture}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </div>
                 <div>
                   <h2>{user?.username || 'User'}</h2>
                   <p className="muted">{user?.email || ''}</p>
+                  {uploadingPicture && <p className="muted">Uploading...</p>}
                 </div>
               </div>
 

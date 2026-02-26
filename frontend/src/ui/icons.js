@@ -50,6 +50,7 @@ export const Icons = {
 
   // User Management
   userRemove: Lu.LuUserMinus,
+  camera: Lu.LuCamera,
 
   // Chat features
   mic: LuMic,
