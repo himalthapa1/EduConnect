@@ -82,6 +82,17 @@
   margin-bottom: var(--spacing-xl);
 }
 
+/* Focus and Calendar Section */
+.focus-calendar-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.focus-calendar-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+}
+
 /* Primary Focus Card */
 .focus-card {
   background: var(--color-surface);
@@ -386,6 +397,10 @@
   
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .focus-calendar-grid {
+    grid-template-columns: 1fr;
   }
 }
 
