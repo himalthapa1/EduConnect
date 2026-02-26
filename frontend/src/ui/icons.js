@@ -39,7 +39,7 @@ export const Icons = {
   filter: Lu.LuFilter,
   chevronDown: Lu.LuChevronDown,
   chevronRight: Lu.LuChevronRight,
-  more: Lu.LuMoreHorizontal,
+  // more: Lu.LuMoreHorizontal, // Not available in this version
   trendingUp: Lu.LuTrendingUp,
   lock: Lu.LuLock,
   maximize: Lu.LuMaximize,
