@@ -179,6 +179,8 @@ const EventTracker = () => {
 
   const renderDayView = () => {
     const dayEvents = getEventsForDate(selectedDate);
+    console.log('Day View - Selected Date:', selectedDate);
+    console.log('Day View - Events:', dayEvents);
     
     return (
       <div className="day-view">
@@ -366,6 +368,7 @@ const EventTracker = () => {
       </div>
 
       <div className="tracker-content">
+        {console.log('Current View:', currentView)}
         {currentView === 'D' && renderDayView()}
         {currentView === 'W' && renderWeekView()}
         {currentView === 'M' && renderMonthView()}
