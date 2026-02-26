@@ -29,7 +29,7 @@ const StudyAnalytics = () => {
 
   if (loading) {
     return (
-      <div className="analytics-container">
+      <div className="analytics-section">
         <div className="analytics-loading">Loading analytics...</div>
       </div>
     );
@@ -37,7 +37,7 @@ const StudyAnalytics = () => {
 
   if (error) {
     return (
-      <div className="analytics-container">
+      <div className="analytics-section">
         <div className="analytics-error">{error}</div>
       </div>
     );
@@ -48,165 +48,150 @@ const StudyAnalytics = () => {
   const { overview, thisWeek, studyHoursByDay, topSubjects, recentActivity } = analytics;
 
   return (
-    <div className="analytics-container">
-      <div className="analytics-header">
-        <h2><Icons.trendingUp size={24} /> Your Study Analytics</h2>
-        <p>Track your progress and stay motivated</p>
+    <section className="analytics-section">
+      {/* Section Header */}
+      <div className="analytics-section-header">
+        <h2>
+          <Icons.trendingUp size={20} />
+          Your Study Analytics
+        </h2>
       </div>
 
-      {/* Overview Stats */}
-      <div className="analytics-overview">
-        <div className="analytics-stat-card">
-          <div className="stat-icon study-hours">
-            <Icons.clock size={24} />
+      {/* Row 1: Summary Cards (4 equal columns) */}
+      <div className="analytics-row-1">
+        <div className="analytics-summary-card">
+          <div className="summary-card-icon study-hours">
+            <Icons.clock size={20} />
           </div>
-          <div className="stat-details">
-            <h3>{overview.totalStudyHours}h</h3>
-            <p>Total Study Hours</p>
-          </div>
-        </div>
-
-        <div className="analytics-stat-card">
-          <div className="stat-icon sessions">
-            <Icons.calendar size={24} />
-          </div>
-          <div className="stat-details">
-            <h3>{overview.totalStudySessions}</h3>
-            <p>Study Sessions</p>
+          <div className="summary-card-content">
+            <div className="summary-card-value">{overview.totalStudyHours}h</div>
+            <div className="summary-card-label">Total Study Hours</div>
           </div>
         </div>
 
-        <div className="analytics-stat-card">
-          <div className="stat-icon groups">
-            <Icons.users size={24} />
+        <div className="analytics-summary-card">
+          <div className="summary-card-icon study-sessions">
+            <Icons.calendar size={20} />
           </div>
-          <div className="stat-details">
-            <h3>{overview.totalGroups}</h3>
-            <p>Study Groups</p>
+          <div className="summary-card-content">
+            <div className="summary-card-value">{overview.totalStudySessions}</div>
+            <div className="summary-card-label">Study Sessions</div>
           </div>
         </div>
 
-        <div className="analytics-stat-card">
-          <div className="stat-icon streak">
-            <Icons.fire size={24} />
+        <div className="analytics-summary-card">
+          <div className="summary-card-icon groups">
+            <Icons.users size={20} />
           </div>
-          <div className="stat-details">
-            <h3>{overview.currentStreak}</h3>
-            <p>Day Streak</p>
+          <div className="summary-card-content">
+            <div className="summary-card-value">{overview.totalGroups}</div>
+            <div className="summary-card-label">Groups Joined</div>
           </div>
         </div>
-      </div>
 
-      {/* This Week Summary */}
-      <div className="analytics-week-summary">
-        <h3>This Week</h3>
-        <div className="week-stats">
-          <div className="week-stat">
-            <span className="week-stat-value">{thisWeek.studyHours}h</span>
-            <span className="week-stat-label">Study Hours</span>
+        <div className="analytics-summary-card">
+          <div className="summary-card-icon streak">
+            <Icons.fire size={20} />
           </div>
-          <div className="week-stat">
-            <span className="week-stat-value">{thisWeek.studySessions}</span>
-            <span className="week-stat-label">Study Sessions</span>
-          </div>
-          <div className="week-stat">
-            <span className="week-stat-value">{thisWeek.groupsJoined}</span>
-            <span className="week-stat-label">Groups Joined</span>
-          </div>
-          <div className="week-stat">
-            <span className="week-stat-value">{thisWeek.sessionsAttended}</span>
-            <span className="week-stat-label">Group Sessions</span>
+          <div className="summary-card-content">
+            <div className="summary-card-value">{overview.currentStreak}</div>
+            <div className="summary-card-label">Day Streak</div>
           </div>
         </div>
       </div>
 
-      {/* Activity Chart */}
-      <div className="analytics-chart-section">
-        <h3>Study Hours (Last 7 Days)</h3>
-        <ActivityChart data={studyHoursByDay} />
+      {/* Row 2: Weekly Stats Card (Full Width) */}
+      <div className="analytics-row-2">
+        <div className="analytics-weekly-card">
+          <h3>This Week</h3>
+          <div className="weekly-stats-grid">
+            <div className="weekly-stat">
+              <div className="weekly-stat-value">{thisWeek.studyHours}h</div>
+              <div className="weekly-stat-label">Study Hours</div>
+            </div>
+            <div className="weekly-stat-divider"></div>
+            <div className="weekly-stat">
+              <div className="weekly-stat-value">{thisWeek.studySessions}</div>
+              <div className="weekly-stat-label">Study Sessions</div>
+            </div>
+            <div className="weekly-stat-divider"></div>
+            <div className="weekly-stat">
+              <div className="weekly-stat-value">{thisWeek.groupsJoined}</div>
+              <div className="weekly-stat-label">Groups Joined</div>
+            </div>
+            <div className="weekly-stat-divider"></div>
+            <div className="weekly-stat">
+              <div className="weekly-stat-value">{thisWeek.sessionsAttended}</div>
+              <div className="weekly-stat-label">Group Sessions</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Study With Me Stats */}
-      <div className="analytics-study-stats">
-        <div className="study-stat-card">
+      {/* Row 3: Study Hours Chart (Full Width) */}
+      <div className="analytics-row-3">
+        <div className="analytics-chart-card">
+          <h3>Study Hours (Last 7 Days)</h3>
+          <div className="chart-container">
+            <ActivityChart data={studyHoursByDay} />
+          </div>
+        </div>
+      </div>
+
+      {/* Row 4: Performance Metrics (3 equal cards) */}
+      <div className="analytics-row-4">
+        <div className="analytics-metric-card">
           <h3>Average Session</h3>
-          <div className="study-stat-value">{overview.avgSessionDuration}h</div>
-          <p>per study session</p>
+          <div className="metric-value">{overview.avgSessionDuration}h</div>
+          <div className="metric-label">per study session</div>
         </div>
-        <div className="study-stat-card">
+
+        <div className="analytics-metric-card">
           <h3>Total Sessions</h3>
-          <div className="study-stat-value">{overview.totalStudySessions}</div>
-          <p>completed</p>
+          <div className="metric-value">{overview.totalStudySessions}</div>
+          <div className="metric-label">completed</div>
+        </div>
+
+        <div className="analytics-metric-card">
+          <h3>Activity Score</h3>
+          <div className="metric-value">{overview.activityScore}</div>
+          <div className="metric-label">engagement points</div>
         </div>
       </div>
 
-      {/* Top Subjects */}
+      {/* Row 5: Streak Card (Centered) */}
+      <div className="analytics-row-5">
+        <div className="analytics-streak-card">
+          <div className="streak-icon">
+            <Icons.fire size={32} />
+          </div>
+          <div className="streak-content">
+            <div className="streak-value">{overview.longestStreak}</div>
+            <div className="streak-label">Longest Streak</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Top Subjects (Optional - if data exists) */}
       {topSubjects && topSubjects.length > 0 && (
-        <div className="analytics-subjects">
-          <h3>Most Studied Subjects</h3>
-          <div className="subjects-list">
-            {topSubjects.map((item, index) => (
-              <div key={index} className="subject-item">
-                <div className="subject-rank">{index + 1}</div>
-                <div className="subject-info">
-                  <span className="subject-name">{item.subject}</span>
-                  <span className="subject-count">{item.count} sessions</span>
+        <div className="analytics-subjects-row">
+          <div className="analytics-subjects-card">
+            <h3>Most Studied Subjects</h3>
+            <div className="subjects-grid">
+              {topSubjects.map((item, index) => (
+                <div key={index} className="subject-item">
+                  <div className="subject-rank">{index + 1}</div>
+                  <div className="subject-info">
+                    <span className="subject-name">{item.subject}</span>
+                    <span className="subject-count">{item.count} sessions</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}
-
-      {/* Additional Stats */}
-      <div className="analytics-additional">
-        <div className="additional-stat">
-          <Icons.message size={20} />
-          <div>
-            <h4>{overview.messagesSent}</h4>
-            <p>Messages Sent</p>
-          </div>
-        </div>
-        <div className="additional-stat">
-          <Icons.file size={20} />
-          <div>
-            <h4>{overview.resourcesShared}</h4>
-            <p>Resources Shared</p>
-          </div>
-        </div>
-        <div className="additional-stat">
-          <Icons.star size={20} />
-          <div>
-            <h4>{overview.activityScore}</h4>
-            <p>Activity Score</p>
-          </div>
-        </div>
-        <div className="additional-stat">
-          <Icons.fire size={20} />
-          <div>
-            <h4>{overview.longestStreak}</h4>
-            <p>Longest Streak</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Study Sessions */}
-      {recentActivity.recentStudySessions && recentActivity.recentStudySessions.length > 0 && (
-        <div className="analytics-recent">
-          <h3>Recent Study Sessions</h3>
-          <div className="recent-sessions-list">
-            {recentActivity.recentStudySessions.map((session, index) => (
-              <div key={index} className="recent-session">
-                <div className="recent-session-info">
-                  <h4>{session.subject}</h4>
-                  <p>{session.duration}h • {new Date(session.date).toLocaleDateString()}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    </section>
   );
 };
 
