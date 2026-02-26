@@ -454,6 +454,22 @@ export const completeSession = async (req, res) => {
 
     await session.populate('organizer participants.user', 'username email');
 
+    // Notify all participants that session is completed
+    const io = req.app.get('io');
+    if (io) {
+      const participantIds = session.participants.map(p => p.user._id);
+      if (participantIds.length > 0) {
+        const NotificationService = (await import('../services/notificationService.js')).default;
+        await NotificationService.notifySystem(io, {
+          userId: participantIds,
+          title: 'Session Completed',
+          message: `"${session.title}" has been completed. Check out the session notes!`,
+          link: `/sessions/${session._id}`,
+          priority: 'medium'
+        });
+      }
+    }
+
     res.json({
       success: true,
       message: 'Session completed successfully',

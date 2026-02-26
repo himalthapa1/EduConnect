@@ -10,7 +10,16 @@ class NotificationService {
       
       // Emit to specific user via Socket.IO
       if (io) {
-        io.to(`user:${data.recipient}`).emit('notification', {
+        const recipientId = data.recipient.toString(); // Ensure it's a string
+        const roomName = `user:${recipientId}`;
+        console.log(`📤 Emitting notification to room: ${roomName}`);
+        console.log(`📤 Notification data:`, {
+          type: notification.type,
+          title: notification.title,
+          message: notification.message
+        });
+        
+        io.to(roomName).emit('notification', {
           notification: notification.toObject(),
           unreadCount: await Notification.getUnreadCount(data.recipient)
         });
@@ -226,14 +235,30 @@ class NotificationService {
    * System notification
    */
   static async notifySystem(io, { userId, title, message, link, priority = 'medium' }) {
-    return this.createNotification(io, {
-      recipient: userId,
+    // Handle both single user and array of users
+    const userIds = Array.isArray(userId) ? userId : [userId];
+    
+    const notifications = userIds.map(uid => ({
+      recipient: uid,
       type: 'system',
       title,
       message,
       link,
       priority
-    });
+    }));
+
+    const created = await Notification.insertMany(notifications);
+    
+    if (io) {
+      for (const notification of created) {
+        io.to(`user:${notification.recipient}`).emit('notification', {
+          notification: notification.toObject(),
+          unreadCount: await Notification.getUnreadCount(notification.recipient)
+        });
+      }
+    }
+    
+    return created;
   }
 
   /**

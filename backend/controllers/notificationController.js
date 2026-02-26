@@ -245,3 +245,46 @@ export const updatePreferences = async (req, res) => {
     });
   }
 };
+
+/**
+ * Create test notification (for debugging)
+ */
+export const createTestNotification = async (req, res) => {
+  try {
+    console.log('Creating test notification for user:', req.user.userId);
+    
+    const io = req.app.get('io');
+    if (!io) {
+      console.error('Socket.IO instance not found!');
+      return res.status(500).json({
+        success: false,
+        error: { message: 'Socket.IO not initialized' }
+      });
+    }
+    
+    const NotificationService = (await import('../services/notificationService.js')).default;
+    
+    const notification = await NotificationService.createNotification(io, {
+      recipient: req.user.userId,
+      type: 'system',
+      title: 'Test Notification',
+      message: 'This is a test notification to verify the system is working correctly!',
+      link: '/dashboard',
+      priority: 'high'
+    });
+    
+    console.log('Test notification created:', notification);
+    
+    res.json({
+      success: true,
+      message: 'Test notification created successfully',
+      data: { notification }
+    });
+  } catch (error) {
+    console.error('Create test notification error:', error);
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to create test notification', details: error.message }
+    });
+  }
+};

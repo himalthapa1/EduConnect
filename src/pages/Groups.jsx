@@ -78,9 +78,22 @@ const GroupDetailModal = ({ group, isOpen, onClose, onLeaveGroup, sessions, onJo
                     <div className="session-info">
                       <h4>{session.title}</h4>
                       <div className="session-details">
-                        📅 {formatDate(session.date)} • 🕐 {formatTime(session.startTime)} - {formatTime(session.endTime)}
-                        <br />
-                        📍 {session.location} • 👥 {session.participants.length}/{session.maxParticipants} joined
+                        <div className="session-detail-row">
+                          <Icons.calendar size={14} />
+                          <span>{formatDate(session.date)}</span>
+                        </div>
+                        <div className="session-detail-row">
+                          <Icons.clock size={14} />
+                          <span>{formatTime(session.startTime)} - {formatTime(session.endTime)}</span>
+                        </div>
+                        <div className="session-detail-row">
+                          <Icons.file size={14} />
+                          <span>{session.location}</span>
+                        </div>
+                        <div className="session-detail-row">
+                          <Icons.users size={14} />
+                          <span>{session.participants.length}/{session.maxParticipants} joined</span>
+                        </div>
                       </div>
                     </div>
                     <div className="session-actions">

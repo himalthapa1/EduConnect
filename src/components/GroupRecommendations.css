@@ -141,6 +141,9 @@
 
 /* Recommendation Badge */
 .recommendation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.8rem;
   font-weight: 700;
   text-align: center;
@@ -152,6 +155,12 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.rating-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* Explanation Text */

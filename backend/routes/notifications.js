@@ -7,7 +7,8 @@ import {
   deleteNotification,
   deleteAllRead,
   getPreferences,
-  updatePreferences
+  updatePreferences,
+  createTestNotification
 } from '../controllers/notificationController.js';
 import { authenticateToken } from '../middleware/auth.js';
 
@@ -16,6 +17,9 @@ const router = express.Router();
 // All routes require authentication
 router.use(authenticateToken);
 
+// Test notification (for debugging)
+router.post('/test', createTestNotification);
+
 // Get notifications
 router.get('/', getNotifications);
 
@@ -23,10 +27,10 @@ router.get('/', getNotifications);
 router.get('/unread-count', getUnreadCount);
 
 // Mark notification as read
-router.patch('/:notificationId/read', markAsRead);
+router.put('/:notificationId/read', markAsRead);
 
 // Mark all as read
-router.patch('/mark-all-read', markAllAsRead);
+router.put('/read-all', markAllAsRead);
 
 // Delete notification
 router.delete('/:notificationId', deleteNotification);

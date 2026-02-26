@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import { useMobileMenu } from '../components/Layout';
 import { useNavigate } from 'react-router-dom';
 import { sessionsAPI, groupsAPI } from '../utils/api';
 import { Icons } from '../ui/icons';
 import { HiMenu } from 'react-icons/hi';
+import { FaBell } from 'react-icons/fa';
+import NotificationBell from '../components/NotificationBell';
 import GroupRecommendations from '../components/GroupRecommendations';
 import TrendingGroups from '../components/TrendingGroups';
 import TodaysFocus from '../components/TodaysFocus';
@@ -13,8 +16,16 @@ import './Dashboard.css';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
+  const { socket } = useSocket();
   const { toggleMobileMenu } = useMobileMenu();
   const navigate = useNavigate();
+
+  // Debug: Log user object to see what properties it has
+  useEffect(() => {
+    console.log('Dashboard: User object:', user);
+    console.log('Dashboard: User ID:', user?.id);
+    console.log('Dashboard: User _id:', user?._id);
+  }, [user]);
   const [stats, setStats] = useState({
     totalSessions: 0,
     upcomingSessions: 0,
@@ -114,8 +125,10 @@ const Dashboard = () => {
           <p className="header-subtitle">Welcome back, {user?.username}!</p>
         </div>
         <div className="header-actions">
+          <NotificationBell socket={socket} userId={user?.id || user?._id} />
           <button onClick={handleCreateSession} className="create-session-btn">
-            + New Session
+            <Icons.calendar size={18} />
+            New Session
           </button>
         </div>
       </header>

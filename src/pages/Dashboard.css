@@ -49,7 +49,35 @@
 
 .header-actions {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+/* Notification bell in dashboard header */
+.header-actions .notification-bell-container {
+  position: relative;
+}
+
+.header-actions .notification-bell-button {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--spacing-sm);
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  height: 44px;
+  width: 44px;
+}
+
+.header-actions .notification-bell-button:hover {
+  background: var(--color-surface-muted);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .create-session-btn {
@@ -60,6 +88,10 @@
   border-radius: var(--spacing-sm);
   font-weight: 600;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: background 0.2s;
 }
 
 .create-session-btn:hover {

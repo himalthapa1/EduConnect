@@ -142,6 +142,21 @@ export const sendTextMessage = async (req, res) => {
       global.io.to(roomId).emit('new-message', messageData);
     }
 
+    // Send notification to group members (except sender)
+    const io = req.app?.get('io');
+    if (io) {
+      const NotificationService = (await import('../services/notificationService.js')).default;
+      const messagePreview = content.length > 50 ? content.substring(0, 50) + '...' : content;
+      await NotificationService.notifyGroupMessage(io, {
+        groupId: group._id,
+        groupName: group.name,
+        senderId: userId,
+        senderName: message.sender.username,
+        members: group.members,
+        messagePreview
+      });
+    }
+
     res.status(201).json({
       success: true,
       data: { message }

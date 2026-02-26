@@ -252,17 +252,22 @@ let server;
 
     // Register chat handlers
     io.on('connection', (socket) => {
-      console.log(`User connected: ${socket.userId}`);
+      const roomName = `user:${socket.userId}`;
+      console.log(`👤 User connected: ${socket.userId}`);
+      console.log(`🚪 Joining room: ${roomName}`);
       
       // Join user-specific room for notifications
-      socket.join(`user:${socket.userId}`);
+      socket.join(roomName);
+      
+      // Verify room membership
+      console.log(`✅ User ${socket.userId} joined rooms:`, Array.from(socket.rooms));
       
       // Register chat handlers
       registerChatHandlers(io, socket);
       
       // Handle disconnect
       socket.on('disconnect', () => {
-        console.log(`User disconnected: ${socket.userId}`);
+        console.log(`👋 User disconnected: ${socket.userId}`);
       });
     });
 

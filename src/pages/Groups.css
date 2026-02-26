@@ -156,9 +156,12 @@
 }
 
 .members-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: #dcfce7;
   color: #166534;
-  padding: 4px 12px;
+  padding: 8px 14px;
   border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 600;
@@ -167,9 +170,6 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 
 .members-badge:hover {
@@ -292,11 +292,13 @@
 }
 
 .subject-badge {
+  display: inline-flex;
+  align-items: center;
   background: var(--color-accent-light);
   color: var(--color-accent-darker);
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -515,6 +517,29 @@
   margin: 0;
 }
 
+.empty-state .empty-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 8px 16px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.empty-state .empty-cta:hover {
+  background: #0b7c6f;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(13, 148, 136, 0.3);
+}
+
 /* Loading State */
 .loading {
   text-align: center;
@@ -583,8 +608,18 @@
   }
 
   .subject-badge {
-    padding: 4px 8px;
-    font-size: 0.75rem;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
+  .members-badge {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
+  .members-count {
+    padding: 6px 12px;
+    font-size: 0.8rem;
   }
 }
 
@@ -884,23 +919,42 @@
 
 .group-stats {
   display: flex;
-  gap: 16px;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
 .members-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: #dcfce7;
   color: #166534;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.members-count:hover {
+  background: #bbf7d0;
+  transform: translateY(-1px);
+}
+
+.members-count.clickable {
+  cursor: pointer;
 }
 
 .subject-badge {
+  display: inline-flex;
+  align-items: center;
   background: #dbeafe;
   color: #1e40af;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 600;
@@ -955,26 +1009,45 @@
 .session-details {
   color: #6b7280;
   font-size: 0.875rem;
-  line-height: 1.4;
+  line-height: 1.8;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.session-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.session-detail-row svg {
+  flex-shrink: 0;
+  color: var(--color-primary);
 }
 
 .session-actions {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
   flex-shrink: 0;
+  min-width: 100px;
 }
 
 .btn-complete-session,
 .btn-leave-session,
 .btn-join-session {
-  padding: 8px 12px;
+  padding: 8px 16px;
   border: none;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 80px;
+  text-align: center;
 }
 
 .btn-complete-session {
