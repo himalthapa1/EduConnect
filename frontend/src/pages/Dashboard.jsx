@@ -11,6 +11,7 @@ import GroupRecommendations from '../components/GroupRecommendations';
 import TrendingGroups from '../components/TrendingGroups';
 import TodaysFocus from '../components/TodaysFocus';
 import EventTracker from '../components/EventTracker';
+import StudyStreakCard from '../components/StudyStreakCard';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -175,12 +176,11 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {/* Split Focus and Calendar Section */}
-        <section className="focus-calendar-section">
-          <div className="focus-calendar-grid">
-            <TodaysFocus />
-            <EventTracker />
-          </div>
+        {/* Three Square Sections: Today's Focus, Streak Score, Calendar */}
+        <section className="three-section-grid">
+          <TodaysFocus />
+          <StudyStreakCard />
+          <EventTracker />
         </section>
 
         <div className="dashboard-content">

@@ -245,29 +245,10 @@ const Register = () => {
                 id="dateOfBirth"
                 className={`form-input ${errors.dateOfBirth ? 'error' : ''}`}
                 value={formData.dateOfBirth}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  // Validate year is 4 digits
-                  if (value) {
-                    const year = value.split('-')[0];
-                    if (year && year.length === 4) {
-                      handleInputChange('dateOfBirth', value);
-                    }
-                  } else {
-                    handleInputChange('dateOfBirth', value);
-                  }
-                }}
+                onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
                 disabled={isLoading}
                 min="1900-01-01"
                 max="9999-12-31"
-                onKeyDown={(e) => {
-                  // Prevent typing more than 4 digits in year
-                  const input = e.target;
-                  const value = input.value;
-                  if (value && value.split('-')[0]?.length >= 4 && e.key >= '0' && e.key <= '9' && input.selectionStart <= 4) {
-                    e.preventDefault();
-                  }
-                }}
               />
               {errors.dateOfBirth && (
                 <span className="field-error">{errors.dateOfBirth}</span>

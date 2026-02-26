@@ -1,10 +1,4 @@
 import User from '../models/User.js';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Set user preferences (onboarding)
 export const setPreferences = async (req, res) => {
@@ -129,6 +123,139 @@ export const changePassword = async (req, res) => {
   }
 };
 
+
+// Update study streak
+export const updateStudyStreak = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized'
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lastStudyDate = user.studyStreak?.lastStudyDate 
+      ? new Date(user.studyStreak.lastStudyDate) 
+      : null;
+
+    if (lastStudyDate) {
+      lastStudyDate.setHours(0, 0, 0, 0);
+    }
+
+    // Check if already studied today
+    if (lastStudyDate && lastStudyDate.getTime() === today.getTime()) {
+      return res.json({
+        success: true,
+        message: 'Streak already updated today',
+        data: {
+          studyStreak: user.studyStreak
+        }
+      });
+    }
+
+    // Initialize studyStreak if it doesn't exist
+    if (!user.studyStreak) {
+      user.studyStreak = {
+        currentStreak: 0,
+        longestStreak: 0,
+        lastStudyDate: null
+      };
+    }
+
+    // Check if streak continues (yesterday)
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (lastStudyDate && lastStudyDate.getTime() === yesterday.getTime()) {
+      // Continue streak
+      user.studyStreak.currentStreak += 1;
+    } else if (!lastStudyDate || lastStudyDate.getTime() < yesterday.getTime()) {
+      // Reset streak
+      user.studyStreak.currentStreak = 1;
+    }
+
+    // Update longest streak
+    if (user.studyStreak.currentStreak > user.studyStreak.longestStreak) {
+      user.studyStreak.longestStreak = user.studyStreak.currentStreak;
+    }
+
+    user.studyStreak.lastStudyDate = today;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Study streak updated',
+      data: {
+        studyStreak: user.studyStreak
+      }
+    });
+  } catch (err) {
+    console.error('Update study streak error:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Server error while updating streak'
+    });
+  }
+};
+
+// Get user profile with streak
+export const getUserProfile = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized'
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          collegeName: user.collegeName,
+          currentYear: user.currentYear,
+          preferences: user.preferences,
+          studyStreak: user.studyStreak || { currentStreak: 0, longestStreak: 0, lastStudyDate: null },
+          onboarding: user.onboarding
+        }
+      }
+    });
+  } catch (err) {
+    console.error('Get user profile error:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Server error while fetching profile'
+    });
+  }
+};
+
+
 // Upload profile picture
 export const uploadProfilePicture = async (req, res) => {
   try {
@@ -182,129 +309,6 @@ export const uploadProfilePicture = async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Server error while uploading profile picture'
-    });
-  }
-};
-
-// Get user profile
-export const getUserProfile = async (req, res) => {
-  try {
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        error: 'Unauthorized'
-      });
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      data: {
-        user: {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          profilePicture: user.profilePicture,
-          collegeName: user.collegeName,
-          currentYear: user.currentYear,
-          preferences: user.preferences,
-          studyStreak: user.studyStreak,
-          onboarding: user.onboarding
-        }
-      }
-    });
-  } catch (err) {
-    console.error('Get user profile error:', err);
-    res.status(500).json({
-      success: false,
-      error: 'Server error while fetching profile'
-    });
-  }
-};
-
-// Update study streak
-export const updateStudyStreak = async (req, res) => {
-  try {
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        error: 'Unauthorized'
-      });
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      });
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const lastStudyDate = user.studyStreak.lastStudyDate 
-      ? new Date(user.studyStreak.lastStudyDate) 
-      : null;
-
-    if (lastStudyDate) {
-      lastStudyDate.setHours(0, 0, 0, 0);
-    }
-
-    // Check if already studied today
-    if (lastStudyDate && lastStudyDate.getTime() === today.getTime()) {
-      return res.json({
-        success: true,
-        message: 'Streak already updated today',
-        data: {
-          studyStreak: user.studyStreak
-        }
-      });
-    }
-
-    // Check if streak continues (yesterday)
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (lastStudyDate && lastStudyDate.getTime() === yesterday.getTime()) {
-      // Continue streak
-      user.studyStreak.currentStreak += 1;
-    } else if (!lastStudyDate || lastStudyDate.getTime() < yesterday.getTime()) {
-      // Reset streak
-      user.studyStreak.currentStreak = 1;
-    }
-
-    // Update longest streak
-    if (user.studyStreak.currentStreak > user.studyStreak.longestStreak) {
-      user.studyStreak.longestStreak = user.studyStreak.currentStreak;
-    }
-
-    user.studyStreak.lastStudyDate = today;
-    await user.save();
-
-    res.json({
-      success: true,
-      message: 'Study streak updated',
-      data: {
-        studyStreak: user.studyStreak
-      }
-    });
-  } catch (err) {
-    console.error('Update study streak error:', err);
-    res.status(500).json({
-      success: false,
-      error: 'Server error while updating streak'
     });
   }
 };

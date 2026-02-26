@@ -1,0 +1,162 @@
+.streak-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.streak-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.streak-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.streak-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Vertical layout for square card */
+.streak-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.streak-stats {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+}
+
+.streak-stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.streak-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.streak-info {
+  flex: 1;
+}
+
+.streak-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.streak-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.streak-divider {
+  width: 1px;
+  background: #d1d5db;
+}
+
+.streak-update-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.streak-update-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.streak-update-btn:active {
+  transform: translateY(0);
+}
+
+.streak-milestones {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px;
+  flex: 1;
+}
+
+.milestone-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.milestone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.milestone-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.milestone-item span:first-child {
+  color: #374151;
+  font-weight: 500;
+}
+
+.milestone-progress {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.streak-loading {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+}

@@ -574,3 +574,21 @@
     font-size: 0.875rem;
   }
 }
+
+/* Three Section Grid - Equal Squares */
+.three-section-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.three-section-grid > * {
+  min-height: 400px;
+}
+
+@media (max-width: 1200px) {
+  .three-section-grid {
+    grid-template-columns: 1fr;
+  }
+}
