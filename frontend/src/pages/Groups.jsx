@@ -393,7 +393,7 @@ const Groups = () => {
         description: formData.description,
         subject: formData.subject,
         tags: formData.tags,
-        maxMembers: formData.maxMembers,
+        maxMembers: parseInt(formData.maxMembers, 10),
         isPublic: formData.isPublic,
       };
 
