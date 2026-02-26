@@ -66,7 +66,7 @@
   transform: translateY(-50%);
   width: 0;
   height: 20px;
-  background: #6366f1;
+  background: #0d9488;
   border-radius: 0 4px 4px 0;
   transition: width 0.2s ease;
 }
@@ -78,10 +78,10 @@
 }
 
 .account-nav-item.active {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #0d9488 0%, #10b981 100%);
   color: white;
   font-weight: 600;
-  box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 14px 0 rgba(13, 148, 136, 0.3);
 }
 
 .account-nav-item.active::before {
@@ -114,7 +114,7 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #0d9488, #10b981);
   color: white;
   font-weight: 600;
   display: flex;
@@ -204,8 +204,8 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
 }
 
 .form-group input:disabled {
@@ -422,13 +422,13 @@
 }
 
 .interest-button:hover {
-  border-color: #6366f1;
-  background: #f8f9ff;
+  border-color: #0d9488;
+  background: #f0fdfa;
 }
 
 .interest-button.selected {
-  background: #6366f1;
-  border-color: #6366f1;
+  background: #0d9488;
+  border-color: #0d9488;
   color: white;
 }
 
@@ -440,13 +440,13 @@
 }
 
 .interest-tag {
-  background: #eef2ff;
-  color: #4f46e5;
+  background: #f0fdfa;
+  color: #0d9488;
   padding: 6px 12px;
   border-radius: 16px;
   font-size: 13px;
   font-weight: 500;
-  border: 1px solid #c7d2fe;
+  border: 1px solid #99f6e4;
 }
 
 /* Selection Info */
@@ -572,7 +572,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #6366f1;
+  background: #0d9488;
   color: white;
   display: flex;
   align-items: center;
@@ -584,7 +584,7 @@
 }
 
 .avatar-upload-btn:hover {
-  background: #4f46e5;
+  background: #0b7c6f;
   transform: scale(1.1);
 }
 
