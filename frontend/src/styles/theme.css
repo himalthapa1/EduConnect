@@ -1,0 +1,113 @@
+:root {
+  /* Spacing Tokens */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Typography */
+  --font-page-title: 24px;
+  --font-section-title: 16px;
+  --font-card-title: 14px;
+  --font-body: 14px;
+  --font-meta: 12px;
+
+  /* Brand Colors */
+  --color-primary: #0d9488; /* Subdued teal primary */
+  --color-accent: #0d9488; /* Same as primary for consistency */
+  --color-accent-darker: #0b7c6f; /* Darker teal */
+  --color-accent-dark: #0d9488; /* Same as primary */
+  --color-accent-light: rgba(13, 148, 136, 0.1); /* Light teal background */
+
+  /* Surfaces */
+  --color-surface: #ffffff;
+  --color-surface-muted: #f9fafb;
+
+  /* Text */
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+
+  /* Borders */
+  --color-border: #e5e7eb;
+
+  /* Focus / Highlight */
+  --color-focus: rgba(13, 148, 136, 0.2);
+}
+
+body {
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-primary);
+}
+
+/* Login Page */
+.login-page {
+  min-height: 100vh;
+  background: var(--color-surface);
+}
+
+.login-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--spacing-sm);
+}
+
+input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus);
+}
+
+.login-link {
+  color: var(--color-primary);
+}
+
+/* Dashboard Page */
+.sidebar {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.sidebar-item.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-left: 3px solid var(--color-surface);
+}
+
+.dashboard-content {
+  background: var(--color-surface-muted);
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.card.recommended {
+  box-shadow: 0 0 0 2px var(--color-focus);
+}
+
+/* Groups / Discover Page */
+.search-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus);
+}
+
+.group-tag {
+  background: rgba(13, 148, 136, 0.1);
+  color: var(--color-primary);
+}
+
+.icon-accent {
+  color: var(--color-primary);
+}
+
+/* Focus, Hover, and Accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Protection Against Button Changes */
+button {
+  background-color: inherit;
+}

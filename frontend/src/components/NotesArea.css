@@ -1,0 +1,20 @@
+/* NotesArea Styles */
+.notes-area {
+  background: rgba(13, 148, 136, 0.02);
+  border-radius: 16px;
+  padding: 3rem;
+  min-height: 350px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(13, 148, 136, 0.08);
+  height: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .notes-area {
+    padding: 2rem 1rem;
+    min-height: 300px;
+  }
+}
