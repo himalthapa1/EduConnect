@@ -78,6 +78,13 @@ const AccountSettings = () => {
       return;
     }
 
+    // Create preview immediately
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfilePicture(reader.result); // Set preview as base64
+    };
+    reader.readAsDataURL(file);
+
     setUploadingPicture(true);
     setMessage(null);
 
@@ -96,15 +103,22 @@ const AccountSettings = () => {
       const data = await response.json();
 
       if (data.success) {
+        // Update with server URL
         setProfilePicture(data.data.profilePicture);
         setMessage('Profile picture updated successfully');
         // Refresh user data
         await verifyToken();
       } else {
-        setMessage(data.error || 'Failed to upload profile picture');
+        const errorMsg = typeof data.error === 'string' ? data.error : data.error?.message || 'Failed to upload profile picture';
+        setMessage(errorMsg);
+        // Revert to original picture on error
+        setProfilePicture(user?.profilePicture || null);
       }
     } catch (err) {
+      console.error('Upload error:', err);
       setMessage('Failed to upload profile picture');
+      // Revert to original picture on error
+      setProfilePicture(user?.profilePicture || null);
     } finally {
       setUploadingPicture(false);
       setTimeout(() => setMessage(null), 3000);
@@ -340,7 +354,11 @@ const AccountSettings = () => {
                 <div className="avatar-container">
                   {profilePicture || user?.profilePicture ? (
                     <img 
-                      src={`${import.meta.env.VITE_API_URL || 'http://localhost:3004'}${profilePicture || user?.profilePicture}`} 
+                      src={
+                        profilePicture?.startsWith('data:') 
+                          ? profilePicture // Base64 preview
+                          : `${import.meta.env.VITE_API_URL || 'http://localhost:3004'}${profilePicture || user?.profilePicture}`
+                      }
                       alt="Profile" 
                       className="avatar-image"
                     />
@@ -475,7 +493,7 @@ const AccountSettings = () => {
 
               {/* Success/Error Messages */}
               {message && (
-                <div className={`alert ${message.includes('failed') ? 'alert-error' : 'alert-success'}`}>
+                <div className={`alert ${typeof message === 'string' && (message.includes('failed') || message.includes('Failed')) ? 'alert-error' : 'alert-success'}`}>
                   {message}
                 </div>
               )}
