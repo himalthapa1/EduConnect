@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { sessionsAPI, groupsAPI } from '../utils/api';
 import { Icons } from '../ui/icons';
 import { HiMenu } from 'react-icons/hi';
+import { io } from 'socket.io-client';
+import NotificationBell from '../components/NotificationBell';
 import GroupRecommendations from '../components/GroupRecommendations';
 import TrendingGroups from '../components/TrendingGroups';
 import './Dashboard.css';
@@ -13,6 +15,7 @@ const Dashboard = () => {
   const { user, logout } = useAuth();
   const { toggleMobileMenu } = useMobileMenu();
   const navigate = useNavigate();
+  const [socket, setSocket] = useState(null);
   const [stats, setStats] = useState({
     totalSessions: 0,
     upcomingSessions: 0,
@@ -22,6 +25,21 @@ const Dashboard = () => {
   const [upcomingSessions, setUpcomingSessions] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Initialize socket connection
+  useEffect(() => {
+    const newSocket = io('http://localhost:3004', {
+      auth: {
+        token: localStorage.getItem('token')
+      }
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.close();
+    };
+  }, []);
 
   useEffect(() => {
     loadDashboardData();
@@ -112,8 +130,10 @@ const Dashboard = () => {
           <p className="header-subtitle">Welcome back, {user?.username}!</p>
         </div>
         <div className="header-actions">
+          <NotificationBell socket={socket} userId={user?.id || user?._id} />
           <button onClick={handleCreateSession} className="create-session-btn">
-            + New Session
+            <Icons.calendar size={18} />
+            New Session
           </button>
         </div>
       </header>

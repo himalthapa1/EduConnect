@@ -1,33 +1,12 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Icons } from '../ui/icons';
-import { useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
-import NotificationBell from './NotificationBell';
-import { FaCalendarPlus } from 'react-icons/fa';
 import './Sidebar.css';
 
 const Sidebar = ({ collapsed, onToggleCollapse, mobileOpen, onMobileClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
-  const [socket, setSocket] = useState(null);
-  const [showEventModal, setShowEventModal] = useState(false);
-
-  // Initialize socket connection
-  useEffect(() => {
-    const newSocket = io('http://localhost:3004', {
-      auth: {
-        token: localStorage.getItem('token')
-      }
-    });
-
-    setSocket(newSocket);
-
-    return () => {
-      newSocket.close();
-    };
-  }, []);
 
   const menuItems = [
     {
@@ -88,16 +67,6 @@ const Sidebar = ({ collapsed, onToggleCollapse, mobileOpen, onMobileClose }) => 
         <div className="logo">
           <span className="logo-icon"><Icons.book size={20} /></span>
           {!collapsed && <span className="logo-text">EduConnect</span>}
-        </div>
-        <div className="header-actions">
-          <NotificationBell socket={socket} userId={user?.id || user?._id} />
-          <button
-            className="calendar-btn"
-            onClick={() => navigate('/sessions')}
-            title="Calendar & Events"
-          >
-            <FaCalendarPlus size={18} />
-          </button>
         </div>
         <button
           className="collapse-btn desktop-only"

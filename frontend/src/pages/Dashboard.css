@@ -49,7 +49,8 @@
 
 .header-actions {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
+  align-items: center;
 }
 
 .create-session-btn {
@@ -60,6 +61,10 @@
   border-radius: var(--spacing-sm);
   font-weight: 600;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: background 0.2s;
 }
 
 .create-session-btn:hover {
