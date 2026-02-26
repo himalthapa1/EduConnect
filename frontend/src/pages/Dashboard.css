@@ -574,3 +574,9 @@
     font-size: 0.875rem;
   }
 }
+
+/* Study Streak Section */
+.streak-section {
+  margin-top: 24px;
+  max-width: 600px;
+}

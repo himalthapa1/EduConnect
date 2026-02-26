@@ -11,6 +11,7 @@ import GroupRecommendations from '../components/GroupRecommendations';
 import TrendingGroups from '../components/TrendingGroups';
 import TodaysFocus from '../components/TodaysFocus';
 import EventTracker from '../components/EventTracker';
+import StudyStreakCard from '../components/StudyStreakCard';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -181,6 +182,11 @@ const Dashboard = () => {
             <TodaysFocus />
             <EventTracker />
           </div>
+        </section>
+
+        {/* Study Streak Section */}
+        <section className="streak-section">
+          <StudyStreakCard />
         </section>
 
         <div className="dashboard-content">

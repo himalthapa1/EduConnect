@@ -85,6 +85,22 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    // Study streak tracking
+    studyStreak: {
+      currentStreak: {
+        type: Number,
+        default: 0,
+      },
+      longestStreak: {
+        type: Number,
+        default: 0,
+      },
+      lastStudyDate: {
+        type: Date,
+        default: null,
+      },
+    },
   },
   { timestamps: true }
 );
