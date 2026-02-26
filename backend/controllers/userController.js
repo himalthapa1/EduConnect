@@ -350,11 +350,28 @@ export const getUserAnalytics = async (req, res) => {
       status: 'completed'
     }).sort({ createdAt: -1 });
 
-    // Calculate total study hours
+    // Calculate total study hours and sessions
     const totalStudyMinutes = studySessions.reduce((sum, session) => {
       return sum + (session.actualDuration || session.studyMinutes || 0);
     }, 0);
     const totalStudyHours = Math.round(totalStudyMinutes / 60 * 10) / 10;
+    const totalStudySessions = studySessions.length;
+
+    // Calculate average session duration
+    const avgSessionDuration = totalStudySessions > 0 
+      ? Math.round((totalStudyMinutes / totalStudySessions) / 60 * 10) / 10 
+      : 0;
+
+    // Get most studied subjects
+    const subjectCounts = {};
+    studySessions.forEach(session => {
+      const subject = session.subject || 'Unknown';
+      subjectCounts[subject] = (subjectCounts[subject] || 0) + 1;
+    });
+    const topSubjects = Object.entries(subjectCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([subject, count]) => ({ subject, count }));
 
     // Get study hours for last 7 days
     const sevenDaysAgo = new Date();
@@ -405,6 +422,8 @@ export const getUserAnalytics = async (req, res) => {
       data: {
         overview: {
           totalStudyHours,
+          totalStudySessions,
+          avgSessionDuration,
           totalGroups: user.joinedGroups.length,
           totalSessions: user.attendedSessions.length,
           messagesSent,
@@ -415,6 +434,7 @@ export const getUserAnalytics = async (req, res) => {
         },
         thisWeek: {
           studyHours: Math.round(studyHoursThisWeek * 10) / 10,
+          studySessions: recentSessions.length,
           groupsJoined: groupsJoinedThisWeek,
           sessionsAttended: sessionsThisWeek
         },
@@ -423,6 +443,7 @@ export const getUserAnalytics = async (req, res) => {
           hours: Math.round(hours * 10) / 10,
           day: new Date(date).toLocaleDateString('en-US', { weekday: 'short' })
         })),
+        topSubjects,
         recentActivity: {
           lastStudySession: studySessions[0] ? {
             subject: studySessions[0].subject,
@@ -433,6 +454,11 @@ export const getUserAnalytics = async (req, res) => {
             id: g._id,
             name: g.name,
             joinedAt: g.createdAt
+          })),
+          recentStudySessions: studySessions.slice(0, 5).map(s => ({
+            subject: s.subject,
+            duration: Math.round((s.actualDuration || s.studyMinutes) / 60 * 10) / 10,
+            date: s.createdAt
           }))
         }
       }

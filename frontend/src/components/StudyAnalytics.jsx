@@ -45,7 +45,7 @@ const StudyAnalytics = () => {
 
   if (!analytics) return null;
 
-  const { overview, thisWeek, studyHoursByDay, recentActivity } = analytics;
+  const { overview, thisWeek, studyHoursByDay, topSubjects, recentActivity } = analytics;
 
   return (
     <div className="analytics-container">
@@ -67,22 +67,22 @@ const StudyAnalytics = () => {
         </div>
 
         <div className="analytics-stat-card">
+          <div className="stat-icon sessions">
+            <Icons.calendar size={24} />
+          </div>
+          <div className="stat-details">
+            <h3>{overview.totalStudySessions}</h3>
+            <p>Study Sessions</p>
+          </div>
+        </div>
+
+        <div className="analytics-stat-card">
           <div className="stat-icon groups">
             <Icons.users size={24} />
           </div>
           <div className="stat-details">
             <h3>{overview.totalGroups}</h3>
             <p>Study Groups</p>
-          </div>
-        </div>
-
-        <div className="analytics-stat-card">
-          <div className="stat-icon sessions">
-            <Icons.calendar size={24} />
-          </div>
-          <div className="stat-details">
-            <h3>{overview.totalSessions}</h3>
-            <p>Sessions Attended</p>
           </div>
         </div>
 
@@ -106,12 +106,16 @@ const StudyAnalytics = () => {
             <span className="week-stat-label">Study Hours</span>
           </div>
           <div className="week-stat">
+            <span className="week-stat-value">{thisWeek.studySessions}</span>
+            <span className="week-stat-label">Study Sessions</span>
+          </div>
+          <div className="week-stat">
             <span className="week-stat-value">{thisWeek.groupsJoined}</span>
             <span className="week-stat-label">Groups Joined</span>
           </div>
           <div className="week-stat">
             <span className="week-stat-value">{thisWeek.sessionsAttended}</span>
-            <span className="week-stat-label">Sessions</span>
+            <span className="week-stat-label">Group Sessions</span>
           </div>
         </div>
       </div>
@@ -121,6 +125,38 @@ const StudyAnalytics = () => {
         <h3>Study Hours (Last 7 Days)</h3>
         <ActivityChart data={studyHoursByDay} />
       </div>
+
+      {/* Study With Me Stats */}
+      <div className="analytics-study-stats">
+        <div className="study-stat-card">
+          <h3>Average Session</h3>
+          <div className="study-stat-value">{overview.avgSessionDuration}h</div>
+          <p>per study session</p>
+        </div>
+        <div className="study-stat-card">
+          <h3>Total Sessions</h3>
+          <div className="study-stat-value">{overview.totalStudySessions}</div>
+          <p>completed</p>
+        </div>
+      </div>
+
+      {/* Top Subjects */}
+      {topSubjects && topSubjects.length > 0 && (
+        <div className="analytics-subjects">
+          <h3>Most Studied Subjects</h3>
+          <div className="subjects-list">
+            {topSubjects.map((item, index) => (
+              <div key={index} className="subject-item">
+                <div className="subject-rank">{index + 1}</div>
+                <div className="subject-info">
+                  <span className="subject-name">{item.subject}</span>
+                  <span className="subject-count">{item.count} sessions</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Additional Stats */}
       <div className="analytics-additional">
@@ -154,15 +190,19 @@ const StudyAnalytics = () => {
         </div>
       </div>
 
-      {/* Recent Activity */}
-      {recentActivity.lastStudySession && (
+      {/* Recent Study Sessions */}
+      {recentActivity.recentStudySessions && recentActivity.recentStudySessions.length > 0 && (
         <div className="analytics-recent">
-          <h3>Last Study Session</h3>
-          <div className="recent-session">
-            <div className="recent-session-info">
-              <h4>{recentActivity.lastStudySession.subject}</h4>
-              <p>{recentActivity.lastStudySession.duration}h • {new Date(recentActivity.lastStudySession.date).toLocaleDateString()}</p>
-            </div>
+          <h3>Recent Study Sessions</h3>
+          <div className="recent-sessions-list">
+            {recentActivity.recentStudySessions.map((session, index) => (
+              <div key={index} className="recent-session">
+                <div className="recent-session-info">
+                  <h4>{session.subject}</h4>
+                  <p>{session.duration}h • {new Date(session.date).toLocaleDateString()}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
