@@ -412,7 +412,9 @@ const AccountSettings = () => {
             <>
               {/* Preferences Header */}
               <div className="profile-header">
-                <div className="avatar">⚙️</div>
+                <div className="avatar">
+                  <Icons.settings size={32} />
+                </div>
                 <div>
                   <h2>Study Preferences</h2>
                   <p className="muted">Customize your learning interests to get better recommendations</p>

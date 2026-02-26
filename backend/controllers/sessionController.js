@@ -1,5 +1,6 @@
 import Session from '../models/Session.js';
 import User from '../models/User.js';
+import NotificationService from '../services/notificationService.js';
 
 /* =========================
    HELPERS
@@ -242,10 +243,22 @@ export const joinSession = async (req, res) => {
     await session.populate('organizer participants.user', 'username email');
 
     // Update user tracking for recommendations
-    await User.findByIdAndUpdate(req.user.userId, {
+    const user = await User.findByIdAndUpdate(req.user.userId, {
       $addToSet: { attendedSessions: session._id },
       $inc: { activityScore: 8 } // Joining session increases activity (less than joining group)
     });
+
+    // Send notification to session organizer
+    const io = req.app.get('io');
+    if (io) {
+      await NotificationService.notifySessionJoin(io, {
+        sessionId: session._id,
+        sessionTitle: session.title,
+        userId: req.user.userId,
+        userName: user.username,
+        organizerId: session.organizer._id
+      });
+    }
 
     res.json({
       success: true,
@@ -319,9 +332,29 @@ export const updateSession = async (req, res) => {
       });
     }
 
+    // Track what changed for notification
+    const changes = [];
+    if (req.body.date && req.body.date !== session.date) changes.push('date');
+    if (req.body.startTime && req.body.startTime !== session.startTime) changes.push('time');
+    if (req.body.location && req.body.location !== session.location) changes.push('location');
+    
     Object.assign(session, req.body);
     await session.save();
     await session.populate('organizer participants.user', 'username email');
+
+    // Notify participants about the update
+    if (changes.length > 0) {
+      const io = req.app.get('io');
+      if (io) {
+        const participantIds = session.participants.map(p => p.user._id);
+        await NotificationService.notifySessionUpdated(io, {
+          sessionId: session._id,
+          sessionTitle: session.title,
+          participants: participantIds,
+          changes: changes.join(', ')
+        });
+      }
+    }
 
     res.json({
       success: true,
@@ -358,7 +391,22 @@ export const deleteSession = async (req, res) => {
       });
     }
 
+    // Get participants before deleting
+    await session.populate('participants.user', 'username email');
+    const participantIds = session.participants.map(p => p.user._id);
+
     await session.deleteOne();
+
+    // Notify participants about cancellation
+    const io = req.app.get('io');
+    if (io && participantIds.length > 0) {
+      await NotificationService.notifySessionCancelled(io, {
+        sessionId: session._id,
+        sessionTitle: session.title,
+        participants: participantIds,
+        reason: 'Session was cancelled by organizer'
+      });
+    }
 
     res.json({
       success: true,
@@ -405,6 +453,22 @@ export const completeSession = async (req, res) => {
     await session.completeSession(notes);
 
     await session.populate('organizer participants.user', 'username email');
+
+    // Notify all participants that session is completed
+    const io = req.app.get('io');
+    if (io) {
+      const participantIds = session.participants.map(p => p.user._id);
+      if (participantIds.length > 0) {
+        const NotificationService = (await import('../services/notificationService.js')).default;
+        await NotificationService.notifySystem(io, {
+          userId: participantIds,
+          title: 'Session Completed',
+          message: `"${session.title}" has been completed. Check out the session notes!`,
+          link: `/sessions/${session._id}`,
+          priority: 'medium'
+        });
+      }
+    }
 
     res.json({
       success: true,

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { groupsAPI } from '../utils/api';
+import { Icons } from '../ui/icons';
 
 const ResourceForm = ({ onSubmit, initial = {} }) => {
   const [title, setTitle] = useState(initial.title || '');
@@ -70,40 +71,59 @@ const ResourceForm = ({ onSubmit, initial = {} }) => {
 
   return (
     <form className="resource-form" onSubmit={handleSubmit}>
-      <div>
+      <div className="form-group">
+        <label>
+          <Icons.file size={16} />
+          <span>Title</span>
+        </label>
         <input
           value={title}
           onChange={e => setTitle(e.target.value)}
-          placeholder="Title*"
+          placeholder="Enter resource title"
           required
           maxLength={200}
         />
       </div>
-      <div>
+      <div className="form-group">
+        <label>
+          <Icons.externalLink size={16} />
+          <span>URL (optional)</span>
+        </label>
         <input
           value={url}
           onChange={e => setUrl(e.target.value)}
-          placeholder="URL (optional)"
+          placeholder="https://example.com"
         />
       </div>
-      <div>
+      <div className="form-group">
+        <label>
+          <Icons.edit size={16} />
+          <span>Description (optional)</span>
+        </label>
         <textarea
           value={description}
           onChange={e => setDescription(e.target.value)}
-          placeholder="Description (optional)"
+          placeholder="Add a description..."
           rows={3}
           maxLength={1000}
         />
       </div>
-      <div>
+      <div className="form-group">
+        <label>
+          <Icons.filter size={16} />
+          <span>Type</span>
+        </label>
         <select value={type} onChange={e => setType(e.target.value)}>
           <option value="resource">Resource</option>
           <option value="note">Note</option>
           <option value="file">File</option>
+          <option value="pdf">PDF</option>
+          <option value="video">Video</option>
+          <option value="link">Link</option>
         </select>
       </div>
       <div
-        className={`file-upload ${dragActive ? 'drag-active' : ''}`}
+        className={`file-upload ${dragActive ? 'drag-active' : ''} ${file ? 'has-file' : ''}`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
@@ -119,16 +139,34 @@ const ResourceForm = ({ onSubmit, initial = {} }) => {
         />
         {file ? (
           <div className="file-preview">
-            <span>{file.name}</span>
-            <button type="button" onClick={removeFile}>Remove</button>
+            <Icons.file size={24} />
+            <div className="file-info">
+              <span className="file-name">{file.name}</span>
+              <span className="file-size">{(file.size / 1024).toFixed(2)} KB</span>
+            </div>
+            <button 
+              type="button" 
+              onClick={(e) => {
+                e.stopPropagation();
+                removeFile();
+              }}
+              className="btn-remove-file"
+            >
+              <Icons.close size={18} />
+            </button>
           </div>
         ) : (
           <div className="upload-placeholder">
-            <span>Drag & drop a file here, or click to select</span>
+            <Icons.upload size={32} />
+            <span className="upload-text">Drag & drop a file here</span>
+            <span className="upload-subtext">or click to select</span>
           </div>
         )}
       </div>
-      <button type="submit">Add</button>
+      <button type="submit" className="btn-submit">
+        <Icons.add size={18} />
+        <span>Add Resource</span>
+      </button>
     </form>
   );
 };

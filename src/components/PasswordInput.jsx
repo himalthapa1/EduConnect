@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Icons } from '../ui/icons';
 import './PasswordInput.css';
 
 const PasswordInput = ({
@@ -102,7 +103,8 @@ const PasswordInput = ({
 
         {capsLockOn && (
           <div className="caps-lock-warning">
-            <span>⚠️ Caps Lock is on</span>
+            <Icons.lock size={14} />
+            <span>Caps Lock is on</span>
           </div>
         )}
       </div>

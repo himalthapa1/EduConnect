@@ -137,50 +137,82 @@ const ResourcesList = ({ group }) => {
     <div className="resources-list">
       {resourceList.map(r => (
         <div key={r._id} className="resource-card">
+          <div className="resource-icon">
+            {r.resourceType === 'pdf' && <Icons.file size={24} />}
+            {r.resourceType === 'link' && <Icons.externalLink size={24} />}
+            {r.resourceType === 'video' && <Icons.video size={24} />}
+            {r.resourceType === 'document' && <Icons.file size={24} />}
+            {!['pdf', 'link', 'video', 'document'].includes(r.resourceType) && <Icons.file size={24} />}
+          </div>
           <div className="resource-info">
             <h4>{r.title}</h4>
             <div className="resource-meta">
-              <div>({r.resourceType})</div>
-              {r.file && (
-                <div className="file-actions">
-                  <button
-                    onClick={() => handleOpenFile(r.file)}
-                    className="btn-open btn-with-text"
-                    title="Open file in new tab"
-                  >
-                    <Icons.externalLink size={16} />
-                    <span>Open</span>
-                  </button>
-                  <a href={`${API_BASE_URL}/${r.file}`} download className="btn-download btn-with-text" title="Download file">
-                    <Icons.download size={16} />
-                    <span>Download</span>
-                  </a>
-                </div>
-              )}
-              {r.url && <a href={r.url} target="_blank" rel="noreferrer" className="download-link">Open link</a>}
-              <div>{isMyUploads ? 'Uploaded by you' : `Shared by ${r.addedBy?.username}`} · {new Date(r.createdAt).toLocaleString()}</div>
+              <span className="resource-type">
+                <Icons.file size={14} />
+                {r.resourceType}
+              </span>
+              <span className="resource-author">
+                <Icons.user size={14} />
+                {isMyUploads ? 'You' : r.addedBy?.username}
+              </span>
+              <span className="resource-date">
+                <Icons.clock size={14} />
+                {new Date(r.createdAt).toLocaleDateString()}
+              </span>
             </div>
           </div>
-          {canManage(r) && (
-            <div className="resource-actions">
-              {isMyUploads && !r.isShared && (
+          <div className="resource-actions">
+            {r.file && (
+              <>
                 <button
-                  onClick={() => handleShare(r._id)}
-                  className="btn-share btn-icon"
-                  title="Share this file with the group"
+                  onClick={() => handleOpenFile(r.file)}
+                  className="btn-action btn-open"
+                  title="Open file"
                 >
-                  <Icons.share size={18} />
+                  <Icons.externalLink size={18} />
                 </button>
-              )}
-              <button
-                onClick={() => handleDelete(r._id)}
-                className="btn-delete btn-icon"
-                title="Delete this file"
+                <a 
+                  href={`${API_BASE_URL}/${r.file}`} 
+                  download 
+                  className="btn-action btn-download" 
+                  title="Download file"
+                >
+                  <Icons.download size={18} />
+                </a>
+              </>
+            )}
+            {r.url && (
+              <a 
+                href={r.url} 
+                target="_blank" 
+                rel="noreferrer" 
+                className="btn-action btn-link"
+                title="Open link"
               >
-                <Icons.delete size={18} />
-              </button>
-            </div>
-          )}
+                <Icons.externalLink size={18} />
+              </a>
+            )}
+            {canManage(r) && (
+              <>
+                {isMyUploads && !r.isShared && (
+                  <button
+                    onClick={() => handleShare(r._id)}
+                    className="btn-action btn-share"
+                    title="Share with group"
+                  >
+                    <Icons.share size={18} />
+                  </button>
+                )}
+                <button
+                  onClick={() => handleDelete(r._id)}
+                  className="btn-action btn-delete"
+                  title="Delete"
+                >
+                  <Icons.delete size={18} />
+                </button>
+              </>
+            )}
+          </div>
         </div>
       ))}
     </div>
@@ -189,12 +221,25 @@ const ResourcesList = ({ group }) => {
   return (
     <div className="resources-section">
       <div className="resources-header">
-        <h4>Resources & Files</h4>
+        <div className="header-title">
+          <Icons.file size={20} />
+          <h4>Resources & Files</h4>
+        </div>
         <button
-          className={openForm ? 'close-btn' : ''}
+          className={openForm ? 'btn-close' : 'btn-add'}
           onClick={() => setOpenForm(o => !o)}
         >
-          {openForm ? 'Close' : '+ Add Resource'}
+          {openForm ? (
+            <>
+              <Icons.close size={18} />
+              <span>Close</span>
+            </>
+          ) : (
+            <>
+              <Icons.add size={18} />
+              <span>Add Resource</span>
+            </>
+          )}
         </button>
       </div>
 
@@ -202,56 +247,71 @@ const ResourcesList = ({ group }) => {
 
       {isUploading && (
         <div className="upload-progress">
+          <div className="progress-info">
+            <Icons.upload size={20} />
+            <span>Uploading... {uploadProgress}%</span>
+          </div>
           <div className="progress-bar">
             <div
               className="progress-fill"
               style={{ width: `${uploadProgress}%` }}
             ></div>
           </div>
-          <div className="progress-text">
-            Uploading... {uploadProgress}%
-          </div>
         </div>
       )}
 
-      {error && <div className="alert alert-error">{error}</div>}
-      {successMessage && <div className="alert alert-success">{successMessage}</div>}
+      {error && (
+        <div className="alert alert-error">
+          <Icons.close size={18} />
+          <span>{error}</span>
+        </div>
+      )}
+      {successMessage && (
+        <div className="alert alert-success">
+          <Icons.check size={18} />
+          <span>{successMessage}</span>
+        </div>
+      )}
 
       <div className="resources-tabs">
         <button
           className={`tab-button ${activeTab === 'my-uploads' ? 'active' : ''}`}
           onClick={() => setActiveTab('my-uploads')}
         >
-          My Uploads ({getMyUploads().length})
+          <Icons.upload size={16} />
+          <span>My Uploads</span>
+          <span className="tab-count">({getMyUploads().length})</span>
         </button>
         <button
           className={`tab-button ${activeTab === 'shared' ? 'active' : ''}`}
           onClick={() => setActiveTab('shared')}
         >
-          Shared Files ({getSharedWithGroup().length})
+          <Icons.share size={16} />
+          <span>Shared Files</span>
+          <span className="tab-count">({getSharedWithGroup().length})</span>
         </button>
       </div>
 
       <div className="resources-content">
         {loading ? (
-          <div>Loading resources...</div>
+          <div className="loading-state">
+            <Icons.clock size={32} />
+            <p>Loading resources...</p>
+          </div>
         ) : activeTab === 'my-uploads' ? (
           getMyUploads().length > 0 ?
             renderResourceList(getMyUploads(), true) :
             <div className="empty-state">
-              <div className="empty-icon">📁</div>
+              <Icons.upload size={48} />
               <h3>No uploads yet</h3>
               <p>Upload resources and files here to organize your study materials.</p>
               <p>Once uploaded, you can share them with your group members.</p>
-              <button className="empty-cta" onClick={() => setOpenForm(true)}>
-                Upload your first file
-              </button>
             </div>
         ) : (
           getSharedWithGroup().length > 0 ?
             renderResourceList(getSharedWithGroup(), false) :
             <div className="empty-state">
-              <div className="empty-icon">📤</div>
+              <Icons.share size={48} />
               <h3>No shared files yet</h3>
               <p>When group members upload files, they'll appear here after being shared.</p>
               <p>This is where the group collaborates on study materials.</p>

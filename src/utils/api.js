@@ -226,4 +226,29 @@ export const recommendationsAPI = {
     api.get('/recommendations/health'),
 };
 
+/**
+ * ======================================================
+ * NOTIFICATIONS API
+ * ======================================================
+ */
+export const notificationsAPI = {
+  getNotifications: (params = {}) =>
+    api.get('/notifications', { params }),
+
+  getUnreadCount: () =>
+    api.get('/notifications/unread-count'),
+
+  markAsRead: (notificationId) =>
+    api.put(`/notifications/${notificationId}/read`),
+
+  markAllAsRead: () =>
+    api.put('/notifications/read-all'),
+
+  deleteNotification: (notificationId) =>
+    api.delete(`/notifications/${notificationId}`),
+
+  deleteAll: () =>
+    api.delete('/notifications/all'),
+};
+
 export default api;

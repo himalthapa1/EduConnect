@@ -113,8 +113,8 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
   };
 
   const getRecommendationBadge = (score) => {
-    if (score >= 0.8) return { text: '⭐ Recommended', color: '#28a745' };
-    if (score >= 0.6) return { text: '👍 Good match', color: '#ffc107' };
+    if (score >= 0.8) return { text: 'Recommended', icon: 'star', color: '#28a745' };
+    if (score >= 0.6) return { text: 'Good match', icon: 'checkCircle', color: '#ffc107' };
     return null; // No badge for low scores
   };
 
@@ -250,13 +250,21 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
                 </div>
                 {getRecommendationBadge(group.score) && (
                   <div className="recommendation-badge" style={{ color: getRecommendationBadge(group.score).color }}>
-                    {getRecommendationBadge(group.score).text}
+                    {getRecommendationBadge(group.score).icon === 'star' ? (
+                      <Icons.star size={14} />
+                    ) : (
+                      <Icons.checkCircle size={14} />
+                    )}
+                    <span>{getRecommendationBadge(group.score).text}</span>
                   </div>
                 )}
                 {group.rating > 0 && (
                   <div className="rating-info">
                     <span className="rating-value">{formatRating(group.rating)}</span>
-                    <span className="rating-label">⭐ rating</span>
+                    <span className="rating-label">
+                      <Icons.star size={14} />
+                      <span>rating</span>
+                    </span>
                   </div>
                 )}
                 {getExplanationText(group).length > 0 && (
