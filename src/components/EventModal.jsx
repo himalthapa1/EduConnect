@@ -152,9 +152,29 @@ const EventModal = ({ isOpen, onClose, onSave, onDelete, event, defaultDate }) =
                 <input
                   type="date"
                   value={formData.date}
-                  onChange={(e) => setFormData({...formData, date: e.target.value})}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Validate year is 4 digits
+                    if (value) {
+                      const year = value.split('-')[0];
+                      if (year && year.length === 4) {
+                        setFormData({...formData, date: value});
+                      }
+                    } else {
+                      setFormData({...formData, date: value});
+                    }
+                  }}
                   required
                   disabled={isSessionEvent}
+                  min="1900-01-01"
+                  max="9999-12-31"
+                  onKeyDown={(e) => {
+                    const input = e.target;
+                    const value = input.value;
+                    if (value && value.split('-')[0]?.length >= 4 && e.key >= '0' && e.key <= '9' && input.selectionStart <= 4) {
+                      e.preventDefault();
+                    }
+                  }}
                 />
               </div>
               <div className="form-group">

@@ -31,6 +31,8 @@ const Onboarding = () => {
   const { user, token, verifyToken } = useAuth();
   const navigate = useNavigate();
   const [selectedInterests, setSelectedInterests] = useState([]);
+  const [customInterest, setCustomInterest] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -43,6 +45,49 @@ const Onboarding = () => {
       }
       return prev;
     });
+  };
+
+  const handleAddCustomInterest = () => {
+    const trimmed = customInterest.trim();
+    
+    if (!trimmed) {
+      setError('Please enter an interest');
+      return;
+    }
+
+    if (trimmed.length < 2) {
+      setError('Interest must be at least 2 characters');
+      return;
+    }
+
+    if (trimmed.length > 50) {
+      setError('Interest must be less than 50 characters');
+      return;
+    }
+
+    // Check if already exists (case-insensitive)
+    const exists = selectedInterests.some(
+      interest => interest.toLowerCase() === trimmed.toLowerCase()
+    );
+
+    if (exists) {
+      setError('This interest is already added');
+      return;
+    }
+
+    if (selectedInterests.length >= 10) {
+      setError('Maximum 10 interests allowed');
+      return;
+    }
+
+    setSelectedInterests(prev => [...prev, trimmed]);
+    setCustomInterest('');
+    setShowCustomInput(false);
+    setError(null);
+  };
+
+  const handleRemoveInterest = (interest) => {
+    setSelectedInterests(prev => prev.filter(i => i !== interest));
   };
 
   const handleSubmit = async () => {

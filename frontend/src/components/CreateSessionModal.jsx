@@ -242,10 +242,29 @@ const CreateSessionModal = ({ onClose, onSuccess }) => {
                 type="date"
                 id="date"
                 value={formData.date}
-                onChange={(e) => handleInputChange('date', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Validate year is 4 digits
+                  if (value) {
+                    const year = value.split('-')[0];
+                    if (year && year.length === 4) {
+                      handleInputChange('date', value);
+                    }
+                  } else {
+                    handleInputChange('date', value);
+                  }
+                }}
                 className={errors.date ? 'error' : ''}
                 min={new Date().toISOString().split('T')[0]}
+                max="9999-12-31"
                 disabled={loading}
+                onKeyDown={(e) => {
+                  const input = e.target;
+                  const value = input.value;
+                  if (value && value.split('-')[0]?.length >= 4 && e.key >= '0' && e.key <= '9' && input.selectionStart <= 4) {
+                    e.preventDefault();
+                  }
+                }}
               />
               {errors.date && <span className="field-error">{errors.date}</span>}
             </div>
