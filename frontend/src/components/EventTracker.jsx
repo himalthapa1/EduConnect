@@ -222,7 +222,7 @@ const EventTracker = () => {
                       </div>
                     </div>
                     <h4>{event.title}</h4>
-                    {event.location && <p className="event-location"><Icons.home size={14} /> {event.location}</p>}
+                    {event.location && <p className="event-location"><Icons.calendar size={14} /> {event.location}</p>}
                     {event.participants && event.participants.length > 0 && (
                       <p className="event-participants"><Icons.users size={14} /> {event.participants.length} participant{event.participants.length !== 1 ? 's' : ''}</p>
                     )}

@@ -3,7 +3,7 @@ import { LuMic, LuFlame, LuStar } from "react-icons/lu";
 
 export const Icons = {
   // Core UI
-  home: Lu.LuHome,
+  home: Lu.LuMapPin,
   calendar: Lu.LuCalendar,
   clock: Lu.LuClock,
   users: Lu.LuUsers,
