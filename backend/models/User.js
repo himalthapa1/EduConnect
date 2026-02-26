@@ -36,6 +36,11 @@ const userSchema = new mongoose.Schema(
       sparse: true, // Allows null values to be non-unique
     },
 
+    profilePicture: {
+      type: String,
+      default: null, // URL to profile picture
+    },
+
     dateOfBirth: {
       type: Date,
     },
@@ -93,6 +98,22 @@ const userSchema = new mongoose.Schema(
     activityScore: {
       type: Number,
       default: 0,
+    },
+
+    // Study streak tracking
+    studyStreak: {
+      currentStreak: {
+        type: Number,
+        default: 0,
+      },
+      longestStreak: {
+        type: Number,
+        default: 0,
+      },
+      lastStudyDate: {
+        type: Date,
+        default: null,
+      },
     },
   },
   { timestamps: true }
