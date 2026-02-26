@@ -1,9 +1,11 @@
 import express from 'express';
+import passport from 'passport';
 import {
   register,
   login,
   verifyToken,
-  createTestUser
+  createTestUser,
+  googleCallback
 } from '../controllers/authController.js';
 
 import {
@@ -36,6 +38,21 @@ router.get(
   '/verify',
   authenticateToken,
   verifyToken
+);
+
+// Google OAuth
+router.get(
+  '/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+router.get(
+  '/google/callback',
+  passport.authenticate('google', { 
+    failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=auth_failed`,
+    session: false 
+  }),
+  googleCallback
 );
 
 // Create test user (development only)

@@ -10,6 +10,7 @@ import rateLimit from "express-rate-limit";
 import mongoose from "mongoose";
 import { Server } from "socket.io";
 import { fileURLToPath } from "url";
+import passport from "./config/passport.js";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import User from "./models/User.js";
@@ -98,6 +99,11 @@ const uploadLimiter = rateLimit({
 ========================= */
 app.use(express.json({ limit: "500mb" }));
 app.use(express.urlencoded({ extended: true, limit: "500mb" }));
+
+/* =========================
+   PASSPORT INITIALIZATION
+========================= */
+app.use(passport.initialize());
 
 /* =========================
    STATIC FILES (UPLOADS)

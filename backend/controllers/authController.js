@@ -248,3 +248,26 @@ export const createTestUser = async (req, res) => {
     });
   }
 };
+
+
+/* =========================
+   GOOGLE OAUTH CALLBACK
+========================= */
+export const googleCallback = async (req, res) => {
+  try {
+    const user = req.user;
+    
+    if (!user) {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=auth_failed`);
+    }
+
+    // Generate JWT token
+    const token = generateToken(user._id, user.email);
+
+    // Redirect to frontend with token
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/callback?token=${token}`);
+  } catch (error) {
+    console.error('Google OAuth callback error:', error);
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=server_error`);
+  }
+};

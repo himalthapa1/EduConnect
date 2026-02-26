@@ -256,6 +256,64 @@ textarea.form-textarea.error:focus {
   text-decoration: underline;
 }
 
+/* Google OAuth Button */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 24px 0;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.auth-divider span {
+  padding: 0 16px;
+  font-weight: 500;
+}
+
+.google-auth-button {
+  width: 100%;
+  padding: 12px 16px;
+  background: white;
+  color: #344054;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.google-auth-button:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.google-auth-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.google-auth-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.google-auth-button svg {
+  flex-shrink: 0;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .auth-card {

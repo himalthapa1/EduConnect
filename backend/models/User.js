@@ -22,9 +22,18 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
+      required: function() {
+        // Password is required only if googleId is not present
+        return !this.googleId;
+      },
       minlength: 6,
       select: false, // 🔒 never return password by default
+    },
+
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // Allows null values to be non-unique
     },
 
     dateOfBirth: {

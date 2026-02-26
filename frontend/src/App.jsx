@@ -9,6 +9,7 @@ import Support from './pages/Support/Support';
 import Contact from './pages/Contact/Contact';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import AuthCallback from './pages/AuthCallback';
 import Onboarding from './pages/Onboarding';
 import Dashboard from './pages/Dashboard';
 import Sessions from './pages/Sessions';
@@ -29,6 +30,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/onboarding/interests" element={<Onboarding />} />
           <Route
             path="/"
