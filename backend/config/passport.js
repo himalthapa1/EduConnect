@@ -1,3 +1,4 @@
+import './env.js'; // Load environment variables first
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import User from '../models/User.js';

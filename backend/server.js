@@ -1,5 +1,11 @@
-import express from "express";
 import dotenv from "dotenv";
+
+/* =========================
+   ENV + PATH SETUP (MUST BE FIRST)
+========================= */
+dotenv.config();
+
+import express from "express";
 import cors from "cors";
 import path from "path";
 import fs from "fs";
@@ -21,11 +27,6 @@ import userRoutes from "./routes/users.js";
 import recommendationRoutes from "./routes/recommendations.js";
 import notificationRoutes from "./routes/notifications.js";
 import { registerChatHandlers } from "./sockets/chatSocket.js";
-
-/* =========================
-   ENV + PATH SETUP
-========================= */
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
