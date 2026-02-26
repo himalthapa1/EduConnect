@@ -185,19 +185,21 @@ const Dashboard = () => {
         </section>
 
         <div className="dashboard-content">
-          {/* Upcoming Sessions */}
-          <section className="upcoming-sessions-section">
-            <div className="section-header">
-              <h2>Upcoming Sessions</h2>
-              <button onClick={handleViewSessions} className="view-all-btn">
-                View All →
-              </button>
-            </div>
-            <div className="sessions-list">
-              {upcomingSessions.length > 0 ? (
-                upcomingSessions.map(session => (
-                  <div key={session._id} className="session-card">
-                    <div className="session-info">
+          {/* Upcoming Sessions and Recent Activity Side by Side */}
+          <div className="sessions-activity-row">
+            {/* Upcoming Sessions */}
+            <section className="upcoming-sessions-section">
+              <div className="section-header">
+                <h2>Upcoming Sessions</h2>
+                <button onClick={handleViewSessions} className="view-all-btn">
+                  View All →
+                </button>
+              </div>
+              <div className="sessions-list">
+                {upcomingSessions.length > 0 ? (
+                  upcomingSessions.map(session => (
+                    <div key={session._id} className="session-card">
+                      <div className="session-info">
                       <h4>{session.title}</h4>
                       <p className="session-subject">
                         {session.subject}
@@ -259,15 +261,24 @@ const Dashboard = () => {
               )}
             </div>
           </section>
+          </div>
 
-          {/* Study Analytics */}
-          <StudyAnalytics />
+          {/* Horizontal Layout: Analytics, Recommendations, Trending */}
+          <section className="dashboard-horizontal-section">
+            {/* Study Analytics */}
+            <div className="horizontal-analytics">
+              <StudyAnalytics />
+            </div>
 
-          {/* Group Recommendations */}
-          <GroupRecommendations limit={6} />
+            {/* Group Recommendations and Trending */}
+            <div className="horizontal-groups">
+              {/* Group Recommendations */}
+              <GroupRecommendations limit={6} />
 
-          {/* Trending Groups */}
-          <TrendingGroups limit={3} />
+              {/* Trending Groups */}
+              <TrendingGroups limit={3} />
+            </div>
+          </section>
         </div>
 
 

@@ -316,6 +316,14 @@ export const joinGroup = async (req, res) => {
       $inc: { activityScore: 10 } // Joining group increases activity
     });
 
+    // Create GroupMember record to track join date
+    const GroupMember = (await import('../models/GroupMember.js')).default;
+    await GroupMember.findOneAndUpdate(
+      { groupId: group._id, userId: userId },
+      { groupId: group._id, userId: userId, role: 'member' },
+      { upsert: true, new: true }
+    );
+
     // Update group activity score (find fresh document to avoid validation issues)
     const updatedGroup = await StudyGroup.findById(groupId);
     await updatedGroup.updateActivityScore();

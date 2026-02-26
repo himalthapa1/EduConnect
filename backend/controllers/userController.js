@@ -343,6 +343,7 @@ export const getUserAnalytics = async (req, res) => {
     const StudyWithMeSession = (await import('../models/StudyWithMeSession.js')).default;
     const GroupMessage = (await import('../models/GroupMessage.js')).default;
     const GroupResource = (await import('../models/GroupResource.js')).default;
+    const GroupMember = (await import('../models/GroupMember.js')).default;
 
     // Get study with me sessions
     const studySessions = await StudyWithMeSession.find({
@@ -403,9 +404,12 @@ export const getUserAnalytics = async (req, res) => {
     // Get groups joined this week
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const groupsJoinedThisWeek = user.joinedGroups.filter(g => 
-      g.createdAt && g.createdAt >= oneWeekAgo
-    ).length;
+    
+    // Use GroupMember to get actual join dates
+    const groupsJoinedThisWeek = await GroupMember.countDocuments({
+      userId,
+      createdAt: { $gte: oneWeekAgo }
+    });
 
     // Get sessions attended this week
     const sessionsThisWeek = user.attendedSessions.filter(s => 

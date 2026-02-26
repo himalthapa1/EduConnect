@@ -53,6 +53,8 @@ const TrendingGroups = ({ limit = 6, showHeader = true, compact = false }) => {
       setJoinSuccess('Successfully joined the group!');
       // Refresh trending groups after joining
       loadTrendingGroups();
+      // Trigger analytics refresh
+      window.dispatchEvent(new Event('refreshAnalytics'));
       // Navigate to groups page after successful join
       setTimeout(() => navigate('/groups'), 1000);
     } catch (error) {

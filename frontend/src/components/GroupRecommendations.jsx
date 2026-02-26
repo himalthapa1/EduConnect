@@ -63,6 +63,8 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
       setJoinSuccess('Successfully joined the group!');
       // Refresh recommendations after joining
       loadRecommendations();
+      // Trigger analytics refresh
+      window.dispatchEvent(new Event('refreshAnalytics'));
       // Navigate to groups page after successful join
       setTimeout(() => navigate('/groups'), 1000);
     } catch (error) {

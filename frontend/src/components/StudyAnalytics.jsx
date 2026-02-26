@@ -11,6 +11,23 @@ const StudyAnalytics = () => {
 
   useEffect(() => {
     loadAnalytics();
+
+    // Listen for analytics refresh events
+    const handleRefresh = () => {
+      loadAnalytics();
+    };
+
+    window.addEventListener('refreshAnalytics', handleRefresh);
+
+    // Refresh analytics every 30 seconds to catch updates
+    const interval = setInterval(() => {
+      loadAnalytics();
+    }, 30000);
+
+    return () => {
+      window.removeEventListener('refreshAnalytics', handleRefresh);
+      clearInterval(interval);
+    };
   }, []);
 
   const loadAnalytics = async () => {
@@ -156,19 +173,6 @@ const StudyAnalytics = () => {
           <h3>Activity Score</h3>
           <div className="metric-value">{overview.activityScore}</div>
           <div className="metric-label">engagement points</div>
-        </div>
-      </div>
-
-      {/* Row 5: Streak Card (Centered) */}
-      <div className="analytics-row-5">
-        <div className="analytics-streak-card">
-          <div className="streak-icon">
-            <Icons.fire size={32} />
-          </div>
-          <div className="streak-content">
-            <div className="streak-value">{overview.longestStreak}</div>
-            <div className="streak-label">Longest Streak</div>
-          </div>
         </div>
       </div>
 
