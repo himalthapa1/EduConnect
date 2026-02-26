@@ -80,56 +80,58 @@ const StudyStreakCard = () => {
         </span>
       </div>
 
-      <div className="streak-stats">
-        <div className="streak-stat-item">
-          <div className="streak-icon">
-            <Icons.flame size={32} color="#f97316" />
+      <div className="streak-content">
+        <div className="streak-stats">
+          <div className="streak-stat-item">
+            <div className="streak-icon">
+              <Icons.flame size={28} color="#f97316" />
+            </div>
+            <div className="streak-info">
+              <div className="streak-number">{streak.currentStreak}</div>
+              <div className="streak-label">Current</div>
+            </div>
           </div>
-          <div className="streak-info">
-            <div className="streak-number">{streak.currentStreak}</div>
-            <div className="streak-label">Current Streak</div>
+
+          <div className="streak-divider"></div>
+
+          <div className="streak-stat-item">
+            <div className="streak-icon">
+              <Icons.star size={28} color="#fbbf24" />
+            </div>
+            <div className="streak-info">
+              <div className="streak-number">{streak.longestStreak}</div>
+              <div className="streak-label">Best</div>
+            </div>
           </div>
         </div>
 
-        <div className="streak-divider"></div>
+        <button className="streak-update-btn" onClick={updateStreak}>
+          <Icons.check size={16} />
+          Mark Today as Studied
+        </button>
 
-        <div className="streak-stat-item">
-          <div className="streak-icon">
-            <Icons.star size={32} color="#fbbf24" />
+        <div className="streak-milestones">
+          <div className="milestone-title">Next Milestones</div>
+          <div className="milestone-list">
+            {streak.currentStreak < 7 && (
+              <div className="milestone-item">
+                <span>🔥 7 days</span>
+                <span className="milestone-progress">{streak.currentStreak}/7</span>
+              </div>
+            )}
+            {streak.currentStreak < 30 && (
+              <div className="milestone-item">
+                <span>💎 30 days</span>
+                <span className="milestone-progress">{streak.currentStreak}/30</span>
+              </div>
+            )}
+            {streak.currentStreak < 100 && (
+              <div className="milestone-item">
+                <span>🏆 100 days</span>
+                <span className="milestone-progress">{streak.currentStreak}/100</span>
+              </div>
+            )}
           </div>
-          <div className="streak-info">
-            <div className="streak-number">{streak.longestStreak}</div>
-            <div className="streak-label">Best Streak</div>
-          </div>
-        </div>
-      </div>
-
-      <button className="streak-update-btn" onClick={updateStreak}>
-        <Icons.check size={16} />
-        Mark Today as Studied
-      </button>
-
-      <div className="streak-milestones">
-        <div className="milestone-title">Next Milestones</div>
-        <div className="milestone-list">
-          {streak.currentStreak < 7 && (
-            <div className="milestone-item">
-              <span>🔥 7 days - On Fire</span>
-              <span className="milestone-progress">{streak.currentStreak}/7</span>
-            </div>
-          )}
-          {streak.currentStreak < 30 && (
-            <div className="milestone-item">
-              <span>💎 30 days - Diamond</span>
-              <span className="milestone-progress">{streak.currentStreak}/30</span>
-            </div>
-          )}
-          {streak.currentStreak < 100 && (
-            <div className="milestone-item">
-              <span>🏆 100 days - Legend</span>
-              <span className="milestone-progress">{streak.currentStreak}/100</span>
-            </div>
-          )}
         </div>
       </div>
     </div>

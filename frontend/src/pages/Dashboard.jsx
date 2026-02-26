@@ -176,17 +176,11 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {/* Split Focus and Calendar Section */}
-        <section className="focus-calendar-section">
-          <div className="focus-calendar-grid">
-            <TodaysFocus />
-            <EventTracker />
-          </div>
-        </section>
-
-        {/* Study Streak Section */}
-        <section className="streak-section">
+        {/* Three Square Sections: Today's Focus, Streak Score, Calendar */}
+        <section className="three-section-grid">
+          <TodaysFocus />
           <StudyStreakCard />
+          <EventTracker />
         </section>
 
         <div className="dashboard-content">
