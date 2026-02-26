@@ -35,9 +35,20 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
             return done(null, user);
           }
 
+          // Generate username (max 30 chars)
+          // Use first part of email + random 6-digit number
+          const emailPrefix = profile.emails[0].value.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+          const randomSuffix = Math.floor(100000 + Math.random() * 900000); // 6-digit random number
+          let username = `${emailPrefix}_${randomSuffix}`;
+          
+          // Ensure username is max 30 characters
+          if (username.length > 30) {
+            username = `${emailPrefix.substring(0, 23)}_${randomSuffix}`;
+          }
+
           // Create new user
           user = await User.create({
-            username: profile.displayName.replace(/\s+/g, '_').toLowerCase() + '_' + Date.now(),
+            username: username,
             email: profile.emails[0].value,
             password: Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8), // Random password
             googleId: profile.id,
