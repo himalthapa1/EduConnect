@@ -23,6 +23,7 @@ export const Icons = {
   user: Lu.LuUser,
   video: Lu.LuVideo,
   chat: Lu.LuMessageCircle,
+  message: Lu.LuMessageCircle,
   checkCircle: Lu.LuCheck,
   file: Lu.LuFile,
   share: Lu.LuShare2,
@@ -57,6 +58,7 @@ export const Icons = {
 
   // Trending features
   flame: LuFlame,
+  fire: LuFlame,
 
   // Rating features
   star: LuStar,

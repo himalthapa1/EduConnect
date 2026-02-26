@@ -312,3 +312,138 @@ export const uploadProfilePicture = async (req, res) => {
     });
   }
 };
+
+
+/* =========================
+   GET USER ANALYTICS
+========================= */
+export const getUserAnalytics = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated'
+      });
+    }
+
+    const user = await User.findById(userId)
+      .populate('joinedGroups', 'name createdAt')
+      .populate('attendedSessions', 'title date startTime endTime');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Import models
+    const StudyWithMeSession = (await import('../models/StudyWithMeSession.js')).default;
+    const GroupMessage = (await import('../models/GroupMessage.js')).default;
+    const GroupResource = (await import('../models/GroupResource.js')).default;
+
+    // Get study with me sessions
+    const studySessions = await StudyWithMeSession.find({
+      userId,
+      status: 'completed'
+    }).sort({ createdAt: -1 });
+
+    // Calculate total study hours
+    const totalStudyMinutes = studySessions.reduce((sum, session) => {
+      return sum + (session.actualDuration || session.studyMinutes || 0);
+    }, 0);
+    const totalStudyHours = Math.round(totalStudyMinutes / 60 * 10) / 10;
+
+    // Get study hours for last 7 days
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const recentSessions = studySessions.filter(s => s.createdAt >= sevenDaysAgo);
+    const studyHoursByDay = {};
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      studyHoursByDay[dateStr] = 0;
+    }
+    
+    recentSessions.forEach(session => {
+      const dateStr = session.createdAt.toISOString().split('T')[0];
+      if (studyHoursByDay[dateStr] !== undefined) {
+        studyHoursByDay[dateStr] += (session.actualDuration || session.studyMinutes || 0) / 60;
+      }
+    });
+
+    // Get messages sent
+    const messagesSent = await GroupMessage.countDocuments({ senderId: userId });
+
+    // Get resources shared
+    const resourcesShared = await GroupResource.countDocuments({ addedBy: userId });
+
+    // Get groups joined this week
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const groupsJoinedThisWeek = user.joinedGroups.filter(g => 
+      g.createdAt && g.createdAt >= oneWeekAgo
+    ).length;
+
+    // Get sessions attended this week
+    const sessionsThisWeek = user.attendedSessions.filter(s => 
+      s.date && new Date(s.date) >= oneWeekAgo
+    ).length;
+
+    // Calculate study hours this week
+    const studyHoursThisWeek = recentSessions.reduce((sum, session) => {
+      return sum + (session.actualDuration || session.studyMinutes || 0) / 60;
+    }, 0);
+
+    res.json({
+      success: true,
+      data: {
+        overview: {
+          totalStudyHours,
+          totalGroups: user.joinedGroups.length,
+          totalSessions: user.attendedSessions.length,
+          messagesSent,
+          resourcesShared,
+          activityScore: user.activityScore || 0,
+          currentStreak: user.studyStreak?.currentStreak || 0,
+          longestStreak: user.studyStreak?.longestStreak || 0
+        },
+        thisWeek: {
+          studyHours: Math.round(studyHoursThisWeek * 10) / 10,
+          groupsJoined: groupsJoinedThisWeek,
+          sessionsAttended: sessionsThisWeek
+        },
+        studyHoursByDay: Object.entries(studyHoursByDay).map(([date, hours]) => ({
+          date,
+          hours: Math.round(hours * 10) / 10,
+          day: new Date(date).toLocaleDateString('en-US', { weekday: 'short' })
+        })),
+        recentActivity: {
+          lastStudySession: studySessions[0] ? {
+            subject: studySessions[0].subject,
+            duration: Math.round((studySessions[0].actualDuration || studySessions[0].studyMinutes) / 60 * 10) / 10,
+            date: studySessions[0].createdAt
+          } : null,
+          recentGroups: user.joinedGroups.slice(0, 5).map(g => ({
+            id: g._id,
+            name: g.name,
+            joinedAt: g.createdAt
+          }))
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error getting user analytics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get analytics',
+      message: error.message
+    });
+  }
+};

@@ -72,6 +72,9 @@ export const usersAPI = {
 
   changePassword: (data) =>
     api.post('/users/change-password', data),
+
+  getAnalytics: () =>
+    api.get('/users/analytics'),
 };
 
 /**

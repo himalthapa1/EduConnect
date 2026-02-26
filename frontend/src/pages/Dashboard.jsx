@@ -12,6 +12,7 @@ import TrendingGroups from '../components/TrendingGroups';
 import TodaysFocus from '../components/TodaysFocus';
 import EventTracker from '../components/EventTracker';
 import StudyStreakCard from '../components/StudyStreakCard';
+import StudyAnalytics from '../components/StudyAnalytics';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -258,6 +259,9 @@ const Dashboard = () => {
               )}
             </div>
           </section>
+
+          {/* Study Analytics */}
+          <StudyAnalytics />
 
           {/* Group Recommendations */}
           <GroupRecommendations limit={6} />

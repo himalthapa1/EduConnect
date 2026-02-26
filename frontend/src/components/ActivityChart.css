@@ -1,0 +1,23 @@
+.activity-chart {
+  width: 100%;
+  height: 300px;
+}
+
+.activity-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Recharts customization */
+.recharts-cartesian-axis-tick-value {
+  fill: #6b7280;
+  font-size: 12px;
+}
+
+.recharts-tooltip-wrapper {
+  outline: none;
+}
