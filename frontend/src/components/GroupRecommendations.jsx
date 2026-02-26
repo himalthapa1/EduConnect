@@ -14,6 +14,7 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
   const [joiningGroupId, setJoiningGroupId] = useState(null);
   const [joinError, setJoinError] = useState(null);
   const [joinSuccess, setJoinSuccess] = useState(null);
+  const [hidingGroupId, setHidingGroupId] = useState(null);
 
   useEffect(() => {
     loadRecommendations();
@@ -78,6 +79,28 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
 
   const handleViewGroup = (groupId) => {
     navigate(`/groups`);
+  };
+
+  const handleNotInterested = async (groupId, event) => {
+    event.stopPropagation();
+    if (!user) {
+      setJoinError('Please log in to provide feedback');
+      return;
+    }
+    setHidingGroupId(groupId);
+    setJoinError(null);
+    try {
+      await groupsAPI.markNotInterested(groupId);
+      setRecommendations(prev => prev.filter(g => g.group_id !== groupId));
+      setJoinSuccess('Feedback recorded. This group won\'t be recommended again.');
+      setTimeout(() => setJoinSuccess(null), 3000);
+    } catch (error) {
+      console.error('Error marking not interested:', error);
+      const errorMessage = error.response?.data?.error?.message || error.response?.data?.message || 'Failed to record feedback';
+      setJoinError(errorMessage);
+    } finally {
+      setHidingGroupId(null);
+    }
   };
 
   const getDifficultyColor = (difficulty) => {
@@ -273,20 +296,25 @@ const GroupRecommendations = ({ limit = 5, showHeader = true, compact = false })
 
             <div className="recommendation-actions">
               {user?.joinedGroups?.includes(group.group_id) ? (
-                <button
-                  className="joined-btn"
-                  disabled
-                >
-                  ✓ Joined
-                </button>
+                <button className="joined-btn" disabled>✓ Joined</button>
               ) : (
-                <button
-                  onClick={(e) => handleJoinGroup(group.group_id, e)}
-                  className="join-btn"
-                  disabled={joiningGroupId === group.group_id}
-                >
-                  {joiningGroupId === group.group_id ? 'Joining...' : 'Join'}
-                </button>
+                <>
+                  <button
+                    onClick={(e) => handleJoinGroup(group.group_id, e)}
+                    className="join-btn"
+                    disabled={joiningGroupId === group.group_id}
+                  >
+                    {joiningGroupId === group.group_id ? 'Joining...' : 'Join'}
+                  </button>
+                  <button
+                    onClick={(e) => handleNotInterested(group.group_id, e)}
+                    className="not-interested-btn"
+                    disabled={hidingGroupId === group.group_id}
+                    title="Not interested"
+                  >
+                    {hidingGroupId === group.group_id ? '...' : '✕'}
+                  </button>
+                </>
               )}
             </div>
           </div>

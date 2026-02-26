@@ -773,3 +773,82 @@ export const rateGroup = async (req, res) => {
     });
   }
 };
+
+/* =========================
+   FEEDBACK LOOP - MARK NOT INTERESTED
+========================= */
+export const markNotInterested = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const userId = req.user?.userId;
+    const { reason } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'User not authenticated' });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+      return res.status(400).json({ success: false, error: 'Invalid group ID' });
+    }
+
+    const group = await StudyGroup.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ success: false, error: 'Group not found' });
+    }
+
+    const UserFeedback = (await import('../models/UserFeedback.js')).default;
+
+    const existingFeedback = await UserFeedback.findOne({ userId, groupId });
+    if (existingFeedback) {
+      return res.json({ success: true, message: 'Feedback already recorded', data: { alreadyMarked: true } });
+    }
+
+    await UserFeedback.create({ userId, groupId, action: 'not_interested', reason: reason || null });
+
+    res.json({ success: true, message: 'Feedback recorded successfully', data: { groupId, action: 'not_interested' } });
+  } catch (err) {
+    console.error('markNotInterested error:', err);
+    res.status(500).json({ success: false, error: 'Failed to record feedback', message: err.message });
+  }
+};
+
+export const removeNotInterested = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'User not authenticated' });
+    }
+
+    const UserFeedback = (await import('../models/UserFeedback.js')).default;
+    const result = await UserFeedback.deleteOne({ userId, groupId });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ success: false, error: 'Feedback not found' });
+    }
+
+    res.json({ success: true, message: 'Feedback removed successfully' });
+  } catch (err) {
+    console.error('removeNotInterested error:', err);
+    res.status(500).json({ success: false, error: 'Failed to remove feedback', message: err.message });
+  }
+};
+
+export const getExcludedGroups = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'User not authenticated' });
+    }
+
+    const UserFeedback = (await import('../models/UserFeedback.js')).default;
+    const excludedGroups = await UserFeedback.getExcludedGroups(userId);
+
+    res.json({ success: true, data: excludedGroups });
+  } catch (err) {
+    console.error('getExcludedGroups error:', err);
+    res.status(500).json({ success: false, error: 'Failed to get excluded groups', message: err.message });
+  }
+};

@@ -56,6 +56,7 @@ class RecommendationEngine:
             'difficulty': g.get('difficulty', 'beginner'),
             'members_count': len(g.get('members', [])),
             'activity_score': g.get('activityScore', 0),
+            'average_rating': g.get('averageRating', 0),
             'created_at': g.get('createdAt', datetime.now())
         } for g in groups]
 
@@ -133,14 +134,13 @@ class RecommendationEngine:
         return total_similarity / count if count > 0 else 0.0
 
     def _calculate_popularity_score(self, group: Dict[str, Any]) -> float:
-        """Calculate popularity score based on members and activity"""
-        members_score = min(group['members_count'] / 100, 1.0)  # Cap at 100 members
-        activity_score = min(group['activity_score'] / 1000, 1.0)  # Normalize activity
-        
-        # Small base score (0.1) to help new groups, but they still need interest match
-        return (members_score * 0.5 + activity_score * 0.3 + 0.1)
+        """Calculate popularity score based on members, activity, and ratings"""
+        members_score = min(group['members_count'] / 100, 1.0)
+        activity_score = min(group['activity_score'] / 1000, 1.0)
+        rating_score = group.get('average_rating', 0) / 5.0
+        return (members_score * 0.3 + activity_score * 0.2 + rating_score * 0.4 + 0.1)
 
-    def _get_cold_start_recommendations(self, user_data: Dict[str, Any], limit: int) -> List[Dict[str, Any]]:
+    def _get_cold_start_recommendations(self, user_data: Dict[str, Any], limit: int, excluded_groups: List[str] = []) -> List[Dict[str, Any]]:
         """Recommendations for new users based on interests and popularity"""
         all_groups = self._get_all_groups()
 
@@ -148,6 +148,10 @@ class RecommendationEngine:
         for group in all_groups:
             # Skip groups user already joined
             if group['id'] in user_data['joined_groups']:
+                continue
+            
+            # Skip groups user marked as not interested
+            if group['id'] in excluded_groups:
                 continue
 
             # Content similarity
@@ -166,6 +170,7 @@ class RecommendationEngine:
                 'subject': group['subject'],
                 'difficulty': group['difficulty'],
                 'members_count': group['members_count'],
+                'average_rating': group['average_rating'],
                 'score': round(final_score, 3)
             })
 
@@ -180,9 +185,16 @@ class RecommendationEngine:
             if not user_data:
                 return []
 
+            # Get user's excluded groups (not interested feedback)
+            try:
+                excluded_feedback = list(self.db.userfeedbacks.find({'userId': ObjectId(user_id)}))
+                excluded_groups = [str(f['groupId']) for f in excluded_feedback]
+            except:
+                excluded_groups = []
+
             # Cold start for new users (no joined groups or low activity)
             if len(user_data['joined_groups']) < 2 or user_data['activity_score'] < 10:
-                return self._get_cold_start_recommendations(user_data, limit)
+                return self._get_cold_start_recommendations(user_data, limit, excluded_groups)
 
             all_groups = self._get_all_groups()
             recommendations = []
@@ -190,6 +202,10 @@ class RecommendationEngine:
             for group in all_groups:
                 # Skip groups user already joined
                 if group['id'] in user_data['joined_groups']:
+                    continue
+                
+                # Skip groups user marked as not interested
+                if group['id'] in excluded_groups:
                     continue
 
                 # Content-based similarity
@@ -202,11 +218,6 @@ class RecommendationEngine:
                 popularity_score = self._calculate_popularity_score(group)
 
                 # Final weighted score using hybrid approach
-                # Combines content-based (50%), collaborative filtering (20%), and popularity (30%)
-                # This creates a balanced recommendation considering:
-                # - What user is interested in (content)
-                # - What similar users liked (collaborative)
-                # - What's popular overall (popularity)
                 final_score = (content_score * 0.5) + (collaborative_score * 0.2) + (popularity_score * 0.3)
 
                 recommendations.append({
@@ -215,6 +226,7 @@ class RecommendationEngine:
                     'subject': group['subject'],
                     'difficulty': group['difficulty'],
                     'members_count': group['members_count'],
+                    'average_rating': group['average_rating'],
                     'score': round(final_score, 3)
                 })
 

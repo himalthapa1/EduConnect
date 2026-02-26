@@ -129,6 +129,15 @@ export const groupsAPI = {
   rateGroup: (groupId, rating) =>
     api.post(`/groups/${groupId}/rate`, { rating }),
 
+  markNotInterested: (groupId, reason = null) =>
+    api.post(`/groups/${groupId}/not-interested`, { reason }),
+
+  removeNotInterested: (groupId) =>
+    api.delete(`/groups/${groupId}/not-interested`),
+
+  getExcludedGroups: () =>
+    api.get(`/groups/feedback/excluded`),
+
   getGroupMessages: (groupId, params = {}) =>
     api.get(`/groups/${groupId}/messages`, { params }),
 

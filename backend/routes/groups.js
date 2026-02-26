@@ -15,6 +15,9 @@ import {
   deleteResource,
   updateResource,
   rateGroup,
+  markNotInterested,
+  removeNotInterested,
+  getExcludedGroups,
 } from "../controllers/groupController.js";
 import {
   getGroupMessages,
@@ -79,6 +82,11 @@ router.put("/:groupId/resources/:resourceId", authenticateToken, updateResource)
 
 // Rate group
 router.post("/:groupId/rate", authenticateToken, rateGroup);
+
+// Feedback loop
+router.post("/:groupId/not-interested", authenticateToken, markNotInterested);
+router.delete("/:groupId/not-interested", authenticateToken, removeNotInterested);
+router.get("/feedback/excluded", authenticateToken, getExcludedGroups);
 
 /* =========================
    DYNAMIC ROUTES LAST
